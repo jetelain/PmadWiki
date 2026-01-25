@@ -1,0 +1,50 @@
+.wiki-content {
+    line-height: 1.6;
+}
+
+    .wiki-content img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .wiki-content table {
+        width: 100%;
+        margin-bottom: 1rem;
+        border-collapse: collapse;
+    }
+
+        .wiki-content table th,
+        .wiki-content table td {
+            padding: 0.75rem;
+            border: 1px solid #dee2e6;
+        }
+
+        .wiki-content table thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+    .wiki-content pre {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        overflow-x: auto;
+    }
+
+    .wiki-content code {
+        background-color: #f8f9fa;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.25rem;
+    }
+
+    .wiki-content pre code {
+        background-color: transparent;
+        padding: 0;
+    }
+
+    .wiki-content blockquote {
+        padding: 0.5rem 1rem;
+        margin: 0 0 1rem;
+        border-left: 0.25rem solid #dee2e6;
+        background-color: #f8f9fa;
+    }

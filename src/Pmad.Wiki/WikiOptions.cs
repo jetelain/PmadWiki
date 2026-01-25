@@ -28,11 +28,6 @@
         public bool UsePageLevelPermissions { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether the integrated Git HTTP server is enabled.
-        /// </summary>
-        public bool EnableGitHttpServer { get; set; } = false;
-
-        /// <summary>
         /// Gets or sets the culture code of base markdown pages.
         /// </summary>
         public string NeutralMarkdownPageCulture { get; set; } = "en";

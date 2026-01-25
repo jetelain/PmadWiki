@@ -9,14 +9,21 @@ public static class WikiMvcBuilderExtensions
     internal static Assembly WikiAssembly
         => typeof(WikiMvcBuilderExtensions).Assembly;
 
-    public static IMvcBuilder AddWiki(this IMvcBuilder builder, WikiOptions options)
+    public static IMvcBuilder AddWiki(this IMvcBuilder builder, Action<WikiOptions> options)
     {
         builder.Services.AddWiki(options);
 
         builder.ConfigureApplicationPartManager(apm =>
         {
-            apm.ApplicationParts.Add(new AssemblyPart(WikiAssembly));
+            apm.ApplicationParts.Add(new CompiledRazorAssemblyPart(WikiAssembly));
         });
+
+        return builder;
+    }
+
+    public static IMvcBuilder AddWikiGitHttpServer(this IMvcBuilder builder)
+    {
+        builder.Services.AddWikiGitHttpServer();
 
         return builder;
     }

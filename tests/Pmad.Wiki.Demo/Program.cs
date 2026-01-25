@@ -3,6 +3,7 @@ using AspNet.Security.OpenId.Steam;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
+using Pmad.Git.HttpServer;
 using Pmad.Wiki.Demo.Entities;
 using Pmad.Wiki.Demo.Services;
 using Pmad.Wiki.Services;
@@ -16,14 +17,18 @@ namespace Pmad.Wiki.Demo
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddDbContext<DemoContext>(options =>
+                options.UseSqlite(builder.Configuration.GetConnectionString(nameof(DemoContext))));
+
             builder.Services.AddScoped<IWikiUserService, DemoWikiUserService>();
             builder.Services.AddLocalization();
 
             builder.Services.AddControllersWithViews()
                 .AddViewLocalization()
-                .AddWiki(new WikiOptions()
+                .AddWiki(options =>
                 {
-                    AllowAnonymousViewing = true
+                    options.AllowAnonymousViewing = true;
+                    options.RepositoryRoot = Path.Combine(builder.Environment.ContentRootPath, "Repositories");
                 });
 
             builder.Services.AddAuthentication(options =>
@@ -42,9 +47,6 @@ namespace Pmad.Wiki.Demo
                 var admins = builder.Configuration.GetSection("Admins").Get<string[]>() ?? Array.Empty<string>();
                 options.AddPolicy("Admin", policy => policy.RequireClaim(ClaimTypes.NameIdentifier, admins));
             });
-
-            builder.Services.AddDbContext<DemoContext>(options =>
-                options.UseSqlite(builder.Configuration.GetConnectionString(nameof(DemoContext))));
 
             var app = builder.Build();
 
@@ -91,6 +93,9 @@ namespace Pmad.Wiki.Demo
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<DemoContext>();
                 dbContext.Database.Migrate();
+
+                var wiki = scope.ServiceProvider.GetRequiredService<IWikiPageService>();
+                wiki.EnsureRepositoryCreated().GetAwaiter().GetResult();
             }
         }
     }

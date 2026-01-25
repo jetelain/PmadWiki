@@ -1,0 +1,45 @@
+@model Pmad.Wiki.Models.WikiHistoryViewModel
+@{
+    ViewData["Title"] = $"History: {Model.PageName}";
+}
+
+<div class="wiki-history">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>History: @Model.PageName</h1>
+        <a asp-action="View" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Page
+        </a>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Culture))
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Showing history for culture: <strong>@Model.Culture</strong>
+        </div>
+    }
+
+    @if (Model.Entries.Any())
+    {
+        <div class="list-group">
+            @foreach (var entry in Model.Entries)
+            {
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">@entry.Message</h5>
+                        <small class="text-muted">@entry.Timestamp.ToString("g")</small>
+                    </div>
+                    <p class="mb-1">
+                        <strong>@entry.AuthorName</strong>
+                    </p>
+                    <small class="text-muted">Commit: @entry.CommitId.Substring(0, Math.Min(8, entry.CommitId.Length))</small>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> No history found for this page.
+        </div>
+    }
+</div>

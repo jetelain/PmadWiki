@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/tests/Pmad.Wiki.Demo/demo.db
+/tests/Pmad.Wiki.Demo/demo.db-shm
+/tests/Pmad.Wiki.Demo/demo.db-wal

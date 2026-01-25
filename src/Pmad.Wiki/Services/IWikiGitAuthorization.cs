@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Pmad.Wiki.Services
+namespace Pmad.Wiki.Services;
+
+internal interface IWikiGitAuthorization
 {
-    internal interface IWikiGitAuthorization
-    {
-        ValueTask<bool> AuthorizeGitHttpAsync(HttpContext context, WikiOptions options, CancellationToken cancellationToken);
-    }
+    ValueTask<bool> AuthorizeGitHttpAsync(HttpContext context, CancellationToken cancellationToken);
 }
