@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /tests/Pmad.Wiki.Demo/demo.db
 /tests/Pmad.Wiki.Demo/demo.db-shm
 /tests/Pmad.Wiki.Demo/demo.db-wal
+/tests/Pmad.Wiki.Demo/appsettings.Development.json
