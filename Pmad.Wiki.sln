@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36908.2 d17.14
+VisualStudioVersion = 17.14.36908.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pmad.Wiki", "src\Pmad.Wiki\Pmad.Wiki.csproj", "{A30C54E7-A08F-4EB6-B3B7-E3A5A6199196}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pmad.Wiki.Test", "tests\Pmad.Wiki.Test\Pmad.Wiki.Test.csproj", "{E7EBAAF4-38CA-4776-B6B7-302C3AE34DBE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pmad.Wiki.Demo", "tests\Pmad.Wiki.Demo\Pmad.Wiki.Demo.csproj", "{57424273-136C-4E69-AB12-0092A61DF840}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pmad.Wiki.Demo", "tests\Pmad.Wiki.Demo\Pmad.Wiki.Demo.csproj", "{3D7648D4-8E0E-4F09-B020-1AEAAE6002DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{E7EBAAF4-38CA-4776-B6B7-302C3AE34DBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E7EBAAF4-38CA-4776-B6B7-302C3AE34DBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E7EBAAF4-38CA-4776-B6B7-302C3AE34DBE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{57424273-136C-4E69-AB12-0092A61DF840}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{57424273-136C-4E69-AB12-0092A61DF840}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{57424273-136C-4E69-AB12-0092A61DF840}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{57424273-136C-4E69-AB12-0092A61DF840}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D7648D4-8E0E-4F09-B020-1AEAAE6002DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D7648D4-8E0E-4F09-B020-1AEAAE6002DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D7648D4-8E0E-4F09-B020-1AEAAE6002DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D7648D4-8E0E-4F09-B020-1AEAAE6002DD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
