@@ -8,4 +8,5 @@ public class WikiPage
     public string? Culture { get; set; }
     public string? LastModifiedBy { get; set; }
     public DateTimeOffset? LastModified { get; set; }
+    public required string ContentHash { get; set; }
 }

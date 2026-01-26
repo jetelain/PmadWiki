@@ -167,7 +167,8 @@ namespace Pmad.Wiki.Controllers
                 Content = page?.Content ?? string.Empty,
                 CommitMessage = page == null ? $"Create page {id}" : $"Update page {id}",
                 Culture = culture,
-                IsNew = page == null
+                IsNew = page == null,
+                OriginalContentHash = page?.ContentHash
             };
 
             return View(viewModel);
@@ -197,6 +198,20 @@ namespace Pmad.Wiki.Controllers
             if (wikiUser == null || !wikiUser.CanEdit)
             {
                 return Forbid();
+            }
+
+            // Check if the page has been modified since the user started editing
+            if (!model.IsNew && !string.IsNullOrEmpty(model.OriginalContentHash))
+            {
+                var currentPage = await _pageService.GetPageAsync(model.PageName, model.Culture, cancellationToken);
+                if (currentPage != null && currentPage.ContentHash != model.OriginalContentHash)
+                {
+                    ModelState.AddModelError(string.Empty, 
+                        $"Warning: This page has been modified by {currentPage.LastModifiedBy ?? "another user"} since you started editing. " +
+                        "Your changes will overwrite those changes. Please review the current version before saving.");
+                    model.OriginalContentHash = currentPage.ContentHash;
+                    return View(model);
+                }
             }
 
             await _pageService.SavePageAsync(

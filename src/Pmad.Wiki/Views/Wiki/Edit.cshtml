@@ -22,6 +22,9 @@
         <input type="hidden" asp-for="PageName" />
         <input type="hidden" asp-for="Culture" />
         <input type="hidden" asp-for="IsNew" />
+        <input type="hidden" asp-for="OriginalContentHash" />
+        
+        <div asp-validation-summary="ModelOnly" class="alert alert-warning" role="alert"></div>
         
         <div class="mb-3">
             <label asp-for="Content" class="form-label">Content (Markdown)</label>

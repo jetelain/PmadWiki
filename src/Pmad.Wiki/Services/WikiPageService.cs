@@ -49,8 +49,8 @@ public class WikiPageService : IWikiPageService
 
         try
         {
-            var content = await repository.ReadFileAsync(filePath, _options.BranchName, cancellationToken);
-            var contentText = Encoding.UTF8.GetString(content);
+            var gitFile = await repository.ReadFileAndHashAsync(filePath, _options.BranchName, cancellationToken);
+            var contentText = Encoding.UTF8.GetString(gitFile.Content);
             var htmlContent = Markdig.Markdown.ToHtml(contentText, _markdownPipeline);
             
             GitCommit? lastCommit = null;
@@ -64,6 +64,7 @@ public class WikiPageService : IWikiPageService
             {
                 PageName = pageName,
                 Content = contentText,
+                ContentHash = gitFile.Hash.Value,
                 HtmlContent = htmlContent,
                 Culture = culture,
                 LastModifiedBy = lastCommit?.Metadata.AuthorName,

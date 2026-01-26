@@ -15,4 +15,6 @@ public class WikiPageEditViewModel
     public string? Culture { get; set; }
     
     public bool IsNew { get; set; }
+    
+    public string? OriginalContentHash { get; set; }
 }
