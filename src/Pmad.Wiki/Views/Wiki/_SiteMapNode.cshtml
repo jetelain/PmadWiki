@@ -12,7 +12,7 @@
                 <i class="bi bi-file-text"></i>
             }
         </span>
-        @if (Model.Children.Any())
+        @if (!Model.HasPage)
         {
             <span class="sitemap-node-folder">@Model.DisplayName</span>
         }

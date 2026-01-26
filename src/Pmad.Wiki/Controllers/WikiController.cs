@@ -176,18 +176,31 @@ namespace Pmad.Wiki.Controllers
                     
                     if (!nodesByPath.TryGetValue(currentPath, out var node))
                     {
-                        var pageInfo = group.FirstOrDefault(p => p.Culture == null || p.Culture == _options.NeutralMarkdownPageCulture);
-                        
-                        node = new WikiSiteMapNode
+                        if (currentPath == pageName)
                         {
-                            PageName = currentPath,
-                            DisplayName = parts[i],
-                            Culture = pageInfo?.Culture,
-                            LastModified = pageInfo?.LastModified,
-                            LastModifiedBy = pageInfo?.LastModifiedBy,
-                            Level = i
-                        };
-                        
+                            var pageInfo = group.FirstOrDefault(p => p.Culture == null || p.Culture == _options.NeutralMarkdownPageCulture);
+                            node = new WikiSiteMapNode
+                            {
+                                PageName = currentPath,
+                                DisplayName = parts[i],
+                                HasPage = true,
+                                Culture = pageInfo?.Culture,
+                                LastModified = pageInfo?.LastModified,
+                                LastModifiedBy = pageInfo?.LastModifiedBy,
+                                Level = i
+                            };
+                        }
+                        else
+                        {
+                            node = new WikiSiteMapNode
+                            {
+                                PageName = currentPath,
+                                DisplayName = parts[i],
+                                HasPage = false,
+                                Level = i
+                            };
+                        }
+
                         nodesByPath[currentPath] = node;
                         
                         if (parentNode != null)

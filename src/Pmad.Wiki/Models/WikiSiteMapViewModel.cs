@@ -15,4 +15,5 @@ public class WikiSiteMapNode
     public string? LastModifiedBy { get; set; }
     public int Level { get; set; }
     public List<WikiSiteMapNode> Children { get; set; } = new();
+    public bool HasPage { get; set; }
 }
