@@ -16,17 +16,17 @@ namespace Pmad.Wiki
 
             endpoints.MapControllerRoute(
                 name: "wiki-view",
-                pattern: $"{pattern}/{{id?}}",
+                pattern: $"{pattern}/view/{{**id}}",
                 defaults: new { controller = "Wiki", action = "View" });
 
             endpoints.MapControllerRoute(
                 name: "wiki-history",
-                pattern: $"{pattern}/{{id}}/history",
+                pattern: $"{pattern}/history/{{**id}}",
                 defaults: new { controller = "Wiki", action = "History" });
 
             endpoints.MapControllerRoute(
                 name: "wiki-edit",
-                pattern: $"{pattern}/{{id}}/edit",
+                pattern: $"{pattern}/edit/{{**id}}",
                 defaults: new { controller = "Wiki", action = "Edit" });
 
             return endpoints;

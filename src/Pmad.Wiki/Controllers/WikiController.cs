@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Pmad.Wiki.Helpers;
 using Pmad.Wiki.Models;
 using Pmad.Wiki.Services;
 
@@ -28,6 +29,16 @@ namespace Pmad.Wiki.Controllers
             if (string.IsNullOrEmpty(id))
             {
                 id = "Home";
+            }
+
+            if (!WikiInputValidator.IsValidPageName(id, out var pageNameError))
+            {
+                return BadRequest(pageNameError);
+            }
+
+            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture, out var cultureError))
+            {
+                return BadRequest(cultureError);
             }
 
             if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
@@ -78,7 +89,17 @@ namespace Pmad.Wiki.Controllers
         {
             if (string.IsNullOrEmpty(id))
             {
-                return BadRequest();
+                return BadRequest("Page name is required.");
+            }
+
+            if (!WikiInputValidator.IsValidPageName(id, out var pageNameError))
+            {
+                return BadRequest(pageNameError);
+            }
+
+            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture, out var cultureError))
+            {
+                return BadRequest(cultureError);
             }
 
             if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
@@ -119,7 +140,17 @@ namespace Pmad.Wiki.Controllers
         {
             if (string.IsNullOrEmpty(id))
             {
-                return BadRequest();
+                return BadRequest("Page name is required.");
+            }
+
+            if (!WikiInputValidator.IsValidPageName(id, out var pageNameError))
+            {
+                return BadRequest(pageNameError);
+            }
+
+            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture, out var cultureError))
+            {
+                return BadRequest(cultureError);
             }
 
             var wikiUser = await _userService.GetWikiUser(User, true, cancellationToken);
@@ -147,6 +178,16 @@ namespace Pmad.Wiki.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(WikiPageEditViewModel model, CancellationToken cancellationToken)
         {
+            if (!WikiInputValidator.IsValidPageName(model.PageName, out var pageNameError))
+            {
+                ModelState.AddModelError(nameof(model.PageName), pageNameError);
+            }
+
+            if (!string.IsNullOrEmpty(model.Culture) && !WikiInputValidator.IsValidCulture(model.Culture, out var cultureError))
+            {
+                ModelState.AddModelError(nameof(model.Culture), cultureError);
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);

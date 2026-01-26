@@ -4,6 +4,7 @@ using Markdig;
 using Microsoft.Extensions.Options;
 using Pmad.Git.HttpServer;
 using Pmad.Git.LocalRepositories;
+using Pmad.Wiki.Helpers;
 
 namespace Pmad.Wiki.Services;
 
@@ -163,9 +164,15 @@ public class WikiPageService : IWikiPageService
         var repository = GetRepository();
         var filePath = GetFilePath(pageName, culture);
         var contentBytes = Encoding.UTF8.GetBytes(content);
-        var exists = await PageExistsAsync(pageName, culture, cancellationToken);
 
-        GitCommitOperation operation = exists
+        var type = await repository.GetPathTypeAsync(filePath, _options.BranchName, cancellationToken);
+
+        if (type != null && type != GitTreeEntryKind.Blob)
+        {
+            throw new InvalidOperationException("Cannot save a page where a directory exists with the same name.");
+        }
+
+        GitCommitOperation operation = type == GitTreeEntryKind.Blob
             ? new UpdateFileOperation(filePath, contentBytes)
             : new AddFileOperation(filePath, contentBytes);
 
@@ -188,8 +195,15 @@ public class WikiPageService : IWikiPageService
 
     private string GetFilePath(string pageName, string? culture)
     {
-        var baseFileName = GetBaseFileName(pageName);
+        WikiInputValidator.ValidatePageName(pageName);
         
+        if (!string.IsNullOrEmpty(culture) && culture != _options.NeutralMarkdownPageCulture)
+        {
+            WikiInputValidator.ValidateCulture(culture);
+        }
+
+        var baseFileName = GetBaseFileName(pageName);
+
         if (string.IsNullOrEmpty(culture) || culture == _options.NeutralMarkdownPageCulture)
         {
             return baseFileName + ".md";
