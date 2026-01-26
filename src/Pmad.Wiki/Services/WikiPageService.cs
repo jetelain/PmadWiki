@@ -38,7 +38,7 @@ public class WikiPageService : IWikiPageService
 
         await repo.CreateCommitAsync(_options.BranchName, 
             [
-                new AddFileOperation("Home.md", Encoding.UTF8.GetBytes("# Welcome to the Wiki!\n\nThis is the home page of your wiki. Feel free to edit this page and add new pages as needed.\n")),
+                new AddFileOperation(_options.HomePageName + ".md", Encoding.UTF8.GetBytes("# Welcome to the Wiki!\n\nThis is the home page of your wiki. Feel free to edit this page and add new pages as needed.\n")),
             ], 
             new GitCommitMetadata("Initial commit", new GitCommitSignature("Wiki System", "wiki@pmadwiki.local", DateTimeOffset.UtcNow)), CancellationToken.None);
     }

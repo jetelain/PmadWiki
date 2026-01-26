@@ -28,7 +28,7 @@ namespace Pmad.Wiki.Controllers
         {
             if (string.IsNullOrEmpty(id))
             {
-                id = "Home";
+                id = _options.HomePageName;
             }
 
             if (!WikiInputValidator.IsValidPageName(id, out var pageNameError))
@@ -220,7 +220,8 @@ namespace Pmad.Wiki.Controllers
             var viewModel = new WikiSiteMapViewModel
             {
                 RootNodes = rootNodes,
-                CanEdit = wikiUser?.CanEdit == true
+                CanEdit = wikiUser?.CanEdit == true,
+                HomePageName = _options.HomePageName
             };
 
             return View(viewModel);
