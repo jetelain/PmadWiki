@@ -22,6 +22,7 @@ public class WikiPageService : IWikiPageService
         _options = options.Value;
         _markdownPipeline = new MarkdownPipelineBuilder()
             .UseAdvancedExtensions()
+            .Use(new WikiLinkExtension(_options.BasePath))
             .Build();
     }
 
@@ -160,6 +161,49 @@ public class WikiPageService : IWikiPageService
         return cultures;
     }
 
+    public async Task<List<WikiPageInfo>> GetAllPagesAsync(CancellationToken cancellationToken = default)
+    {
+        var repository = GetRepository();
+        var pages = new Dictionary<string, WikiPageInfo>();
+
+        try
+        {
+            await foreach (var item in repository.EnumerateCommitTreeAsync(_options.BranchName, null, cancellationToken))
+            {
+                if (item.Entry.Kind == GitTreeEntryKind.Blob && item.Path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+                {
+                    var (pageName, culture) = ParsePagePath(item.Path);
+                    
+                    var key = $"{pageName}:{culture ?? _options.NeutralMarkdownPageCulture}";
+                    
+                    if (!pages.ContainsKey(key))
+                    {
+                        GitCommit? lastCommit = null;
+                        await foreach (var commit in repository.GetFileHistoryAsync(item.Path, _options.BranchName, cancellationToken))
+                        {
+                            lastCommit = commit;
+                            break;
+                        }
+
+                        pages[key] = new WikiPageInfo
+                        {
+                            PageName = pageName,
+                            Culture = culture,
+                            LastModified = lastCommit?.Metadata.AuthorDate,
+                            LastModifiedBy = lastCommit?.Metadata.AuthorName
+                        };
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // Repository might be empty or branch doesn't exist
+        }
+
+        return pages.Values.OrderBy(p => p.PageName).ToList();
+    }
+
     public async Task SavePageAsync(string pageName, string? culture, string content, string commitMessage, IWikiUser author, CancellationToken cancellationToken = default)
     {
         var repository = GetRepository();
@@ -222,6 +266,26 @@ public class WikiPageService : IWikiPageService
     private string GetBaseFileName(string pageName)
     {
         return pageName.Replace('\\', '/').Trim('/');
+    }
+
+    private (string pageName, string? culture) ParsePagePath(string filePath)
+    {
+        var fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
+        var directory = Path.GetDirectoryName(filePath)?.Replace('\\', '/');
+        
+        // Check if the file has a culture suffix
+        var parts = fileNameWithoutExt.Split('.');
+        if (parts.Length > 1 && IsValidCulture(parts[^1]))
+        {
+            var culture = parts[^1];
+            var baseName = string.Join(".", parts.Take(parts.Length - 1));
+            var pageName = string.IsNullOrEmpty(directory) ? baseName : $"{directory}/{baseName}";
+            return (pageName, culture);
+        }
+        
+        // No culture suffix
+        var pageNameWithoutCulture = string.IsNullOrEmpty(directory) ? fileNameWithoutExt : $"{directory}/{fileNameWithoutExt}";
+        return (pageNameWithoutCulture, null);
     }
 
     private bool IsLocalizedVersionOfPage(string fileName, string pageName, out string? culture)

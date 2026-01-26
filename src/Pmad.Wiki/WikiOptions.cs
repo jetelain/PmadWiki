@@ -27,9 +27,14 @@
         /// </summary>
         public bool UsePageLevelPermissions { get; set; } = true;
 
-        /// <summary>
-        /// Gets or sets the culture code of base markdown pages.
-        /// </summary>
-        public string NeutralMarkdownPageCulture { get; set; } = "en";
-    }
+    /// <summary>
+    /// Gets or sets the culture code of base markdown pages.
+    /// </summary>
+    public string NeutralMarkdownPageCulture { get; set; } = "en";
+
+    /// <summary>
+    /// Gets or sets the base path for wiki routes (e.g., "wiki").
+    /// </summary>
+    public string BasePath { get; set; } = "wiki";
+}
 }

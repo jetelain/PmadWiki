@@ -1,0 +1,48 @@
+@model Pmad.Wiki.Models.WikiSiteMapNode
+
+<div class="sitemap-node level-@Model.Level">
+    <div class="sitemap-node-content">
+        <span class="sitemap-node-icon">
+            @if (Model.Children.Any())
+            {
+                <i class="bi bi-folder"></i>
+            }
+            else
+            {
+                <i class="bi bi-file-text"></i>
+            }
+        </span>
+        @if (Model.Children.Any())
+        {
+            <span class="sitemap-node-folder">@Model.DisplayName</span>
+        }
+        else
+        {
+            <a asp-action="View" 
+               asp-route-id="@Model.PageName" 
+               asp-route-culture="@Model.Culture" 
+               class="sitemap-node-link">
+                @Model.DisplayName
+            </a>
+            @if (Model.LastModified.HasValue)
+            {
+                <span class="sitemap-node-meta">
+                    @Model.LastModified.Value.ToString("g")
+                    @if (!string.IsNullOrEmpty(Model.LastModifiedBy))
+                    {
+                        <text>by @Model.LastModifiedBy</text>
+                    }
+                </span>
+            }
+        }
+    </div>
+    @if (Model.Children.Any())
+    {
+        <div class="sitemap-node-children">
+            @foreach (var child in Model.Children)
+            {
+                @await Html.PartialAsync("_SiteMapNode", child)
+            }
+        </div>
+    }
+</div>

@@ -135,6 +135,85 @@ namespace Pmad.Wiki.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> SiteMap(CancellationToken cancellationToken)
+        {
+            if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
+            {
+                return Challenge();
+            }
+
+            IWikiUserWithPermissions? wikiUser = null;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+                if (wikiUser != null && !wikiUser.CanView && !_options.AllowAnonymousViewing)
+                {
+                    return Forbid();
+                }
+            }
+
+            var allPages = await _pageService.GetAllPagesAsync(cancellationToken);
+            
+            // Group pages by neutral culture (page name)
+            var pageGroups = allPages.GroupBy(p => p.PageName).ToList();
+            
+            // Build hierarchy
+            var rootNodes = new List<WikiSiteMapNode>();
+            var nodesByPath = new Dictionary<string, WikiSiteMapNode>();
+
+            foreach (var group in pageGroups.OrderBy(g => g.Key))
+            {
+                var pageName = group.Key;
+                var parts = pageName.Split('/');
+                
+                WikiSiteMapNode? parentNode = null;
+                var currentPath = "";
+                
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    if (i > 0) currentPath += "/";
+                    currentPath += parts[i];
+                    
+                    if (!nodesByPath.TryGetValue(currentPath, out var node))
+                    {
+                        var pageInfo = group.FirstOrDefault(p => p.Culture == null || p.Culture == _options.NeutralMarkdownPageCulture);
+                        
+                        node = new WikiSiteMapNode
+                        {
+                            PageName = currentPath,
+                            DisplayName = parts[i],
+                            Culture = pageInfo?.Culture,
+                            LastModified = pageInfo?.LastModified,
+                            LastModifiedBy = pageInfo?.LastModifiedBy,
+                            Level = i
+                        };
+                        
+                        nodesByPath[currentPath] = node;
+                        
+                        if (parentNode != null)
+                        {
+                            parentNode.Children.Add(node);
+                        }
+                        else
+                        {
+                            rootNodes.Add(node);
+                        }
+                    }
+                    
+                    parentNode = node;
+                }
+            }
+
+            var viewModel = new WikiSiteMapViewModel
+            {
+                RootNodes = rootNodes,
+                CanEdit = wikiUser?.CanEdit == true
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
         [Authorize]
         public async Task<IActionResult> Edit(string id, string? culture, CancellationToken cancellationToken)
         {

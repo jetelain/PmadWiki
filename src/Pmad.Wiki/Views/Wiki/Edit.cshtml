@@ -6,9 +6,16 @@
 <div class="wiki-edit">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>@(Model.IsNew ? "Create" : "Edit"): @Model.PageName</h1>
-        <a asp-action="View" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-secondary">
-            <i class="bi bi-x"></i> Cancel
-        </a>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group" role="group">
+                <a asp-action="SiteMap" class="btn btn-outline-secondary">
+                    <i class="bi bi-map"></i> Site Map
+                </a>
+                <a asp-action="View" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-secondary">
+                    <i class="bi bi-x"></i> Cancel
+                </a>
+            </div>
+        </div>
     </div>
 
     @if (!string.IsNullOrEmpty(Model.Culture))

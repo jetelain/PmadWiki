@@ -12,5 +12,7 @@ public interface IWikiPageService
     
     Task<List<string>> GetAvailableCulturesForPageAsync(string pageName, CancellationToken cancellationToken = default);
     
+    Task<List<WikiPageInfo>> GetAllPagesAsync(CancellationToken cancellationToken = default);
+    
     Task SavePageAsync(string pageName, string? culture, string content, string commitMessage, Services.IWikiUser author, CancellationToken cancellationToken = default);
 }
