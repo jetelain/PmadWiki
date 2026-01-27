@@ -8,4 +8,7 @@ Features:
 - Bootstrap 5 based UI
 - Easy integration into existing ASP.NET Core MVC applications
 - Page localization support
-- Optional fine-grained access control
+- Optional page-level access control with group-based permissions
+- Pattern-based access rules (supports wildcards)
+- In-memory caching for optimal performance
+- Admin interface for managing access rules

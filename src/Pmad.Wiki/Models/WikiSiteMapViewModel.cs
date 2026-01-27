@@ -4,6 +4,7 @@ public class WikiSiteMapViewModel
 {
     public List<WikiSiteMapNode> RootNodes { get; set; } = new();
     public bool CanEdit { get; set; }
+    public bool CanAdmin { get; set; }
 
     public required string HomePageName { get; set; }
 }

@@ -12,13 +12,19 @@ public class WikiPageService : IWikiPageService
 {
     private readonly IGitRepositoryService _gitRepositoryService;
     private readonly IWikiUserService _wikiUserService;
+    private readonly IPageAccessControlService _pageAccessControlService;
     private readonly WikiOptions _options;
     private readonly MarkdownPipeline _markdownPipeline;
 
-    public WikiPageService(IGitRepositoryService gitRepositoryService, IWikiUserService wikiUserService, IOptions<WikiOptions> options)
+    public WikiPageService(
+        IGitRepositoryService gitRepositoryService, 
+        IWikiUserService wikiUserService, 
+        IPageAccessControlService pageAccessControlService,
+        IOptions<WikiOptions> options)
     {
         _wikiUserService = wikiUserService;
         _gitRepositoryService = gitRepositoryService;
+        _pageAccessControlService = pageAccessControlService;
         _options = options.Value;
         _markdownPipeline = new MarkdownPipelineBuilder()
             .UseAdvancedExtensions()
@@ -227,7 +233,7 @@ public class WikiPageService : IWikiPageService
         await repository.CreateCommitAsync(_options.BranchName, new[] { operation }, metadata, cancellationToken);
     }
 
-    private GitRepository GetRepository()
+    private IGitRepository GetRepository()
     {
         var repositoryPath = GetRepositoryPath();
         return _gitRepositoryService.GetRepository(repositoryPath);
@@ -324,5 +330,10 @@ public class WikiPageService : IWikiPageService
         {
             return false;
         }
+    }
+
+    public Task<PageAccessPermissions> CheckPageAccessAsync(string pageName, string[] userGroups, CancellationToken cancellationToken = default)
+    {
+        return _pageAccessControlService.CheckPageAccessAsync(pageName, userGroups, cancellationToken);
     }
 }

@@ -11,6 +11,12 @@
                 <a asp-action="View" asp-route-id="@Model.HomePageName" class="btn btn-outline-secondary">
                     <i class="bi bi-house"></i> Home
                 </a>
+                @if (Model.CanAdmin)
+                {
+                    <a asp-action="AccessControl" class="btn btn-outline-secondary">
+                        <i class="bi bi-shield-lock"></i> Access Control
+                    </a>
+                }
             </div>
         </div>
     </div>

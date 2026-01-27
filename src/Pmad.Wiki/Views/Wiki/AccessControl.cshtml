@@ -1,0 +1,84 @@
+@model Pmad.Wiki.Models.WikiAccessControlViewModel
+@{
+    ViewData["Title"] = "Access Control Rules";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>
+                <i class="bi bi-shield-lock"></i> Page Access Control Rules
+            </h1>
+
+            @if (!Model.IsEnabled)
+            {
+                <div class="alert alert-warning" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> Page-level permissions are currently disabled. 
+                    Set <code>UsePageLevelPermissions = true</code> in WikiOptions to enable this feature.
+                </div>
+            }
+
+            <div class="mb-3">
+                <a asp-action="EditAccessControl" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Edit Rules
+                </a>
+                <a asp-action="SiteMap" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Site Map
+                </a>
+            </div>
+
+            @if (Model.Rules.Count == 0)
+            {
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle"></i> No access control rules defined. All users have full access to all pages.
+                </div>
+            }
+            else
+            {
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Current Rules</h5>
+                        <p class="text-muted small">
+                            Rules are evaluated in order from top to bottom. The first matching rule determines access.
+                        </p>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Order</th>
+                                        <th>Pattern</th>
+                                        <th>Read Groups</th>
+                                        <th>Write Groups</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var rule in Model.Rules)
+                                    {
+                                        <tr>
+                                            <td>@rule.Order</td>
+                                            <td><code>@rule.Pattern</code></td>
+                                            <td>@(string.IsNullOrEmpty(rule.ReadGroups) ? "<em>All users</em>" : rule.ReadGroups)</td>
+                                            <td>@(string.IsNullOrEmpty(rule.WriteGroups) ? "<em>All users</em>" : rule.WriteGroups)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Pattern Syntax</h5>
+                        <ul>
+                            <li><code>*</code> - Matches any characters except / (within a single path segment)</li>
+                            <li><code>**</code> - Matches any characters including / (across path segments)</li>
+                            <li><code>admin/**</code> - Matches all pages under the admin directory</li>
+                            <li><code>Home</code> - Matches exactly the Home page</li>
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

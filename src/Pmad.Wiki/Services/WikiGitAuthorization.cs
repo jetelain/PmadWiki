@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Pmad.Git.HttpServer;
 
 namespace Pmad.Wiki.Services;
 
@@ -14,15 +15,15 @@ internal class WikiGitAuthorization : IWikiGitAuthorization
         _wikiOptions = wikiOptions.Value;
     }
 
-    public async ValueTask<bool> AuthorizeGitHttpAsync(HttpContext context, CancellationToken cancellationToken)
+    public async ValueTask<bool> AuthorizeGitHttpAsync(HttpContext context, GitOperation operation, CancellationToken cancellationToken)
     {
         var user = await _wikiUserService.GetWikiUser(context.User, false, cancellationToken);
         if (user is null)
         {
-            // TODO
-            // if AllowAnonymousViewing is true and is UsePageLevelPermissions is false we could allow read only git access
-            // but the git http server does not currently support that scenario
-
+            if (_wikiOptions.AllowAnonymousViewing && !_wikiOptions.UsePageLevelPermissions && operation == GitOperation.Read)
+            {
+                return true;
+            }
             return false;
         }
         return user.CanRemoteGit;

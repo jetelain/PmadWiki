@@ -11,15 +11,18 @@ namespace Pmad.Wiki.Controllers
     {
         private readonly IWikiPageService _pageService;
         private readonly IWikiUserService _userService;
+        private readonly IPageAccessControlService _accessControlService;
         private readonly WikiOptions _options;
 
         public WikiController(
             IWikiPageService pageService,
             IWikiUserService userService,
+            IPageAccessControlService accessControlService,
             IOptions<WikiOptions> options)
         {
             _pageService = pageService;
             _userService = userService;
+            _accessControlService = accessControlService;
             _options = options.Value;
         }
 
@@ -56,25 +59,59 @@ namespace Pmad.Wiki.Controllers
                 }
             }
 
+            // Check page-level permissions
+            if (_options.UsePageLevelPermissions)
+            {
+                var userGroups = wikiUser?.Groups ?? [];
+                var pageAccess = await _pageService.CheckPageAccessAsync(id, userGroups, cancellationToken);
+                if (!pageAccess.CanRead)
+                {
+                    if (User.Identity?.IsAuthenticated != true)
+                    {
+                        return Challenge();
+                    }
+                    return Forbid();
+                }
+            }
+
             var page = await _pageService.GetPageAsync(id, culture, cancellationToken);
             
             if (page == null)
             {
                 if (wikiUser?.CanEdit == true)
                 {
-                    return RedirectToAction(nameof(Edit), new { id, culture });
+                    // Check page-level edit permissions even for new pages
+                    if (_options.UsePageLevelPermissions)
+                    {
+                        var pageAccess = await _pageService.CheckPageAccessAsync(id, wikiUser.Groups, cancellationToken);
+                        if (pageAccess.CanEdit)
+                        {
+                            return RedirectToAction(nameof(Edit), new { id, culture });
+                        }
+                    }
+                    else
+                    {
+                        return RedirectToAction(nameof(Edit), new { id, culture });
+                    }
                 }
                 return NotFound();
             }
 
             var availableCultures = await _pageService.GetAvailableCulturesForPageAsync(id, cancellationToken);
 
+            bool canEdit = wikiUser?.CanEdit == true;
+            if (canEdit && _options.UsePageLevelPermissions)
+            {
+                var pageAccess = await _pageService.CheckPageAccessAsync(id, wikiUser!.Groups, cancellationToken);
+                canEdit = pageAccess.CanEdit;
+            }
+
             var viewModel = new WikiPageViewModel
             {
                 PageName = id,
                 HtmlContent = page.HtmlContent,
                 Title = id,
-                CanEdit = wikiUser?.CanEdit == true,
+                CanEdit = canEdit,
                 Culture = culture,
                 AvailableCultures = availableCultures,
                 LastModifiedBy = page.LastModifiedBy,
@@ -107,11 +144,27 @@ namespace Pmad.Wiki.Controllers
                 return Challenge();
             }
 
+            IWikiUserWithPermissions? wikiUser = null;
             if (User.Identity?.IsAuthenticated == true)
             {
-                var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+                wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
                 if (wikiUser != null && !wikiUser.CanView && !_options.AllowAnonymousViewing)
                 {
+                    return Forbid();
+                }
+            }
+
+            // Check page-level permissions
+            if (_options.UsePageLevelPermissions)
+            {
+                var userGroups = wikiUser?.Groups ?? [];
+                var pageAccess = await _pageService.CheckPageAccessAsync(id, userGroups, cancellationToken);
+                if (!pageAccess.CanRead)
+                {
+                    if (User.Identity?.IsAuthenticated != true)
+                    {
+                        return Challenge();
+                    }
                     return Forbid();
                 }
             }
@@ -153,6 +206,23 @@ namespace Pmad.Wiki.Controllers
             }
 
             var allPages = await _pageService.GetAllPagesAsync(cancellationToken);
+
+            // Filter pages based on page-level permissions
+            if (_options.UsePageLevelPermissions)
+            {
+                var userGroups = wikiUser?.Groups ?? [];
+
+                var filteredPages = new List<WikiPageInfo>();
+                foreach (var page in allPages)
+                {
+                    var pageAccess = await _pageService.CheckPageAccessAsync(page.PageName, userGroups, cancellationToken);
+                    if (pageAccess.CanRead)
+                    {
+                        filteredPages.Add(page);
+                    }
+                }
+                allPages = filteredPages;
+            }
             
             // Group pages by neutral culture (page name)
             var pageGroups = allPages.GroupBy(p => p.PageName).ToList();
@@ -221,6 +291,7 @@ namespace Pmad.Wiki.Controllers
             {
                 RootNodes = rootNodes,
                 CanEdit = wikiUser?.CanEdit == true,
+                CanAdmin = wikiUser?.CanAdmin == true,
                 HomePageName = _options.HomePageName
             };
 
@@ -250,6 +321,16 @@ namespace Pmad.Wiki.Controllers
             if (wikiUser == null || !wikiUser.CanEdit)
             {
                 return Forbid();
+            }
+
+            // Check page-level permissions
+            if (_options.UsePageLevelPermissions)
+            {
+                var pageAccess = await _pageService.CheckPageAccessAsync(id, wikiUser.Groups, cancellationToken);
+                if (!pageAccess.CanEdit)
+                {
+                    return Forbid();
+                }
             }
 
             var page = await _pageService.GetPageAsync(id, culture, cancellationToken);
@@ -293,6 +374,16 @@ namespace Pmad.Wiki.Controllers
                 return Forbid();
             }
 
+            // Check page-level permissions
+            if (_options.UsePageLevelPermissions)
+            {
+                var pageAccess = await _pageService.CheckPageAccessAsync(model.PageName, wikiUser.Groups, cancellationToken);
+                if (!pageAccess.CanEdit)
+                {
+                    return Forbid();
+                }
+            }
+
             // Check if the page has been modified since the user started editing
             if (!model.IsNew && !string.IsNullOrEmpty(model.OriginalContentHash))
             {
@@ -316,6 +407,93 @@ namespace Pmad.Wiki.Controllers
                 cancellationToken);
 
             return RedirectToAction(nameof(View), new { id = model.PageName, culture = model.Culture });
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> AccessControl(CancellationToken cancellationToken)
+        {
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            if (wikiUser == null || !wikiUser.CanAdmin)
+            {
+                return Forbid();
+            }
+
+            var rules = await _accessControlService.GetRulesAsync(cancellationToken);
+
+            var viewModel = new WikiAccessControlViewModel
+            {
+                Rules = rules.Select(r => new WikiAccessControlRuleViewModel
+                {
+                    Pattern = r.Pattern,
+                    ReadGroups = string.Join(", ", r.ReadGroups),
+                    WriteGroups = string.Join(", ", r.WriteGroups),
+                    Order = r.Order
+                }).ToList(),
+                IsEnabled = _options.UsePageLevelPermissions
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> EditAccessControl(CancellationToken cancellationToken)
+        {
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            if (wikiUser == null || !wikiUser.CanAdmin)
+            {
+                return Forbid();
+            }
+
+            if (!_options.UsePageLevelPermissions)
+            {
+                return BadRequest("Page-level permissions are not enabled.");
+            }
+
+            var rules = await _accessControlService.GetRulesAsync(cancellationToken);
+            var content = AccessControlRuleSerializer.SerializeRules(rules, includeExamples: true);
+
+            var viewModel = new WikiAccessControlEditViewModel
+            {
+                Content = content
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditAccessControl(WikiAccessControlEditViewModel model, CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var wikiUser = await _userService.GetWikiUser(User, true, cancellationToken);
+            if (wikiUser == null || !wikiUser.CanAdmin)
+            {
+                return Forbid();
+            }
+
+            if (!_options.UsePageLevelPermissions)
+            {
+                return BadRequest("Page-level permissions are not enabled.");
+            }
+
+            try
+            {
+                var rules = AccessControlRuleSerializer.ParseRules(model.Content);
+                await _accessControlService.SaveRulesAsync(rules, model.CommitMessage, wikiUser.User, cancellationToken);
+                return RedirectToAction(nameof(AccessControl));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Error saving rules: {ex.Message}");
+                return View(model);
+            }
         }
     }
 }
