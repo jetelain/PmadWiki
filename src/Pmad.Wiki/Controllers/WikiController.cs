@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Pmad.Wiki.Helpers;
@@ -75,7 +76,7 @@ namespace Pmad.Wiki.Controllers
             }
 
             var page = await _pageService.GetPageAsync(id, culture, cancellationToken);
-            
+
             if (page == null)
             {
                 if (wikiUser?.CanEdit == true)
@@ -110,7 +111,7 @@ namespace Pmad.Wiki.Controllers
             {
                 PageName = id,
                 HtmlContent = page.HtmlContent,
-                Title = id,
+                Title = page.Title,
                 CanEdit = canEdit,
                 Culture = culture,
                 AvailableCultures = availableCultures,
@@ -118,7 +119,31 @@ namespace Pmad.Wiki.Controllers
                 LastModified = page.LastModified
             };
 
+            await GenerateBreadcrumbAsync(id, culture, viewModel.Breadcrumb, cancellationToken);
+
             return View(viewModel);
+        }
+
+        private async Task GenerateBreadcrumbAsync(string id, string? culture, List<WikiPageLink> breadcrumb, CancellationToken cancellationToken)
+        {
+            var accumulatedPath = new StringBuilder();
+            foreach (var part in id.Split('/'))
+            {
+                if (accumulatedPath.Length > 0)
+                {
+                    accumulatedPath.Append('/');
+                }
+                accumulatedPath.Append(part);
+
+                var currentPath = accumulatedPath.ToString();
+                var title = await _pageService.GetPageTitleAsync(currentPath, culture, cancellationToken);
+
+                breadcrumb.Add(new WikiPageLink
+                {
+                    PageName = currentPath,
+                    PageTitle = title ?? part
+                });
+            }
         }
 
         [HttpGet]
@@ -252,7 +277,8 @@ namespace Pmad.Wiki.Controllers
                             node = new WikiSiteMapNode
                             {
                                 PageName = currentPath,
-                                DisplayName = parts[i],
+                                DisplayName = pageInfo?.Title ?? parts[i],
+                                Title = pageInfo?.Title,
                                 HasPage = true,
                                 Culture = pageInfo?.Culture,
                                 LastModified = pageInfo?.LastModified,
@@ -345,6 +371,8 @@ namespace Pmad.Wiki.Controllers
                 OriginalContentHash = page?.ContentHash
             };
 
+            await GenerateBreadcrumbAsync(id, culture, viewModel.Breadcrumb, cancellationToken);
+
             return View(viewModel);
         }
 
@@ -362,6 +390,8 @@ namespace Pmad.Wiki.Controllers
             {
                 ModelState.AddModelError(nameof(model.Culture), cultureError);
             }
+
+            await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
 
             if (!ModelState.IsValid)
             {

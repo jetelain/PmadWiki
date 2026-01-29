@@ -4,6 +4,8 @@ namespace Pmad.Wiki.Models;
 
 public class WikiPageEditViewModel
 {
+    public List<WikiPageLink> Breadcrumb { get; } = new();
+
     public required string PageName { get; set; }
     
     [Required]

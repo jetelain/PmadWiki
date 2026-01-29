@@ -17,4 +17,6 @@ public interface IWikiPageService
     Task SavePageAsync(string pageName, string? culture, string content, string commitMessage, Services.IWikiUser author, CancellationToken cancellationToken = default);
 
     Task<PageAccessPermissions> CheckPageAccessAsync(string pageName, string[] userGroups, CancellationToken cancellationToken = default);
+
+    Task<string?> GetPageTitleAsync(string pageName, string? culture, CancellationToken cancellationToken = default);
 }

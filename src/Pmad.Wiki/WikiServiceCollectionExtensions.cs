@@ -13,6 +13,7 @@ public static class WikiServiceCollectionExtensions
 
         services.AddScoped<IWikiPageService, WikiPageService>();
         services.AddScoped<IPageAccessControlService, PageAccessControlService>();
+        services.AddSingleton<IWikiPageTitleCache, WikiPageTitleCache>();
         services.AddMemoryCache();
         services.AddGitRepositoryService();
 
@@ -31,6 +32,11 @@ public static class WikiServiceCollectionExtensions
                 gitOptions.RepositoryResolver = _ => wikiOptions.Value.WikiRepositoryName;
                 gitOptions.AuthorizeAsync = (context, _, operation, cancellationToken) =>
                     context.RequestServices.GetRequiredService<IWikiGitAuthorization>().AuthorizeGitHttpAsync(context, operation, cancellationToken);
+                gitOptions.OnReceivePackCompleted = (context, repo, result) => {
+                    context.RequestServices.GetRequiredService<IPageAccessControlService>().ClearCache();
+                    context.RequestServices.GetRequiredService<IWikiPageTitleCache>().ClearCache();
+                    return ValueTask.CompletedTask;
+                };
             });
 
         services.AddGitSmartHttp(_ => { });

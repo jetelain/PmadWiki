@@ -2,6 +2,7 @@ namespace Pmad.Wiki.Models;
 
 public class WikiPageViewModel
 {
+    public List<WikiPageLink> Breadcrumb { get; } = new();
     public required string PageName { get; set; }
     public required string HtmlContent { get; set; }
     public required string Title { get; set; }

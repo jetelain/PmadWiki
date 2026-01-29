@@ -13,6 +13,7 @@ public class WikiPageService : IWikiPageService
     private readonly IGitRepositoryService _gitRepositoryService;
     private readonly IWikiUserService _wikiUserService;
     private readonly IPageAccessControlService _pageAccessControlService;
+    private readonly IWikiPageTitleCache _titleCache;
     private readonly WikiOptions _options;
     private readonly MarkdownPipeline _markdownPipeline;
 
@@ -20,11 +21,13 @@ public class WikiPageService : IWikiPageService
         IGitRepositoryService gitRepositoryService, 
         IWikiUserService wikiUserService, 
         IPageAccessControlService pageAccessControlService,
+        IWikiPageTitleCache titleCache,
         IOptions<WikiOptions> options)
     {
         _wikiUserService = wikiUserService;
         _gitRepositoryService = gitRepositoryService;
         _pageAccessControlService = pageAccessControlService;
+        _titleCache = titleCache;
         _options = options.Value;
         _markdownPipeline = new MarkdownPipelineBuilder()
             .UseAdvancedExtensions()
@@ -52,7 +55,7 @@ public class WikiPageService : IWikiPageService
     public async Task<WikiPage?> GetPageAsync(string pageName, string? culture, CancellationToken cancellationToken = default)
     {
         var repository = GetRepository();
-        var filePath = GetFilePath(pageName, culture);
+        var filePath = WikiFilePathHelper.GetFilePath(pageName, culture, _options.NeutralMarkdownPageCulture);
 
         try
         {
@@ -60,6 +63,9 @@ public class WikiPageService : IWikiPageService
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
             var htmlContent = Markdig.Markdown.ToHtml(contentText, _markdownPipeline);
             
+            // Extract title and populate cache
+            var title = _titleCache.ExtractAndCacheTitle(pageName, culture, contentText);
+
             GitCommit? lastCommit = null;
             await foreach (var commit in repository.GetFileHistoryAsync(filePath, _options.BranchName, cancellationToken))
             {
@@ -73,6 +79,7 @@ public class WikiPageService : IWikiPageService
                 Content = contentText,
                 ContentHash = gitFile.Hash.Value,
                 HtmlContent = htmlContent,
+                Title = title,
                 Culture = culture,
                 LastModifiedBy = lastCommit?.Metadata.AuthorName,
                 LastModified = lastCommit?.Metadata.AuthorDate
@@ -87,7 +94,7 @@ public class WikiPageService : IWikiPageService
     public async Task<List<WikiHistoryItem>> GetPageHistoryAsync(string pageName, string? culture, CancellationToken cancellationToken = default)
     {
         var repository = GetRepository();
-        var filePath = GetFilePath(pageName, culture);
+        var filePath = WikiFilePathHelper.GetFilePath(pageName, culture, _options.NeutralMarkdownPageCulture);
         var history = new List<WikiHistoryItem>();
         var userCache = new Dictionary<string, IWikiUser>();
         try
@@ -123,7 +130,7 @@ public class WikiPageService : IWikiPageService
     public async Task<bool> PageExistsAsync(string pageName, string? culture, CancellationToken cancellationToken = default)
     {
         var repository = GetRepository();
-        var filePath = GetFilePath(pageName, culture);
+        var filePath = WikiFilePathHelper.GetFilePath(pageName, culture, _options.NeutralMarkdownPageCulture);
 
         try
         {
@@ -140,7 +147,7 @@ public class WikiPageService : IWikiPageService
     {
         var repository = GetRepository();
         var cultures = new List<string>();
-        var baseFileName = GetBaseFileName(pageName);
+        var baseFileName = WikiFilePathHelper.GetBaseFileName(pageName);
         var directory = Path.GetDirectoryName(baseFileName) ?? string.Empty;
 
         try
@@ -152,7 +159,7 @@ public class WikiPageService : IWikiPageService
                 if (item.Entry.Kind == GitTreeEntryKind.Blob)
                 {
                     var fileName = Path.GetFileName(item.Path);
-                    if (IsLocalizedVersionOfPage(fileName, pageName, out var culture))
+                    if (WikiFilePathHelper.IsLocalizedVersionOfPage(fileName, pageName, _options.NeutralMarkdownPageCulture, out var culture))
                     {
                         cultures.Add(culture ?? _options.NeutralMarkdownPageCulture);
                     }
@@ -178,7 +185,7 @@ public class WikiPageService : IWikiPageService
             {
                 if (item.Entry.Kind == GitTreeEntryKind.Blob && item.Path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
                 {
-                    var (pageName, culture) = ParsePagePath(item.Path);
+                    var (pageName, culture) = WikiFilePathHelper.ParsePagePath(item.Path);
                     
                     var key = $"{pageName}:{culture ?? _options.NeutralMarkdownPageCulture}";
                     
@@ -191,9 +198,12 @@ public class WikiPageService : IWikiPageService
                             break;
                         }
 
+                        var title = await _titleCache.GetPageTitleAsync(pageName, culture, cancellationToken);
+
                         pages[key] = new WikiPageInfo
                         {
                             PageName = pageName,
+                            Title = title,
                             Culture = culture,
                             LastModified = lastCommit?.Metadata.AuthorDate,
                             LastModifiedBy = lastCommit?.Metadata.AuthorName
@@ -213,7 +223,7 @@ public class WikiPageService : IWikiPageService
     public async Task SavePageAsync(string pageName, string? culture, string content, string commitMessage, IWikiUser author, CancellationToken cancellationToken = default)
     {
         var repository = GetRepository();
-        var filePath = GetFilePath(pageName, culture);
+        var filePath = WikiFilePathHelper.GetFilePath(pageName, culture, _options.NeutralMarkdownPageCulture);
         var contentBytes = Encoding.UTF8.GetBytes(content);
 
         var type = await repository.GetPathTypeAsync(filePath, _options.BranchName, cancellationToken);
@@ -231,6 +241,9 @@ public class WikiPageService : IWikiPageService
         var metadata = new GitCommitMetadata(commitMessage, authorSignature);
 
         await repository.CreateCommitAsync(_options.BranchName, new[] { operation }, metadata, cancellationToken);
+
+        // Update the title cache immediately with the new content
+        _titleCache.ExtractAndCacheTitle(pageName, culture, content);
     }
 
     private IGitRepository GetRepository()
@@ -244,96 +257,13 @@ public class WikiPageService : IWikiPageService
         return Path.Combine(_options.RepositoryRoot, _options.WikiRepositoryName);
     }
 
-    private string GetFilePath(string pageName, string? culture)
-    {
-        WikiInputValidator.ValidatePageName(pageName);
-        
-        if (!string.IsNullOrEmpty(culture) && culture != _options.NeutralMarkdownPageCulture)
-        {
-            WikiInputValidator.ValidateCulture(culture);
-        }
-
-        var baseFileName = GetBaseFileName(pageName);
-
-        if (string.IsNullOrEmpty(culture) || culture == _options.NeutralMarkdownPageCulture)
-        {
-            return baseFileName + ".md";
-        }
-
-        var directory = Path.GetDirectoryName(baseFileName);
-        var fileName = Path.GetFileNameWithoutExtension(baseFileName);
-        var localizedFileName = $"{fileName}.{culture}.md";
-        
-        return string.IsNullOrEmpty(directory) 
-            ? localizedFileName 
-            : Path.Combine(directory, localizedFileName).Replace('\\', '/');
-    }
-
-    private string GetBaseFileName(string pageName)
-    {
-        return pageName.Replace('\\', '/').Trim('/');
-    }
-
-    private (string pageName, string? culture) ParsePagePath(string filePath)
-    {
-        var fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
-        var directory = Path.GetDirectoryName(filePath)?.Replace('\\', '/');
-        
-        // Check if the file has a culture suffix
-        var parts = fileNameWithoutExt.Split('.');
-        if (parts.Length > 1 && IsValidCulture(parts[^1]))
-        {
-            var culture = parts[^1];
-            var baseName = string.Join(".", parts.Take(parts.Length - 1));
-            var pageName = string.IsNullOrEmpty(directory) ? baseName : $"{directory}/{baseName}";
-            return (pageName, culture);
-        }
-        
-        // No culture suffix
-        var pageNameWithoutCulture = string.IsNullOrEmpty(directory) ? fileNameWithoutExt : $"{directory}/{fileNameWithoutExt}";
-        return (pageNameWithoutCulture, null);
-    }
-
-    private bool IsLocalizedVersionOfPage(string fileName, string pageName, out string? culture)
-    {
-        culture = null;
-        var basePageName = Path.GetFileNameWithoutExtension(GetBaseFileName(pageName));
-        var fileNameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
-
-        if (fileNameWithoutExt == basePageName)
-        {
-            culture = _options.NeutralMarkdownPageCulture;
-            return true;
-        }
-
-        if (fileNameWithoutExt.StartsWith(basePageName + ".", StringComparison.OrdinalIgnoreCase))
-        {
-            var potentialCulture = fileNameWithoutExt.Substring(basePageName.Length + 1);
-            if (IsValidCulture(potentialCulture))
-            {
-                culture = potentialCulture;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private bool IsValidCulture(string culture)
-    {
-        try
-        {
-            CultureInfo.GetCultureInfo(culture);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     public Task<PageAccessPermissions> CheckPageAccessAsync(string pageName, string[] userGroups, CancellationToken cancellationToken = default)
     {
         return _pageAccessControlService.CheckPageAccessAsync(pageName, userGroups, cancellationToken);
+    }
+
+    public Task<string?> GetPageTitleAsync(string pageName, string? culture, CancellationToken cancellationToken = default)
+    {
+        return _titleCache.GetPageTitleAsync(pageName, culture, cancellationToken);
     }
 }

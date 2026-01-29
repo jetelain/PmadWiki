@@ -22,7 +22,7 @@
                asp-route-id="@Model.PageName" 
                asp-route-culture="@Model.Culture" 
                class="sitemap-node-link">
-                @Model.DisplayName
+                @(Model.Title ?? Model.DisplayName)
             </a>
             @if (Model.LastModified.HasValue)
             {

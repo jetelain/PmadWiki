@@ -5,7 +5,16 @@
 
 <div class="wiki-page">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>@Model.Title</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Wiki" asp-action="View" asp-route-id="">Wiki</a></li>
+                @foreach (var crumb in Model.Breadcrumb.Take(Model.Breadcrumb.Count - 1))
+                {
+                    <li class="breadcrumb-item"><a asp-controller="Wiki" asp-action="View" asp-route-id="@crumb.PageName">@crumb.PageTitle</a></li>
+                }
+                <li class="breadcrumb-item active" aria-current="page">@Model.Breadcrumb.Last().PageTitle</li>
+            </ol>
+        </nav>
         <div class="btn-toolbar" role="toolbar">
             @if (Model.AvailableCultures.Count > 1)
             {
@@ -45,20 +54,20 @@
         </div>
     </div>
 
+    <div class="wiki-content mb-5">
+        @Html.Raw(Model.HtmlContent)
+    </div>    
+    
     @if (Model.LastModified.HasValue)
     {
-        <div class="text-muted small mb-3">
-            Last modified: @Model.LastModified.Value.ToString("f") 
+        <div class="text-muted small">
+            Last modified: @Model.LastModified.Value.ToString("f")
             @if (!string.IsNullOrEmpty(Model.LastModifiedBy))
             {
                 <text>by @Model.LastModifiedBy</text>
             }
         </div>
     }
-
-    <div class="wiki-content">
-        @Html.Raw(Model.HtmlContent)
-    </div>
 </div>
 
 @section Styles {
