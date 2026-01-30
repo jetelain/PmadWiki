@@ -15,7 +15,7 @@ internal class WikiLinkInlineRenderer : LinkInlineRenderer
 
     protected override void Write(HtmlRenderer renderer, LinkInline link)
     {
-        if (link.Url != null && !IsAbsoluteUrl(link.Url) && link.Url.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+        if (link.Url != null && !IsAbsoluteUrl(link.Url) && IsWikiLink(link.Url))
         {
             // Remove .md extension
             var url = link.Url;
@@ -43,5 +43,12 @@ internal class WikiLinkInlineRenderer : LinkInlineRenderer
         return url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
                url.StartsWith("//", StringComparison.Ordinal);
+    }
+
+    private static bool IsWikiLink(string url)
+    {
+        // Check if URL ends with .md or contains .md# (for anchors)
+        return url.EndsWith(".md", StringComparison.OrdinalIgnoreCase) ||
+               url.Contains(".md#", StringComparison.OrdinalIgnoreCase);
     }
 }
