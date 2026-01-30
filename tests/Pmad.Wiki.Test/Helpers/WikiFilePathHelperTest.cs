@@ -198,4 +198,95 @@ public class WikiFilePathHelperTest
         Assert.Throws<ArgumentException>(() => 
             WikiFilePathHelper.GetFilePath("test", "INVALID", "en"));
     }
+
+    [Fact]
+    public void GetRelativePath_SameDirectory_ReturnsPageName()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetRelativePath("admin/page1", "admin/page2");
+
+        // Assert
+        Assert.Equal("page2", result);
+    }
+
+    [Fact]
+    public void GetRelativePath_SamePage_ReturnsPageName()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetRelativePath("home", "home");
+
+        // Assert
+        Assert.Equal("home", result);
+    }
+
+    [Fact]
+    public void GetRelativePath_FromRootToNested_ReturnsFullPath()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetRelativePath("home", "admin/settings");
+
+        // Assert
+        Assert.Equal("admin/settings", result);
+    }
+
+    [Fact]
+    public void GetRelativePath_FromNestedToRoot_ReturnsParentPath()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetRelativePath("admin/settings", "home");
+
+        // Assert
+        Assert.Equal("../home", result);
+    }
+
+    [Fact]
+    public void GetRelativePath_BetweenDifferentNestedPaths_ReturnsCorrectPath()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetRelativePath("admin/settings", "docs/help");
+
+        // Assert
+        Assert.Equal("../docs/help", result);
+    }
+
+    [Fact]
+    public void GetRelativePath_DeeplyNestedToRoot_ReturnsMultipleParents()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetRelativePath("admin/users/settings", "home");
+
+        // Assert
+        Assert.Equal("../../home", result);
+    }
+
+    [Fact]
+    public void GetRelativePath_BetweenDeeplyNestedPaths_ReturnsCorrectPath()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetRelativePath("admin/users/permissions", "docs/api/reference");
+
+        // Assert
+        Assert.Equal("../../docs/api/reference", result);
+    }
+
+    [Fact]
+    public void GetRelativePath_WithCommonPrefix_ReturnsCorrectPath()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetRelativePath("admin/users/list", "admin/groups/list");
+
+        // Assert
+        Assert.Equal("../groups/list", result);
+    }
+
+    [Fact]
+    public void GetRelativePath_ParentPage_ReturnsCorrectPath()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetRelativePath("home/subpage", "home");
+
+        // Assert
+        Assert.Equal("../home", result);
+    }
 }
+

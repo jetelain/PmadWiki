@@ -19,4 +19,6 @@ public class WikiPageEditViewModel
     public bool IsNew { get; set; }
     
     public string? OriginalContentHash { get; set; }
+        
+    public List<WikiPageLinkInfo> AvailablePagesForLinking { get; set; } = new();
 }

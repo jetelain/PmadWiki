@@ -79,6 +79,48 @@ public static class WikiFilePathHelper
         return false;
     }
 
+    public static string GetRelativePath(string fromPage, string toPage)
+    {
+        var fromParts = fromPage.Split('/');
+        var toParts = toPage.Split('/');
+        
+        // Find common prefix length (only considering directory parts, not the page itself)
+        int commonPrefixLength = 0;
+        int maxCommonLength = Math.Min(fromParts.Length - 1, toParts.Length - 1);
+        while (commonPrefixLength < maxCommonLength &&
+               fromParts[commonPrefixLength] == toParts[commonPrefixLength])
+        {
+            commonPrefixLength++;
+        }
+        
+        // Calculate how many levels to go up from the current page
+        // We always go up one level from the current page, then add more for each directory level
+        int levelsUp = fromParts.Length - 1 - commonPrefixLength;
+        
+        // Build the relative path
+        var relativeParts = new List<string>();
+        
+        // Add "../" for each level up
+        for (int i = 0; i < levelsUp; i++)
+        {
+            relativeParts.Add("..");
+        }
+        
+        // Add the remaining parts of the target path
+        for (int i = commonPrefixLength; i < toParts.Length; i++)
+        {
+            relativeParts.Add(toParts[i]);
+        }
+        
+        // If we're linking to a page in the same directory, just use the page name
+        if (relativeParts.Count == 0)
+        {
+            return toParts[^1];
+        }
+        
+        return string.Join("/", relativeParts);
+    }
+
     private static bool IsValidCulture(string culture)
     {
         try

@@ -1,0 +1,10 @@
+@model List<Pmad.Wiki.Models.WikiPageLinkInfo>
+@foreach (var pageInfo in Model)
+{
+    <button type="button" class="list-group-item list-group-item-action page-link-item" data-page-name="@pageInfo.PageName" data-page-title="@(pageInfo.Title ?? pageInfo.PageName)" data-relative-path="@pageInfo.RelativePath">
+        <div class="d-flex w-100 justify-content-between">
+            <h6 class="mb-1">@(pageInfo.Title ?? pageInfo.PageName)</h6>
+        </div>
+        <small class="text-muted">@pageInfo.PageName</small>
+    </button>
+}

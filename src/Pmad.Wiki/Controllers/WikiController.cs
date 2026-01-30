@@ -403,28 +403,11 @@ namespace Pmad.Wiki.Controllers
                 }
             }
 
-            var allPages = await _pageService.GetAllPagesAsync(cancellationToken);
+            var allPages = await GetAllAccessiblePages(wikiUser, cancellationToken);
 
-            // Filter pages based on page-level permissions
-            if (_options.UsePageLevelPermissions)
-            {
-                var userGroups = wikiUser?.Groups ?? [];
-
-                var filteredPages = new List<WikiPageInfo>();
-                foreach (var page in allPages)
-                {
-                    var pageAccess = await _pageService.CheckPageAccessAsync(page.PageName, userGroups, cancellationToken);
-                    if (pageAccess.CanRead)
-                    {
-                        filteredPages.Add(page);
-                    }
-                }
-                allPages = filteredPages;
-            }
-            
             // Group pages by neutral culture (page name)
             var pageGroups = allPages.GroupBy(p => p.PageName).ToList();
-            
+
             // Build hierarchy
             var rootNodes = new List<WikiSiteMapNode>();
             var nodesByPath = new Dictionary<string, WikiSiteMapNode>();
@@ -433,15 +416,15 @@ namespace Pmad.Wiki.Controllers
             {
                 var pageName = group.Key;
                 var parts = pageName.Split('/');
-                
+
                 WikiSiteMapNode? parentNode = null;
                 var currentPath = "";
-                
+
                 for (int i = 0; i < parts.Length; i++)
                 {
                     if (i > 0) currentPath += "/";
                     currentPath += parts[i];
-                    
+
                     if (!nodesByPath.TryGetValue(currentPath, out var node))
                     {
                         if (currentPath == pageName)
@@ -471,7 +454,7 @@ namespace Pmad.Wiki.Controllers
                         }
 
                         nodesByPath[currentPath] = node;
-                        
+
                         if (parentNode != null)
                         {
                             parentNode.Children.Add(node);
@@ -481,7 +464,7 @@ namespace Pmad.Wiki.Controllers
                             rootNodes.Add(node);
                         }
                     }
-                    
+
                     parentNode = node;
                 }
             }
@@ -495,6 +478,30 @@ namespace Pmad.Wiki.Controllers
             };
 
             return View(viewModel);
+        }
+
+        private async Task<List<WikiPageInfo>> GetAllAccessiblePages(IWikiUserWithPermissions? wikiUser, CancellationToken cancellationToken)
+        {
+            var allPages = await _pageService.GetAllPagesAsync(cancellationToken);
+
+            if (!_options.UsePageLevelPermissions)
+            {
+                return allPages;
+            }
+
+            // Filter pages based on page-level permissions
+            var userGroups = wikiUser?.Groups ?? [];
+
+            var filteredPages = new List<WikiPageInfo>();
+            foreach (var page in allPages)
+            {
+                var pageAccess = await _pageService.CheckPageAccessAsync(page.PageName, userGroups, cancellationToken);
+                if (pageAccess.CanRead)
+                {
+                    filteredPages.Add(page);
+                }
+            }
+            return filteredPages;
         }
 
         [HttpGet]
@@ -562,6 +569,34 @@ namespace Pmad.Wiki.Controllers
             return View(viewModel);
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetAccessiblePages(string currentPageName, CancellationToken cancellationToken)
+        {
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            if (wikiUser == null || !wikiUser.CanEdit)
+            {
+                return Forbid();
+            }
+
+            if (!WikiInputValidator.IsValidPageName(currentPageName, out var pageNameError))
+            {
+                return BadRequest(pageNameError);
+            }
+
+            var pages = (await GetAllAccessiblePages(wikiUser, cancellationToken))
+                .Select(p => new WikiPageLinkInfo
+                {
+                    PageName = p.PageName,
+                    Title = p.Title,
+                    RelativePath = WikiFilePathHelper.GetRelativePath(currentPageName, p.PageName)
+                })
+                .OrderBy(p => p.PageName)
+                .ToList();
+
+            return PartialView("_PageLinkList", pages);
+        }
+
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -577,10 +612,11 @@ namespace Pmad.Wiki.Controllers
                 ModelState.AddModelError(nameof(model.Culture), cultureError);
             }
 
-            await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
 
             if (!ModelState.IsValid)
             {
+                await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
+
                 return View(model);
             }
 
