@@ -13,3 +13,18 @@ Features:
 - Pattern-based access rules (supports wildcards)
 - In-memory caching for optimal performance
 - Admin interface for managing access rules
+- Version history with visual diff comparison
+
+## Third-Party Libraries
+
+This project uses the following third-party libraries:
+
+- **Markdig** - Markdown processor for .NET
+- **Bootstrap 5** - Front-end framework
+- **Bootstrap Icons** - Icon library
+- **Mergely** - Text diff and merge library (Mozilla Public License Version 1.1)
+  - Copyright © Jamie Peabody
+  - Used for displaying side-by-side diff comparisons
+  - See `wwwroot/lib/mergely/LICENSE` for full license text
+
+See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for complete licensing information.

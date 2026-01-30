@@ -127,6 +127,39 @@ public class WikiPageService : IWikiPageService
         return history;
     }
 
+    public async Task<WikiPage?> GetPageAtRevisionAsync(string pageName, string? culture, string commitId, CancellationToken cancellationToken = default)
+    {
+        var repository = GetRepository();
+        var filePath = WikiFilePathHelper.GetFilePath(pageName, culture, _options.NeutralMarkdownPageCulture);
+
+        try
+        {
+            var gitFile = await repository.ReadFileAndHashAsync(filePath, commitId, cancellationToken);
+            var contentText = Encoding.UTF8.GetString(gitFile.Content);
+            var htmlContent = Markdig.Markdown.ToHtml(contentText, _markdownPipeline);
+            
+            var title = MarkdownTitleExtractor.ExtractFirstTitle(contentText, pageName);
+
+            var commit = await repository.GetCommitAsync(commitId, cancellationToken);
+
+            return new WikiPage
+            {
+                PageName = pageName,
+                Content = contentText,
+                ContentHash = gitFile.Hash.Value,
+                HtmlContent = htmlContent,
+                Title = title,
+                Culture = culture,
+                LastModifiedBy = commit.Metadata.AuthorName,
+                LastModified = commit.Metadata.AuthorDate
+            };
+        }
+        catch (FileNotFoundException)
+        {
+            return null;
+        }
+    }
+
     public async Task<bool> PageExistsAsync(string pageName, string? culture, CancellationToken cancellationToken = default)
     {
         var repository = GetRepository();

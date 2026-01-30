@@ -1,0 +1,84 @@
+@model Pmad.Wiki.Models.WikiPageDiffViewModel
+@{
+    ViewData["Title"] = $"{Model.PageName} - Compare Versions";
+}
+
+@* 
+    Diff visualization powered by Mergely
+    Copyright (c) Jamie Peabody
+    Licensed under Mozilla Public License Version 1.1
+    https://www.mergely.com/
+*@
+
+<div class="wiki-diff">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Compare Versions: @Model.PageName</h1>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group" role="group">
+                <a asp-action="History" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-outline-secondary">
+                    <i class="bi bi-clock-history"></i> History
+                </a>
+                <a asp-action="View" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Page
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Culture))
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Comparing versions for culture: <strong>@Model.Culture</strong>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-dash-circle"></i> From (Older)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Commit:</strong> <code>@Model.FromCommitId.Substring(0, Math.Min(8, Model.FromCommitId.Length))</code></p>
+                    <p class="mb-1"><strong>Author:</strong> @Model.FromAuthorName</p>
+                    <p class="mb-1"><strong>Date:</strong> @Model.FromTimestamp.ToString("g")</p>
+                    <p class="mb-0"><strong>Message:</strong> @Model.FromMessage</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-plus-circle"></i> To (Newer)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Commit:</strong> <code>@Model.ToCommitId.Substring(0, Math.Min(8, Model.ToCommitId.Length))</code></p>
+                    <p class="mb-1"><strong>Author:</strong> @Model.ToAuthorName</p>
+                    <p class="mb-1"><strong>Date:</strong> @Model.ToTimestamp.ToString("g")</p>
+                    <p class="mb-0"><strong>Message:</strong> @Model.ToMessage</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="compare"></div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/mergely/js/mergely.min.js"></script>
+    <script>
+        const doc = new Mergely('#compare', {
+          lhs: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.FromContent)),
+          rhs: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToContent)),
+          license: 'mpl-separate-notice'
+        });
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/pmad-wiki/css/style.css" />
+    <link rel="stylesheet" href="~/lib/mergely/css/mergely.css" />
+}

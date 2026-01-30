@@ -37,6 +37,16 @@ namespace Pmad.Wiki
                 pattern: $"{pattern}/edit/{{**id}}",
                 defaults: new { controller = "Wiki", action = "Edit" });
 
+            endpoints.MapControllerRoute(
+                name: "wiki-revision",
+                pattern: $"{pattern}/revision/{{**id}}",
+                defaults: new { controller = "Wiki", action = "Revision" });
+
+            endpoints.MapControllerRoute(
+                name: "wiki-diff",
+                pattern: $"{pattern}/diff/{{**id}}",
+                defaults: new { controller = "Wiki", action = "Diff" });
+
             return endpoints;
         }
 

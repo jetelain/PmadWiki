@@ -27,18 +27,60 @@
 
     @if (Model.Entries.Any())
     {
+        <div class="mb-3">
+            <button id="compareButton" class="btn btn-primary" disabled>
+                <i class="bi bi-file-diff"></i> Compare Selected Versions
+            </button>
+            <small class="text-muted ms-2">Select two versions to compare</small>
+        </div>
+
         <div class="list-group">
-            @foreach (var entry in Model.Entries)
+            @for (int i = 0; i < Model.Entries.Count; i++)
             {
+                var entry = Model.Entries[i];
                 <div class="list-group-item">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">@entry.Message</h5>
-                        <small class="text-muted">@entry.Timestamp.ToString("g")</small>
+                    <div class="d-flex w-100 justify-content-between align-items-start">
+                        <div class="form-check me-3">
+                            <input class="form-check-input compare-checkbox" 
+                                   type="checkbox" 
+                                   value="@entry.CommitId" 
+                                   id="commit-@i">
+                            <label class="form-check-label" for="commit-@i"></label>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">@entry.Message</h5>
+                            <p class="mb-1">
+                                <strong>@entry.AuthorName</strong>
+                            </p>
+                            <small class="text-muted">Commit: @entry.CommitId.Substring(0, Math.Min(8, entry.CommitId.Length))</small>
+                        </div>
+                        <div class="d-flex flex-column align-items-end">
+                            <small class="text-muted mb-2">@entry.Timestamp.ToString("g")</small>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a asp-action="Revision" 
+                                   asp-route-id="@Model.PageName" 
+                                   asp-route-commitId="@entry.CommitId"
+                                   asp-route-culture="@Model.Culture"
+                                   class="btn btn-outline-secondary"
+                                   title="View this version">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                @if (i < Model.Entries.Count - 1)
+                                {
+                                    var previousEntry = Model.Entries[i + 1];
+                                    <a asp-action="Diff" 
+                                       asp-route-id="@Model.PageName" 
+                                       asp-route-fromCommit="@previousEntry.CommitId"
+                                       asp-route-toCommit="@entry.CommitId"
+                                       asp-route-culture="@Model.Culture"
+                                       class="btn btn-outline-secondary"
+                                       title="Compare with previous version">
+                                        <i class="bi bi-file-diff"></i> Diff
+                                    </a>
+                                }
+                            </div>
+                        </div>
                     </div>
-                    <p class="mb-1">
-                        <strong>@entry.AuthorName</strong>
-                    </p>
-                    <small class="text-muted">Commit: @entry.CommitId.Substring(0, Math.Min(8, entry.CommitId.Length))</small>
                 </div>
             }
         </div>
@@ -50,3 +92,59 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+
+        document.getElementById('compareButton').addEventListener('click', function(){ 
+            compareSelected('@Url.Action("Diff", "Wiki", new { id = Model.PageName })', '@Model.Culture'); 
+        });
+
+        document.querySelectorAll('.compare-checkbox').forEach(cb => {
+            cb.addEventListener('change', updateCompareButton);
+        });
+
+        function updateCompareButton() {
+            const checkboxes = document.querySelectorAll('.compare-checkbox:checked');
+            const button = document.getElementById('compareButton');
+            button.disabled = checkboxes.length !== 2;
+            
+            // Ensure only two checkboxes can be selected
+            if (checkboxes.length >= 2) {
+                document.querySelectorAll('.compare-checkbox:not(:checked)').forEach(cb => {
+                    cb.disabled = true;
+                });
+            } else {
+                document.querySelectorAll('.compare-checkbox').forEach(cb => {
+                    cb.disabled = false;
+                });
+            }
+        }
+
+        function compareSelected(baseUri, culture) {
+            const checkboxes = Array.from(document.querySelectorAll('.compare-checkbox:checked'));
+            if (checkboxes.length !== 2) {
+                return;
+            }
+
+            const indices = checkboxes.map(cb => {
+                const id = cb.id.replace('commit-', '');
+                return parseInt(id);
+            });
+            
+            // Determine which is older (higher index = older in history)
+            const olderIndex = Math.max(indices[0], indices[1]);
+            const newerIndex = Math.min(indices[0], indices[1]);
+            const fromCommit = checkboxes[indices.indexOf(olderIndex)].value;
+            const toCommit = checkboxes[indices.indexOf(newerIndex)].value;
+
+            const url = baseUri + '?fromCommit=' +
+                        encodeURIComponent(fromCommit) + 
+                        '&toCommit=' + encodeURIComponent(toCommit) +
+                        (culture ? '&culture=' + encodeURIComponent(culture) : '');
+            
+            window.location.href = url;
+        }
+    </script>
+}
+

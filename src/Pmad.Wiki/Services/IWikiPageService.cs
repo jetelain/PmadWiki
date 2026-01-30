@@ -8,6 +8,8 @@ public interface IWikiPageService
     
     Task<List<WikiHistoryItem>> GetPageHistoryAsync(string pageName, string? culture, CancellationToken cancellationToken = default);
     
+    Task<WikiPage?> GetPageAtRevisionAsync(string pageName, string? culture, string commitId, CancellationToken cancellationToken = default);
+    
     Task<bool> PageExistsAsync(string pageName, string? culture, CancellationToken cancellationToken = default);
     
     Task<List<string>> GetAvailableCulturesForPageAsync(string pageName, CancellationToken cancellationToken = default);

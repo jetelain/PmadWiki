@@ -213,6 +213,179 @@ namespace Pmad.Wiki.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Revision(string id, string commitId, string? culture, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Page name is required.");
+            }
+
+            if (string.IsNullOrEmpty(commitId))
+            {
+                return BadRequest("Commit ID is required.");
+            }
+
+            if (!WikiInputValidator.IsValidPageName(id, out var pageNameError))
+            {
+                return BadRequest(pageNameError);
+            }
+
+            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture, out var cultureError))
+            {
+                return BadRequest(cultureError);
+            }
+
+            if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
+            {
+                return Challenge();
+            }
+
+            IWikiUserWithPermissions? wikiUser = null;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+                if (wikiUser != null && !wikiUser.CanView && !_options.AllowAnonymousViewing)
+                {
+                    return Forbid();
+                }
+            }
+
+            // Check page-level permissions
+            if (_options.UsePageLevelPermissions)
+            {
+                var userGroups = wikiUser?.Groups ?? [];
+                var pageAccess = await _pageService.CheckPageAccessAsync(id, userGroups, cancellationToken);
+                if (!pageAccess.CanRead)
+                {
+                    if (User.Identity?.IsAuthenticated != true)
+                    {
+                        return Challenge();
+                    }
+                    return Forbid();
+                }
+            }
+
+            var page = await _pageService.GetPageAtRevisionAsync(id, culture, commitId, cancellationToken);
+
+            if (page == null)
+            {
+                return NotFound();
+            }
+
+            var history = await _pageService.GetPageHistoryAsync(id, culture, cancellationToken);
+            var historyEntry = history.FirstOrDefault(h => h.CommitId == commitId);
+
+            var viewModel = new WikiPageRevisionViewModel
+            {
+                PageName = id,
+                HtmlContent = page.HtmlContent,
+                Title = page.Title,
+                Culture = culture,
+                CommitId = commitId,
+                AuthorName = historyEntry?.AuthorName ?? page.LastModifiedBy ?? "Unknown",
+                Timestamp = historyEntry?.Timestamp ?? page.LastModified ?? DateTimeOffset.MinValue,
+                Message = historyEntry?.Message ?? "",
+                CanEdit = wikiUser?.CanEdit == true
+            };
+
+            await GenerateBreadcrumbAsync(id, culture, viewModel.Breadcrumb, cancellationToken);
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Diff(string id, string fromCommit, string toCommit, string? culture, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Page name is required.");
+            }
+
+            if (string.IsNullOrEmpty(fromCommit))
+            {
+                return BadRequest("From commit ID is required.");
+            }
+
+            if (string.IsNullOrEmpty(toCommit))
+            {
+                return BadRequest("To commit ID is required.");
+            }
+
+            if (!WikiInputValidator.IsValidPageName(id, out var pageNameError))
+            {
+                return BadRequest(pageNameError);
+            }
+
+            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture, out var cultureError))
+            {
+                return BadRequest(cultureError);
+            }
+
+            if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
+            {
+                return Challenge();
+            }
+
+            IWikiUserWithPermissions? wikiUser = null;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+                if (wikiUser != null && !wikiUser.CanView && !_options.AllowAnonymousViewing)
+                {
+                    return Forbid();
+                }
+            }
+
+            // Check page-level permissions
+            if (_options.UsePageLevelPermissions)
+            {
+                var userGroups = wikiUser?.Groups ?? [];
+                var pageAccess = await _pageService.CheckPageAccessAsync(id, userGroups, cancellationToken);
+                if (!pageAccess.CanRead)
+                {
+                    if (User.Identity?.IsAuthenticated != true)
+                    {
+                        return Challenge();
+                    }
+                    return Forbid();
+                }
+            }
+
+            var fromPage = await _pageService.GetPageAtRevisionAsync(id, culture, fromCommit, cancellationToken);
+            var toPage = await _pageService.GetPageAtRevisionAsync(id, culture, toCommit, cancellationToken);
+
+            if (fromPage == null || toPage == null)
+            {
+                return NotFound();
+            }
+
+            var history = await _pageService.GetPageHistoryAsync(id, culture, cancellationToken);
+            var fromEntry = history.FirstOrDefault(h => h.CommitId == fromCommit);
+            var toEntry = history.FirstOrDefault(h => h.CommitId == toCommit);
+
+            var viewModel = new WikiPageDiffViewModel
+            {
+                PageName = id,
+                Culture = culture,
+                FromCommitId = fromCommit,
+                ToCommitId = toCommit,
+                FromAuthorName = fromEntry?.AuthorName ?? fromPage.LastModifiedBy ?? "Unknown",
+                ToAuthorName = toEntry?.AuthorName ?? toPage.LastModifiedBy ?? "Unknown",
+                FromTimestamp = fromEntry?.Timestamp ?? fromPage.LastModified ?? DateTimeOffset.MinValue,
+                ToTimestamp = toEntry?.Timestamp ?? toPage.LastModified ?? DateTimeOffset.MinValue,
+                FromMessage = fromEntry?.Message ?? "",
+                ToMessage = toEntry?.Message ?? "",
+                FromContent = fromPage.Content,
+                ToContent = toPage.Content,
+                CanEdit = wikiUser?.CanEdit == true
+            };
+
+            await GenerateBreadcrumbAsync(id, culture, viewModel.Breadcrumb, cancellationToken);
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> SiteMap(CancellationToken cancellationToken)
         {
             if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
@@ -326,7 +499,7 @@ namespace Pmad.Wiki.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Edit(string id, string? culture, CancellationToken cancellationToken)
+        public async Task<IActionResult> Edit(string id, string? culture, string? restoreFromCommit, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -359,13 +532,26 @@ namespace Pmad.Wiki.Controllers
                 }
             }
 
-            var page = await _pageService.GetPageAsync(id, culture, cancellationToken);
+            WikiPage? page;
+            bool isRestore = false;
+
+            if (!string.IsNullOrEmpty(restoreFromCommit))
+            {
+                page = await _pageService.GetPageAtRevisionAsync(id, culture, restoreFromCommit, cancellationToken);
+                isRestore = true;
+            }
+            else
+            {
+                page = await _pageService.GetPageAsync(id, culture, cancellationToken);
+            }
             
             var viewModel = new WikiPageEditViewModel
             {
                 PageName = id,
                 Content = page?.Content ?? string.Empty,
-                CommitMessage = page == null ? $"Create page {id}" : $"Update page {id}",
+                CommitMessage = isRestore 
+                    ? $"Restore page {id} to revision {restoreFromCommit?.Substring(0, Math.Min(8, restoreFromCommit.Length))}"
+                    : page == null ? $"Create page {id}" : $"Update page {id}",
                 Culture = culture,
                 IsNew = page == null,
                 OriginalContentHash = page?.ContentHash
