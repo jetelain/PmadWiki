@@ -13,17 +13,20 @@ namespace Pmad.Wiki.Controllers
         private readonly IWikiPageService _pageService;
         private readonly IWikiUserService _userService;
         private readonly IPageAccessControlService _accessControlService;
+        private readonly IMarkdownRenderService _markdownRenderService;
         private readonly WikiOptions _options;
 
         public WikiController(
             IWikiPageService pageService,
             IWikiUserService userService,
             IPageAccessControlService accessControlService,
+            IMarkdownRenderService markdownRenderService,
             IOptions<WikiOptions> options)
         {
             _pageService = pageService;
             _userService = userService;
             _accessControlService = accessControlService;
+            _markdownRenderService = markdownRenderService;
             _options = options.Value;
         }
 
@@ -595,6 +598,26 @@ namespace Pmad.Wiki.Controllers
                 .ToList();
 
             return PartialView("_PageLinkList", pages);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PreviewMarkdown([FromBody] string markdown, CancellationToken cancellationToken)
+        {
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            if (wikiUser == null || !wikiUser.CanEdit)
+            {
+                return Forbid();
+            }
+
+            if (string.IsNullOrEmpty(markdown))
+            {
+                return Content(string.Empty);
+            }
+
+            var html = _markdownRenderService.ToHtml(markdown);
+            return Content(html);
         }
 
         [HttpPost]

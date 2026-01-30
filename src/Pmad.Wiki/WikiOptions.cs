@@ -1,4 +1,6 @@
-﻿namespace Pmad.Wiki;
+﻿using Markdig;
+
+namespace Pmad.Wiki;
 
 public class WikiOptions
 {
@@ -36,6 +38,11 @@ public class WikiOptions
     /// Gets or sets the name of the wiki's home page.
     /// </summary>
     public string HomePageName { get; set; } = "Home";
+
+    /// <summary>
+    /// Gets or sets a delegate that customize the Markdown pipeline before processing content.
+    /// </summary>
+    public Action<MarkdownPipelineBuilder>? ConfigureMarkdown { get; set; }
 
     /// <summary>
     /// Gets or sets the base path for wiki routes (e.g., "wiki").

@@ -46,6 +46,7 @@ public class WikiPageServiceTest
             _mockWikiUserService.Object,
             _mockPageAccessControlService.Object,
             _mockTitleCache.Object,
+            new MarkdownRenderService(optionsWrapper),
             optionsWrapper);
     }
 

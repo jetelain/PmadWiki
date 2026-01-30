@@ -2,6 +2,85 @@ document.addEventListener('DOMContentLoaded', function () {
     const textarea = document.getElementById('content-textarea');
     if (!textarea) return;
 
+    // Preview toggle functionality
+    const togglePreviewBtn = document.getElementById('togglePreview');
+    const previewContainer = document.getElementById('preview-container');
+    const previewContent = document.getElementById('preview-content');
+    const previewLoading = document.getElementById('preview-loading');
+    const previewButtonText = document.getElementById('previewButtonText');
+    let isPreviewMode = false;
+    let previewDebounceTimer = null;
+
+    if (togglePreviewBtn && previewContainer && previewContent) {
+        togglePreviewBtn.addEventListener('click', function () {
+            isPreviewMode = !isPreviewMode;
+
+            if (isPreviewMode) {
+                textarea.classList.add("d-none");
+                previewContainer.classList.remove("d-none");
+                previewButtonText.textContent = 'Edit';
+                togglePreviewBtn.querySelector('i').className = 'bi bi-pencil';
+                updatePreview();
+            } else {
+                textarea.classList.remove("d-none");
+                previewContainer.classList.add("d-none");
+                previewButtonText.textContent = 'Preview';
+                togglePreviewBtn.querySelector('i').className = 'bi bi-eye';
+            }
+        });
+
+        async function updatePreview() {
+            if (!isPreviewMode) return;
+
+            const markdown = textarea.value;
+
+            if (!markdown.trim()) {
+                previewContent.innerHTML = '<p class="text-muted">No content to preview.</p>';
+                return;
+            }
+
+            previewLoading.classList.remove("d-none");
+            previewContent.classList.add("d-none");
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const response = await fetch('/Wiki/PreviewMarkdown', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(markdown)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to render preview');
+                }
+
+                const html = await response.text();
+                previewContent.innerHTML = html;
+            } catch (error) {
+                console.error('Error rendering preview:', error);
+                previewContent.innerHTML = '<div class="alert alert-danger">Failed to render preview. Please try again.</div>';
+            } finally {
+                previewLoading.classList.add("d-none");
+                previewContent.classList.remove("d-none");
+            }
+        }
+
+        // Auto-update preview on content change (debounced)
+        textarea.addEventListener('input', function () {
+            if (isPreviewMode) {
+                if (previewDebounceTimer) {
+                    clearTimeout(previewDebounceTimer);
+                }
+                previewDebounceTimer = setTimeout(() => {
+                    updatePreview();
+                }, 1000);
+            }
+        });
+    }
+
     // Markdown formatting toolbar handlers
     document.querySelectorAll('[data-markdown-action]').forEach(button => {
         button.addEventListener('click', function (e) {
@@ -18,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const pageList = document.getElementById('pageList');
     const pageListContainer = document.getElementById('pageListContainer');
     const pageLinkModal = document.getElementById('pageLinkModal');
-    
+
     let pagesLoaded = false;
 
     if (pageLinkModal) {
@@ -28,20 +107,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 try {
                     const currentPageName = pageLinkModal.getAttribute('data-current-page');
                     const response = await fetch(`/Wiki/GetAccessiblePages?currentPageName=${encodeURIComponent(currentPageName)}`);
-                    
+
                     if (!response.ok) {
                         throw new Error('Failed to load pages');
                     }
-                    
+
                     const html = await response.text();
-                    
+
                     if (pageList) {
                         pageList.innerHTML = html;
                         attachPageLinkHandlers();
                     }
-                    
+
                     pagesLoaded = true;
-                    
+
                     if (pageListContainer) {
                         pageListContainer.style.display = 'none';
                     }
@@ -60,9 +139,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function attachPageLinkHandlers() {
         if (!pageList) return;
-        
+
         const pageItems = pageList.querySelectorAll('.page-link-item');
-        
+
         pageItems.forEach(item => {
             item.addEventListener('click', function () {
                 const relativePath = this.getAttribute('data-relative-path');
@@ -71,16 +150,16 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     }
-    
+
     if (pageSearchInput && pageList) {
         pageSearchInput.addEventListener('input', function () {
             const searchTerm = this.value.toLowerCase();
             const items = pageList.querySelectorAll('.page-link-item');
-            
+
             items.forEach(item => {
                 const pageName = item.getAttribute('data-page-name').toLowerCase();
                 const pageTitle = (item.getAttribute('data-page-title') || '').toLowerCase();
-                
+
                 if (pageName.includes(searchTerm) || pageTitle.includes(searchTerm)) {
                     item.style.display = '';
                 } else {
@@ -91,14 +170,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function handlePageSelection(relativePath, pageTitle) {
             const modalElement = document.getElementById('pageLinkModal');
-            
+
             modalElement.addEventListener('hidden.bs.modal', () => {
                 pageSearchInput.value = '';
                 const items = pageList.querySelectorAll('.page-link-item');
                 items.forEach(i => i.style.display = '');
                 insertWikiLink(textarea, relativePath, pageTitle);
             }, { once: true });
-            
+
             const modal = bootstrap.Modal.getInstance(modalElement);
             modal?.hide();
         }
@@ -109,10 +188,10 @@ function applyMarkdown(textarea, action) {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = textarea.value.substring(start, end);
-    
+
     let newText = '';
     let cursorOffset = 0;
-    
+
     switch (action) {
         case 'bold':
             newText = `**${selectedText || 'bold text'}**`;
@@ -177,7 +256,7 @@ function applyMarkdown(textarea, action) {
         default:
             return;
     }
-    
+
     insertTextWithUndo(textarea, start, end, newText, cursorOffset);
 }
 
@@ -185,19 +264,19 @@ function insertWikiLink(textarea, relativePath, pageTitle) {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = textarea.value.substring(start, end);
-    
+
     const linkText = selectedText || pageTitle;
     const wikiLink = `[${linkText}](${relativePath}.md)`;
-    
+
     insertTextWithUndo(textarea, start, end, wikiLink, wikiLink.length);
 }
 
 function insertTextWithUndo(textarea, start, end, newText, cursorOffset) {
     textarea.focus();
     textarea.setSelectionRange(start, end);
-    
+
     let success = false;
-    
+
     // Try execCommand first for better undo/redo support
     try {
         if (document.execCommand && document.queryCommandSupported('insertText')) {
@@ -206,13 +285,13 @@ function insertTextWithUndo(textarea, start, end, newText, cursorOffset) {
     } catch (e) {
         success = false;
     }
-    
+
     // Fallback if execCommand fails or is not supported
     if (!success) {
         textarea.setRangeText(newText, start, end, 'select');
         textarea.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true }));
     }
-    
+
     // Set cursor position
     const newPosition = start + cursorOffset;
     textarea.setSelectionRange(newPosition, newPosition);

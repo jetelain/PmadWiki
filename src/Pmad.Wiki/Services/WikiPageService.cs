@@ -1,6 +1,4 @@
-using System.Globalization;
 using System.Text;
-using Markdig;
 using Microsoft.Extensions.Options;
 using Pmad.Git.HttpServer;
 using Pmad.Git.LocalRepositories;
@@ -15,13 +13,14 @@ public class WikiPageService : IWikiPageService
     private readonly IPageAccessControlService _pageAccessControlService;
     private readonly IWikiPageTitleCache _titleCache;
     private readonly WikiOptions _options;
-    private readonly MarkdownPipeline _markdownPipeline;
+    private readonly IMarkdownRenderService _markdownRenderService;
 
     public WikiPageService(
         IGitRepositoryService gitRepositoryService, 
         IWikiUserService wikiUserService, 
         IPageAccessControlService pageAccessControlService,
         IWikiPageTitleCache titleCache,
+        IMarkdownRenderService markdownRenderService,
         IOptions<WikiOptions> options)
     {
         _wikiUserService = wikiUserService;
@@ -29,10 +28,7 @@ public class WikiPageService : IWikiPageService
         _pageAccessControlService = pageAccessControlService;
         _titleCache = titleCache;
         _options = options.Value;
-        _markdownPipeline = new MarkdownPipelineBuilder()
-            .UseAdvancedExtensions()
-            .Use(new WikiLinkExtension(_options.BasePath))
-            .Build();
+        _markdownRenderService = markdownRenderService;
     }
 
     public async Task EnsureRepositoryCreated()
@@ -61,7 +57,7 @@ public class WikiPageService : IWikiPageService
         {
             var gitFile = await repository.ReadFileAndHashAsync(filePath, _options.BranchName, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
-            var htmlContent = Markdig.Markdown.ToHtml(contentText, _markdownPipeline);
+            var htmlContent = _markdownRenderService.ToHtml(contentText);
             
             // Extract title and populate cache
             var title = _titleCache.ExtractAndCacheTitle(pageName, culture, contentText);
@@ -136,7 +132,7 @@ public class WikiPageService : IWikiPageService
         {
             var gitFile = await repository.ReadFileAndHashAsync(filePath, commitId, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
-            var htmlContent = Markdig.Markdown.ToHtml(contentText, _markdownPipeline);
+            var htmlContent = _markdownRenderService.ToHtml(contentText);
             
             var title = MarkdownTitleExtractor.ExtractFirstTitle(contentText, pageName);
 
