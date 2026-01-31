@@ -51,4 +51,12 @@ public class WikiOptions
     /// Value is set by <c>WikiEndpointRouteBuilderExtensions.MapWiki</c> method to ensure consistency with routing.
     /// </remarks>
     internal string BasePath { get; set; } = "wiki";
+
+    /// <summary>
+    /// Gets or sets the layout page to use for wiki views.
+    /// </summary>
+    /// <remarks>
+    /// If not set, the default layout from the host application's _ViewStart.cshtml will be used.
+    /// </remarks>
+    public string? Layout { get; set; }
 }
