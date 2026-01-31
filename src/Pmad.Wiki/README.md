@@ -7,6 +7,7 @@ Features:
 - Markdown rendering (powered by Markdig)
 - Bootstrap 5 based UI
 - Easy integration into existing ASP.NET Core MVC applications
+- Customizable layout support - use your own application's layout
 - Page localization support
 - Automatic page title extraction from H1 headings
 - Optional page-level access control with group-based permissions
@@ -14,6 +15,25 @@ Features:
 - In-memory caching for optimal performance
 - Admin interface for managing access rules
 - Version history with visual diff comparison
+
+## Configuration
+
+### Custom Layout
+
+You can specify a custom layout for wiki pages by setting the `Layout` property in `WikiOptions`:
+
+```csharp
+builder.Services.AddControllersWithViews()
+    .AddWiki(options =>
+    {
+        options.RepositoryRoot = "/path/to/repositories";
+        options.WikiRepositoryName = "wiki";
+        options.Layout = "_WikiLayout"; // Use your custom layout
+        // ... other options
+    });
+```
+
+If not set, wiki pages will use the default layout defined in your application's `_ViewStart.cshtml`.
 
 ## Third-Party Libraries
 
