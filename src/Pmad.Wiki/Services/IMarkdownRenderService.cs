@@ -2,5 +2,5 @@
 
 public interface IMarkdownRenderService
 {
-    string ToHtml(string markdown);
+    string ToHtml(string markdown, string? culture = null);
 }

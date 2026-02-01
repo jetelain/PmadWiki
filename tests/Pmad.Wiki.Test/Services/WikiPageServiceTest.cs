@@ -1,9 +1,12 @@
 using System.Text;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Pmad.Git.HttpServer;
 using Pmad.Git.LocalRepositories;
 using Pmad.Wiki.Services;
+using Pmad.Wiki.Test.Infrastructure;
 
 namespace Pmad.Wiki.Test.Services;
 
@@ -31,11 +34,11 @@ public class WikiPageServiceTest
             WikiRepositoryName = "wiki",
             BranchName = "main",
             NeutralMarkdownPageCulture = "en",
-            HomePageName = "Home",
-            BasePath = "wiki"
+            HomePageName = "Home"
         };
 
         var optionsWrapper = Options.Create(_options);
+        var linkGenerator = CreateMockLinkGenerator();
 
         _mockGitRepositoryService
             .Setup(x => x.GetRepository(It.IsAny<string>()))
@@ -46,8 +49,13 @@ public class WikiPageServiceTest
             _mockWikiUserService.Object,
             _mockPageAccessControlService.Object,
             _mockTitleCache.Object,
-            new MarkdownRenderService(optionsWrapper),
+            new MarkdownRenderService(optionsWrapper, linkGenerator),
             optionsWrapper);
+    }
+
+    private static LinkGenerator CreateMockLinkGenerator()
+    {
+        return new TestLinkGenerator();
     }
 
     #region GetPageAsync Tests

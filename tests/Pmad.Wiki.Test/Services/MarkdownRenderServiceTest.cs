@@ -1,6 +1,10 @@
 using Markdig;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
+using Moq;
 using Pmad.Wiki.Services;
+using Pmad.Wiki.Test.Infrastructure;
 
 namespace Pmad.Wiki.Test.Services;
 
@@ -8,16 +12,23 @@ public class MarkdownRenderServiceTest
 {
     private readonly IMarkdownRenderService _service;
     private readonly WikiOptions _options;
+    private readonly LinkGenerator _linkGenerator;
 
     public MarkdownRenderServiceTest()
     {
         _options = new WikiOptions
         {
-            BasePath = "wiki"
+            NeutralMarkdownPageCulture = "en"
         };
 
+        _linkGenerator = CreateMockLinkGenerator();
         var optionsWrapper = Options.Create(_options);
-        _service = new MarkdownRenderService(optionsWrapper);
+        _service = new MarkdownRenderService(optionsWrapper, _linkGenerator);
+    }
+
+    private static LinkGenerator CreateMockLinkGenerator(string basePath = "wiki")
+    {
+        return new TestLinkGenerator(basePath);
     }
 
     #region Constructor Tests
@@ -27,20 +38,22 @@ public class MarkdownRenderServiceTest
     {
         // Arrange
         var optionsWrapper = Options.Create<WikiOptions>(null!);
+        var linkGenerator = CreateMockLinkGenerator();
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new MarkdownRenderService(optionsWrapper));
+        Assert.Throws<ArgumentNullException>(() => new MarkdownRenderService(optionsWrapper, linkGenerator));
     }
 
     [Fact]
     public void Constructor_WithValidOptions_CreatesInstance()
     {
         // Arrange
-        var options = new WikiOptions { BasePath = "wiki" };
+        var options = new WikiOptions { NeutralMarkdownPageCulture = "en" };
         var optionsWrapper = Options.Create(options);
+        var linkGenerator = CreateMockLinkGenerator();
 
         // Act
-        var service = new MarkdownRenderService(optionsWrapper);
+        var service = new MarkdownRenderService(optionsWrapper, linkGenerator);
 
         // Assert
         Assert.NotNull(service);
@@ -53,16 +66,19 @@ public class MarkdownRenderServiceTest
         bool configurationCalled = false;
         var options = new WikiOptions
         {
-            BasePath = "wiki",
+            NeutralMarkdownPageCulture = "en",
             ConfigureMarkdown = builder =>
             {
                 configurationCalled = true;
             }
         };
         var optionsWrapper = Options.Create(options);
+        var linkGenerator = CreateMockLinkGenerator();
 
         // Act
-        var service = new MarkdownRenderService(optionsWrapper);
+        var service = new MarkdownRenderService(optionsWrapper, linkGenerator);
+        // Trigger pipeline creation
+        service.ToHtml("test");
 
         // Assert
         Assert.True(configurationCalled);
@@ -316,6 +332,20 @@ public class Test
 
         // Assert
         Assert.Contains("/wiki/view/page#section", html);
+        Assert.Contains(">Section</a>", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithWikiLinkWithAnchorAndCulture_PreservesAnchor()
+    {
+        // Arrange
+        var markdown = "[Section](page.md#section)";
+
+        // Act
+        var html = _service.ToHtml(markdown, "fr");
+
+        // Assert
+        Assert.Contains("/wiki/view/page?culture=fr#section", html);
         Assert.Contains(">Section</a>", html);
     }
 
@@ -634,15 +664,16 @@ var code = ""sample"";
 
     #endregion
 
-    #region BasePath Tests
+    #region Custom Route Tests
 
     [Fact]
     public void ToHtml_WithCustomBasePath_UsesCorrectPath()
     {
         // Arrange
-        var options = new WikiOptions { BasePath = "docs" };
+        var options = new WikiOptions { NeutralMarkdownPageCulture = "en" };
         var optionsWrapper = Options.Create(options);
-        var service = new MarkdownRenderService(optionsWrapper);
+        var linkGenerator = CreateMockLinkGenerator("docs");
+        var service = new MarkdownRenderService(optionsWrapper, linkGenerator);
         var markdown = "[Page](test.md)";
 
         // Act
@@ -656,9 +687,10 @@ var code = ""sample"";
     public void ToHtml_WithEmptyBasePath_UsesCorrectPath()
     {
         // Arrange
-        var options = new WikiOptions { BasePath = "" };
+        var options = new WikiOptions { NeutralMarkdownPageCulture = "en" };
         var optionsWrapper = Options.Create(options);
-        var service = new MarkdownRenderService(optionsWrapper);
+        var linkGenerator = CreateMockLinkGenerator("");
+        var service = new MarkdownRenderService(optionsWrapper, linkGenerator);
         var markdown = "[Page](test.md)";
 
         // Act

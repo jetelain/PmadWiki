@@ -12,11 +12,6 @@ namespace Pmad.Wiki
         {
             ArgumentNullException.ThrowIfNull(endpoints);
 
-            var options = endpoints.ServiceProvider.GetRequiredService<IOptions<WikiOptions>>().Value;
-            
-            // Update BasePath to match the routing pattern
-            options.BasePath = pattern;
-
             endpoints.MapControllerRoute(
                 name: "wiki-sitemap",
                 pattern: $"{pattern}/sitemap",

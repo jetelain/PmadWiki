@@ -1,16 +1,19 @@
 using Markdig;
 using Markdig.Renderers;
 using Markdig.Renderers.Html.Inlines;
+using Microsoft.AspNetCore.Routing;
 
 namespace Pmad.Wiki.Services;
 
 internal class WikiLinkExtension : IMarkdownExtension
 {
-    private readonly string _basePath;
+    private readonly LinkGenerator _linkGenerator;
+    private readonly string? _culture;
 
-    public WikiLinkExtension(string basePath)
+    public WikiLinkExtension(LinkGenerator linkGenerator, string? culture)
     {
-        _basePath = basePath;
+        _linkGenerator = linkGenerator;
+        _culture = culture;
     }
 
     public void Setup(MarkdownPipelineBuilder pipeline)
@@ -26,7 +29,7 @@ internal class WikiLinkExtension : IMarkdownExtension
             {
                 htmlRenderer.ObjectRenderers.Remove(linkRenderer);
             }
-            htmlRenderer.ObjectRenderers.AddIfNotAlready(new WikiLinkInlineRenderer(_basePath));
+            htmlRenderer.ObjectRenderers.AddIfNotAlready(new WikiLinkInlineRenderer(_linkGenerator, _culture));
         }
     }
 }

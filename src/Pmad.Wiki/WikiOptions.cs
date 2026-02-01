@@ -45,14 +45,6 @@ public class WikiOptions
     public Action<MarkdownPipelineBuilder>? ConfigureMarkdown { get; set; }
 
     /// <summary>
-    /// Gets or sets the base path for wiki routes (e.g., "wiki").
-    /// </summary>
-    /// <remarks>
-    /// Value is set by <c>WikiEndpointRouteBuilderExtensions.MapWiki</c> method to ensure consistency with routing.
-    /// </remarks>
-    internal string BasePath { get; set; } = "wiki";
-
-    /// <summary>
     /// Gets or sets the layout page to use for wiki views.
     /// </summary>
     /// <remarks>

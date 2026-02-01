@@ -11,7 +11,7 @@ public static class WikiServiceCollectionExtensions
     {
         services.Configure<WikiOptions>(options);
 
-        services.AddScoped<IMarkdownRenderService, MarkdownRenderService>();
+        services.AddSingleton<IMarkdownRenderService, MarkdownRenderService>();
         services.AddScoped<IWikiPageService, WikiPageService>();
         services.AddScoped<IPageAccessControlService, PageAccessControlService>();
         services.AddSingleton<IWikiPageTitleCache, WikiPageTitleCache>();

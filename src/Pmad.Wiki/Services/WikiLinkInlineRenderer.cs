@@ -1,16 +1,20 @@
 using Markdig.Renderers;
+using Markdig.Renderers.Html;
 using Markdig.Renderers.Html.Inlines;
 using Markdig.Syntax.Inlines;
+using Microsoft.AspNetCore.Routing;
 
 namespace Pmad.Wiki.Services;
 
 internal class WikiLinkInlineRenderer : LinkInlineRenderer
 {
-    private readonly string _basePath;
+    private readonly LinkGenerator _linkGenerator;
+    private readonly string? _culture;
 
-    public WikiLinkInlineRenderer(string basePath)
+    public WikiLinkInlineRenderer(LinkGenerator linkGenerator, string? culture)
     {
-        _basePath = basePath;
+        _linkGenerator = linkGenerator;
+        _culture = culture;
     }
 
     protected override void Write(HtmlRenderer renderer, LinkInline link)
@@ -30,9 +34,22 @@ internal class WikiLinkInlineRenderer : LinkInlineRenderer
             
             url = url.Substring(0, url.Length - 3);
             
-            // Build proper route URL
+            // Build proper route URL using LinkGenerator
             var pagePath = url.TrimStart('/');
-            link.Url = $"/{_basePath}/view/{pagePath}{anchor}";
+            var generatedUrl = _linkGenerator.GetPathByAction(
+                action: "View",
+                controller: "Wiki",
+                values: new { id = pagePath, culture = _culture });
+            
+            if (generatedUrl != null)
+            {
+                link.Url = generatedUrl + anchor;
+            }
+            else
+            {
+                // Fallback if LinkGenerator fails (shouldn't happen in normal circumstances)
+                link.Url = $"/wiki/view/{pagePath}{anchor}";
+            }
         }
         
         base.Write(renderer, link);
