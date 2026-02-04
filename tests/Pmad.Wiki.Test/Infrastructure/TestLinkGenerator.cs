@@ -39,15 +39,20 @@ internal class TestLinkGenerator : LinkGenerator
         var action = values["action"]?.ToString();
         var controller = values["controller"]?.ToString();
         var id = values["id"]?.ToString() ?? "";
-        var culture = values["culture"]?.ToString();
 
         if (action == "View" && controller == "Wiki")
         {
+            var culture = values["culture"]?.ToString();
             var path = $"/{_basePath}/view/{id}";
             if (!string.IsNullOrEmpty(culture))
             {
                 path += $"?culture={culture}";
             }
+            return path;
+        }
+        else if (action == "Media" && controller == "Wiki")
+        {
+            var path = $"/{_basePath}/media/{id}";
             return path;
         }
 

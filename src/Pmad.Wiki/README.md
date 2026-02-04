@@ -10,6 +10,7 @@ Features:
 - Customizable layout support - use your own application's layout
 - Page localization support
 - Automatic page title extraction from H1 headings
+- Media file support (images, videos, PDFs, and other files from the Git repository)
 - Optional page-level access control with group-based permissions
 - Pattern-based access rules (supports wildcards)
 - In-memory caching for optimal performance
@@ -17,6 +18,26 @@ Features:
 - Version history with visual diff comparison
 
 ## Configuration
+
+### Media Files
+
+The wiki supports serving media files (images, videos, audio, PDFs, etc.) directly from the Git repository. Media files can be referenced in your markdown pages using standard markdown syntax:
+
+```markdown
+![Image description](images/logo.png)
+![Relative path](../shared/banner.jpg)
+[Download PDF](documents/guide.pdf)
+```
+
+Supported media file types:
+- **Images**: `.jpg`, `.jpeg`, `.png`, `.gif`, `.svg`, `.webp`, `.bmp`, `.ico`
+- **Videos**: `.mp4`, `.webm`, `.ogg`
+- **Audio**: `.mp3`, `.wav`
+- **Documents**: `.pdf`
+
+Media files are subject to the same access control rules as wiki pages. When page-level permissions are enabled, media files inherit the access permissions of their containing directory.
+
+The media files are served through the `/wiki/media/{path}` route and are automatically linked when you use relative paths in your markdown.
 
 ### Custom Layout
 

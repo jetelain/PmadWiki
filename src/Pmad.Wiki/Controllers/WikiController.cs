@@ -770,5 +770,61 @@ namespace Pmad.Wiki.Controllers
                 return View(model);
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Media(string id, CancellationToken cancellationToken)
+        {
+            if (!WikiInputValidator.IsValidMediaPath(id, out var pageNameError))
+            {
+                return BadRequest(pageNameError);
+            }
+
+            if (!_options.AllowedMediaExtensions.Any(ext => id.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+            {
+                return BadRequest("Invalid file path.");
+            }
+
+            if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
+            {
+                return Challenge();
+            }
+
+            IWikiUserWithPermissions? wikiUser = null;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+                if (wikiUser != null && !wikiUser.CanView && !_options.AllowAnonymousViewing)
+                {
+                    return Forbid();
+                }
+            }
+
+            // For media files, check access based on the directory they're in
+            // Extract the page/directory path from the media file path
+            var directoryPath = Path.GetDirectoryName(id)?.Replace('\\', '/');
+            if (!string.IsNullOrEmpty(directoryPath) && _options.UsePageLevelPermissions)
+            {
+                var userGroups = wikiUser?.Groups ?? [];
+                var pageAccess = await _pageService.CheckPageAccessAsync(directoryPath, userGroups, cancellationToken);
+                if (!pageAccess.CanRead)
+                {
+                    if (User.Identity?.IsAuthenticated != true)
+                    {
+                        return Challenge();
+                    }
+                    return Forbid();
+                }
+            }
+
+            var fileContent = await _pageService.GetMediaFileAsync(id, cancellationToken);
+
+            if (fileContent == null)
+            {
+                return NotFound();
+            }
+
+            return File(fileContent, ContentTypeHelper.GetContentType(id));
+        }
+
     }
 }

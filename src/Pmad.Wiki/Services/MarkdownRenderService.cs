@@ -50,19 +50,36 @@ public sealed partial class MarkdownRenderService : IMarkdownRenderService
                 {
                     linkInline.Url = ProcessSingleWikiLink(match.Groups[1].Value, match.Groups[2].Value, currentPageDirectoryParts, culture);
                 }
+                else if (IsMedia(linkInline.Url))
+                {
+                    linkInline.Url = ProcessMediaLink(linkInline.Url, currentPageDirectoryParts);
+                }
             }
         }
     }
 
+    private bool IsMedia(string url)
+    {
+        return !url.StartsWith("#", StringComparison.Ordinal)
+            && _options.AllowedMediaExtensions.Any(ext => url.EndsWith(ext, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private string ProcessMediaLink(string url, List<string> currentPageDirectoryParts)
+    {
+        var targetMedia = ResolvePath(url, currentPageDirectoryParts);
+
+        return GenerateMediaUrl(targetMedia);
+    }
+
     private string ProcessSingleWikiLink(string urlWithoutExtension, string anchor, List<string> currentPageDirectoryParts, string? culture)
     {
-        var targetPageName = ResolveTargetPageName(urlWithoutExtension, currentPageDirectoryParts);
+        var targetPageName = ResolvePath(urlWithoutExtension, currentPageDirectoryParts);
         var generatedUrl = GenerateWikiUrl(targetPageName, culture);
         return generatedUrl + anchor;
     }
 
 
-    private static string ResolveTargetPageName(string url, List<string> currentPageDirectoryParts)
+    private static string ResolvePath(string url, List<string> currentPageDirectoryParts)
     {
         if (url.StartsWith("/"))
         {
@@ -88,6 +105,22 @@ public sealed partial class MarkdownRenderService : IMarkdownRenderService
         
         // Fallback if LinkGenerator fails
         return $"/wiki/view/{targetPageName}";
+    }
+
+    private string GenerateMediaUrl(string mediaPath)
+    {
+        var generatedUrl = _linkGenerator.GetPathByAction(
+            action: "Media",
+            controller: "Wiki",
+            values: new { id = mediaPath });
+
+        if (generatedUrl != null)
+        {
+            return generatedUrl;
+        }
+
+        // Fallback if LinkGenerator fails
+        return $"/wiki/media/{mediaPath}";
     }
 
     private static List<string> GetDirectoryParts(string pagePath)

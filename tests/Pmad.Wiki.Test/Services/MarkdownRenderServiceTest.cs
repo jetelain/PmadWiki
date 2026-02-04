@@ -420,17 +420,83 @@ public class Test
     }
 
     [Fact]
-    public void ToHtml_WithNonMarkdownLink_DoesNotConvert()
+    public void ToHtml_WithImageLink_ConvertsToMediaRoute()
     {
         // Arrange
-        var markdown = "[Image](image.png)";
+        var markdown = "![Image](image.png)";
 
         // Act
         var html = _service.ToHtml(markdown);
 
         // Assert
-        Assert.Contains("image.png", html);
-        Assert.DoesNotContain("/wiki/view/", html);
+        Assert.Contains("/wiki/media/image.png", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithImageLinkInSubfolder_ConvertsToMediaRoute()
+    {
+        // Arrange
+        var markdown = "![Image](images/logo.png)";
+
+        // Act
+        var html = _service.ToHtml(markdown);
+
+        // Assert
+        Assert.Contains("/wiki/media/images/logo.png", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithVideoLink_ConvertsToMediaRoute()
+    {
+        // Arrange
+        var markdown = "[Video](video.mp4)";
+
+        // Act
+        var html = _service.ToHtml(markdown);
+
+        // Assert
+        Assert.Contains("/wiki/media/video.mp4", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithPdfLink_ConvertsToMediaRoute()
+    {
+        // Arrange
+        var markdown = "[Document](document.pdf)";
+
+        // Act
+        var html = _service.ToHtml(markdown);
+
+        // Assert
+        Assert.Contains("/wiki/media/document.pdf", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithExternalImage_DoesNotConvert()
+    {
+        // Arrange
+        var markdown = "![External](https://example.com/image.png)";
+
+        // Act
+        var html = _service.ToHtml(markdown);
+
+        // Assert
+        Assert.Contains("https://example.com/image.png", html);
+        Assert.DoesNotContain("/wiki/media/", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithNonMediaExtension_DoesNotConvert()
+    {
+        // Arrange
+        var markdown = "[Document](document.txt)";
+
+        // Act
+        var html = _service.ToHtml(markdown);
+
+        // Assert
+        Assert.Contains("document.txt", html);
+        Assert.DoesNotContain("/wiki/media/", html);
     }
 
     [Fact]
