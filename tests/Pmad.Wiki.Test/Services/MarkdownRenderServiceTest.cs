@@ -300,7 +300,7 @@ public class Test
         var markdown = "[Page](test.md)";
 
         // Act
-        var html = _service.ToHtml(markdown);
+        var html = _service.ToHtml(markdown, null, "home");
 
         // Assert
         Assert.Contains("/wiki/view/test", html);
@@ -314,7 +314,7 @@ public class Test
         var markdown = "[Admin Settings](admin/settings.md)";
 
         // Act
-        var html = _service.ToHtml(markdown);
+        var html = _service.ToHtml(markdown, null, "home");
 
         // Assert
         Assert.Contains("/wiki/view/admin/settings", html);
@@ -328,7 +328,7 @@ public class Test
         var markdown = "[Section](page.md#section)";
 
         // Act
-        var html = _service.ToHtml(markdown);
+        var html = _service.ToHtml(markdown, null, "home");
 
         // Assert
         Assert.Contains("/wiki/view/page#section", html);
@@ -342,7 +342,7 @@ public class Test
         var markdown = "[Section](page.md#section)";
 
         // Act
-        var html = _service.ToHtml(markdown, "fr");
+        var html = _service.ToHtml(markdown, "fr", "home");
 
         // Assert
         Assert.Contains("/wiki/view/page?culture=fr#section", html);
@@ -371,7 +371,7 @@ public class Test
         var markdown = "[Root Page](/root.md)";
 
         // Act
-        var html = _service.ToHtml(markdown);
+        var html = _service.ToHtml(markdown, null, "docs/page");
 
         // Assert
         Assert.Contains("/wiki/view/root", html);
@@ -431,6 +431,76 @@ public class Test
         // Assert
         Assert.Contains("image.png", html);
         Assert.DoesNotContain("/wiki/view/", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithRelativeWikiLink_ResolvesRelativeToCurrentPage()
+    {
+        // Arrange
+        var markdown = "[Settings](settings.md)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, "docs/admin/intro");
+
+        // Assert
+        // Should resolve to docs/admin/settings (same directory as current page)
+        Assert.Contains("/wiki/view/docs/admin/settings", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithRelativeWikiLinkInSubfolder_ResolvesCorrectly()
+    {
+        // Arrange
+        var markdown = "[Nested Page](subfolder/page.md)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, "docs/intro");
+
+        // Assert
+        // Should resolve to docs/subfolder/page
+        Assert.Contains("/wiki/view/docs/subfolder/page", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithRelativeWikiLinkGoingUp_ResolvesCorrectly()
+    {
+        // Arrange
+        var markdown = "[Parent Page](../parent.md)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, "docs/admin/settings");
+
+        // Assert
+        // Should resolve to docs/parent
+        Assert.Contains("/wiki/view/docs/parent", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithRelativeWikiLinkFromRoot_ResolvesCorrectly()
+    {
+        // Arrange
+        var markdown = "[Other Page](other.md)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, "home");
+
+        // Assert
+        // Should resolve to other (same level as home, which is root)
+        Assert.Contains("/wiki/view/other", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithoutCurrentPageName_ProcessWikiLinks()
+    {
+        // Arrange
+        var markdown = "[Page](test.md)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, null);
+
+        // Assert
+        // Without currentPageName, links should not be processed
+        Assert.Contains("/wiki/view/test", html);
     }
 
     #endregion
@@ -609,7 +679,7 @@ var code = ""sample"";
 | A     | B     |";
 
         // Act
-        var html = _service.ToHtml(markdown);
+        var html = _service.ToHtml(markdown, null, "home");
 
         // Assert
         Assert.Contains("<h1", html);
@@ -654,7 +724,7 @@ var code = ""sample"";
 - [Page 3](folder/page3.md)";
 
         // Act
-        var html = _service.ToHtml(markdown);
+        var html = _service.ToHtml(markdown, null, "home");
 
         // Assert
         Assert.Contains("/wiki/view/page1", html);
@@ -677,7 +747,7 @@ var code = ""sample"";
         var markdown = "[Page](test.md)";
 
         // Act
-        var html = service.ToHtml(markdown);
+        var html = service.ToHtml(markdown, null, "home");
 
         // Assert
         Assert.Contains("/docs/view/test", html);
@@ -694,7 +764,7 @@ var code = ""sample"";
         var markdown = "[Page](test.md)";
 
         // Act
-        var html = service.ToHtml(markdown);
+        var html = service.ToHtml(markdown, null, "home");
 
         // Assert
         Assert.Contains("//view/test", html);

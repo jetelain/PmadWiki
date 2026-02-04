@@ -5,10 +5,10 @@ namespace Pmad.Wiki.Helpers;
 
 public static partial class WikiInputValidator
 {
-    [GeneratedRegex("^[a-zA-Z0-9_/-]+$")]
+    [GeneratedRegex("^[a-zA-Z0-9_/-]+$", RegexOptions.CultureInvariant)]
     private static partial Regex PageNameRegex();
 
-    [GeneratedRegex("^[a-z]{2}(-[A-Z]{2})?$")]
+    [GeneratedRegex("^[a-z]{2}(-[A-Z]{2})?$", RegexOptions.CultureInvariant)]
     private static partial Regex CultureRegex();
 
     public static bool IsValidPageName(string pageName, [NotNullWhen(false)] out string? errorMessage)

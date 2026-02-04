@@ -57,7 +57,7 @@ public class WikiPageService : IWikiPageService
         {
             var gitFile = await repository.ReadFileAndHashAsync(filePath, _options.BranchName, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
-            var htmlContent = _markdownRenderService.ToHtml(contentText, culture);
+            var htmlContent = _markdownRenderService.ToHtml(contentText, culture, pageName);
             
             // Extract title and populate cache
             var title = _titleCache.ExtractAndCacheTitle(pageName, culture, contentText);
@@ -132,7 +132,7 @@ public class WikiPageService : IWikiPageService
         {
             var gitFile = await repository.ReadFileAndHashAsync(filePath, commitId, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
-            var htmlContent = _markdownRenderService.ToHtml(contentText, culture);
+            var htmlContent = _markdownRenderService.ToHtml(contentText, culture, pageName);
             
             var title = MarkdownTitleExtractor.ExtractFirstTitle(contentText, pageName);
 

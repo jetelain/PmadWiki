@@ -44,13 +44,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
             try {
                 const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const pageNameInput = document.querySelector('input[name="PageName"]');
+                const cultureInput = document.querySelector('input[name="Culture"]');
+                
+                const request = {
+                    markdown: markdown,
+                    pageName: pageNameInput ? pageNameInput.value : null,
+                    culture: cultureInput ? cultureInput.value : null
+                };
+                
                 const response = await fetch('/Wiki/PreviewMarkdown', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'RequestVerificationToken': token
                     },
-                    body: JSON.stringify(markdown)
+                    body: JSON.stringify(request)
                 });
 
                 if (!response.ok) {

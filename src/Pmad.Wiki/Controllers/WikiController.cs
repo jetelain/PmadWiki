@@ -603,7 +603,7 @@ namespace Pmad.Wiki.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PreviewMarkdown([FromBody] string markdown, CancellationToken cancellationToken)
+        public async Task<IActionResult> PreviewMarkdown([FromBody] PreviewMarkdownRequest request, CancellationToken cancellationToken)
         {
             var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
             if (wikiUser == null || !wikiUser.CanEdit)
@@ -611,12 +611,12 @@ namespace Pmad.Wiki.Controllers
                 return Forbid();
             }
 
-            if (string.IsNullOrEmpty(markdown))
+            if (string.IsNullOrEmpty(request?.Markdown))
             {
                 return Content(string.Empty);
             }
 
-            var html = _markdownRenderService.ToHtml(markdown);
+            var html = _markdownRenderService.ToHtml(request.Markdown, request.Culture, request.PageName);
             return Content(html);
         }
 

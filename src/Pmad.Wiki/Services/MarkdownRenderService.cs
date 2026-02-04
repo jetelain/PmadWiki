@@ -1,12 +1,19 @@
 ﻿using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 using Markdig;
+using Markdig.Parsers;
+using Markdig.Syntax;
+using Markdig.Syntax.Inlines;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 
 namespace Pmad.Wiki.Services;
 
-public sealed class MarkdownRenderService : IMarkdownRenderService
+public sealed partial class MarkdownRenderService : IMarkdownRenderService
 {
+    [GeneratedRegex("^([a-zA-Z0-9_/\\.-]+)\\.md(#.*)?$", RegexOptions.CultureInvariant)]
+    private static partial Regex PageNativePathRegex();
+
     private readonly ConcurrentDictionary<string, MarkdownPipeline> _pipelineCache = new();
     private readonly WikiOptions _options;
     private readonly LinkGenerator _linkGenerator;
@@ -17,10 +24,112 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
         _linkGenerator = linkGenerator ?? throw new ArgumentNullException(nameof(linkGenerator));
     }
 
-    public string ToHtml(string markdown, string? culture = null)
+    public string ToHtml(string markdown, string? culture = null, string? currentPageName = null)
     {
-        var pipeline = GetOrCreatePipeline(culture);
-        return Markdown.ToHtml(markdown, pipeline);
+        var pipeline = GetOrCreatePipeline(culture); 
+
+        var document = MarkdownParser.Parse(markdown, pipeline);
+
+        // Process wiki links to make them relative to the current page
+        ProcessWikiLinks(document, currentPageName ?? string.Empty, culture);
+
+        return Markdown.ToHtml(document, pipeline);
+    }
+
+    private void ProcessWikiLinks(Markdig.Syntax.MarkdownDocument document, string currentPageName, string? culture)
+    {
+        // Pre-compute current page directory parts to avoid repeated splitting
+        var currentPageDirectoryParts = GetDirectoryParts(currentPageName);
+
+        foreach (var linkInline in document.Descendants<LinkInline>())
+        {
+            if (linkInline.Url != null && !IsAbsoluteUrl(linkInline.Url))
+            {
+                var match = PageNativePathRegex().Match(linkInline.Url);
+                if (match.Success)
+                {
+                    linkInline.Url = ProcessSingleWikiLink(match.Groups[1].Value, match.Groups[2].Value, currentPageDirectoryParts, culture);
+                }
+            }
+        }
+    }
+
+    private string ProcessSingleWikiLink(string urlWithoutExtension, string anchor, List<string> currentPageDirectoryParts, string? culture)
+    {
+        var targetPageName = ResolveTargetPageName(urlWithoutExtension, currentPageDirectoryParts);
+        var generatedUrl = GenerateWikiUrl(targetPageName, culture);
+        return generatedUrl + anchor;
+    }
+
+
+    private static string ResolveTargetPageName(string url, List<string> currentPageDirectoryParts)
+    {
+        if (url.StartsWith("/"))
+        {
+            // Absolute path from wiki root
+            return url.TrimStart('/');
+        }
+        
+        // Relative path - resolve against current page directory
+        return ResolveRelativePath(currentPageDirectoryParts, url);
+    }
+
+    private string GenerateWikiUrl(string targetPageName, string? culture)
+    {
+        var generatedUrl = _linkGenerator.GetPathByAction(
+            action: "View",
+            controller: "Wiki",
+            values: new { id = targetPageName, culture = culture });
+        
+        if (generatedUrl != null)
+        {
+            return generatedUrl;
+        }
+        
+        // Fallback if LinkGenerator fails
+        return $"/wiki/view/{targetPageName}";
+    }
+
+    private static List<string> GetDirectoryParts(string pagePath)
+    {
+        var pageParts = pagePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        // Get all parts except the last one (the file name)
+        return [.. pageParts.Take(pageParts.Length - 1)];
+    }
+
+    private static string ResolveRelativePath(List<string> currentPageDirectoryParts, string relativePath)
+    {
+        var relativeParts = relativePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var resultParts = new List<string>(currentPageDirectoryParts);
+        
+        // Process each part of the relative path
+        foreach (var part in relativeParts)
+        {
+            if (part == "..")
+            {
+                // Go up one level
+                if (resultParts.Count > 0)
+                {
+                    resultParts.RemoveAt(resultParts.Count - 1);
+                }
+            }
+            else if (part != ".")
+            {
+                // Add the part
+                resultParts.Add(part);
+            }
+            // Skip "." as it means current directory
+        }
+        
+        return string.Join("/", resultParts);
+    }
+
+    private static bool IsAbsoluteUrl(string url)
+    {
+        return url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+               url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+               url.StartsWith("//", StringComparison.Ordinal);
     }
 
     private MarkdownPipeline GetOrCreatePipeline(string? culture)
@@ -31,8 +140,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
         {
             var builder = new MarkdownPipelineBuilder()
                 .UseAdvancedExtensions()
-                .DisableHtml()
-                .Use(new WikiLinkExtension(_linkGenerator, _options.NeutralMarkdownPageCulture == key ? null : key));
+                .DisableHtml();
 
             if (_options.ConfigureMarkdown != null)
             {
