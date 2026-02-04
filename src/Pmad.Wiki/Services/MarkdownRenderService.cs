@@ -63,29 +63,16 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
 
     private string ProcessMediaLink(string url, List<string> currentPageDirectoryParts)
     {
-        var targetMedia = ResolvePath(url, currentPageDirectoryParts);
+        var targetMedia = ResolveRelativePath(currentPageDirectoryParts, url);
 
         return GenerateMediaUrl(targetMedia);
     }
 
     private string ProcessSingleWikiLink(string urlWithoutExtension, string anchor, List<string> currentPageDirectoryParts, string? culture)
     {
-        var targetPageName = ResolvePath(urlWithoutExtension, currentPageDirectoryParts);
+        var targetPageName = ResolveRelativePath(currentPageDirectoryParts, urlWithoutExtension);
         var generatedUrl = GenerateWikiUrl(targetPageName, culture);
         return generatedUrl + anchor;
-    }
-
-
-    private static string ResolvePath(string url, List<string> currentPageDirectoryParts)
-    {
-        if (url.StartsWith("/"))
-        {
-            // Absolute path from wiki root
-            return url.TrimStart('/');
-        }
-        
-        // Relative path - resolve against current page directory
-        return ResolveRelativePath(currentPageDirectoryParts, url);
     }
 
     private string GenerateWikiUrl(string targetPageName, string? culture)
@@ -159,7 +146,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
     {
         return url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
-               url.StartsWith("//", StringComparison.Ordinal);
+               url.StartsWith("/", StringComparison.Ordinal);
     }
 
     private MarkdownPipeline GetOrCreatePipeline(string? culture)

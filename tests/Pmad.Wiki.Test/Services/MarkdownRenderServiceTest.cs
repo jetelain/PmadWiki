@@ -365,7 +365,7 @@ public class Test
     }
 
     [Fact]
-    public void ToHtml_WithAbsoluteWikiLink_ConvertsToWikiRoute()
+    public void ToHtml_WithAbsoluteLink_DoesNotConvert()
     {
         // Arrange
         var markdown = "[Root Page](/root.md)";
@@ -374,7 +374,8 @@ public class Test
         var html = _service.ToHtml(markdown, null, "docs/page");
 
         // Assert
-        Assert.Contains("/wiki/view/root", html);
+        Assert.Contains("/root.md", html);
+        Assert.DoesNotContain("/wiki/view/root", html);
     }
 
     [Fact]
