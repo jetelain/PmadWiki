@@ -523,7 +523,7 @@ public class WikiInputValidatorTest
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidateMediaPath(null!));
-        Assert.Equal("pageName", exception.ParamName);
+        Assert.Equal("mediaPath", exception.ParamName);
         Assert.Contains("Media path cannot be null or empty.", exception.Message);
     }
 
@@ -533,7 +533,7 @@ public class WikiInputValidatorTest
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidateMediaPath(""));
-        Assert.Equal("pageName", exception.ParamName);
+        Assert.Equal("mediaPath", exception.ParamName);
         Assert.Contains("Media path cannot be null or empty.", exception.Message);
     }
 
@@ -547,7 +547,7 @@ public class WikiInputValidatorTest
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidateMediaPath(mediaPath));
-        Assert.Equal("pageName", exception.ParamName);
+        Assert.Equal("mediaPath", exception.ParamName);
         Assert.Contains("Invalid path.", exception.Message);
     }
 
