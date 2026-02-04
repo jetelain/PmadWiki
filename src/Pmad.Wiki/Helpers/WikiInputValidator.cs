@@ -103,11 +103,11 @@ public static partial class WikiInputValidator
         }
     }
 
-    public static void ValidateMediaPath(string pageName)
+    public static void ValidateMediaPath(string mediaPath)
     {
-        if (!IsValidMediaPath(pageName, out var errorMessage))
+        if (!IsValidMediaPath(mediaPath, out var errorMessage))
         {
-            throw new ArgumentException(errorMessage, nameof(pageName));
+            throw new ArgumentException(errorMessage, nameof(mediaPath));
         }
     }
 

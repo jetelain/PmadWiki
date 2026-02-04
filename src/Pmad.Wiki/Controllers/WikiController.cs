@@ -781,10 +781,10 @@ namespace Pmad.Wiki.Controllers
 
             if (!_options.AllowedMediaExtensions.Any(ext => id.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
             {
-                return BadRequest("Invalid file path.");
+                return BadRequest("Unsupported media file type.");
             }
 
-            if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
+            if (!_options.AllowAnonymousViewing && User.Identity?.IsAuthenticated != true)
             {
                 return Challenge();
             }

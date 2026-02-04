@@ -29,7 +29,7 @@ The wiki supports serving media files (images, videos, audio, PDFs, etc.) direct
 [Download PDF](documents/guide.pdf)
 ```
 
-Supported media file types by default :
+Supported media file types by default:
 - **Images**: `.png`, `.jpg`, `.jpeg`, `.gif`, `.svg`, `.webp`
 - **Videos**: `.mp4`, `.webm`, `.ogg`
 - **Documents**: `.pdf`
@@ -73,7 +73,7 @@ This project uses the following third-party libraries:
 - **Bootstrap 5** - Front-end framework
 - **Bootstrap Icons** - Icon library
 - **Mergely** - Text diff and merge library (Mozilla Public License Version 1.1)
-  - Copyright © Jamie Peabody
+  - Copyright Â© Jamie Peabody
   - Used for displaying side-by-side diff comparisons
   - See `wwwroot/lib/mergely/LICENSE` for full license text
 
