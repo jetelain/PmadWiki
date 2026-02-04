@@ -569,6 +569,58 @@ public class Test
         Assert.Contains("/wiki/view/test", html);
     }
 
+    [Fact]
+    public void ToHtml_WithRelativeImageLink_ResolvesRelativeToCurrentPage()
+    {
+        // Arrange
+        var markdown = "![Image](settings.png)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, "docs/admin/intro");
+
+        // Assert
+        Assert.Contains("/wiki/media/docs/admin/settings.png", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithRelativeImageLinkInSubfolder_ResolvesCorrectly()
+    {
+        // Arrange
+        var markdown = "![Image](subfolder/page.png)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, "docs/intro");
+
+        // Assert
+        Assert.Contains("/wiki/media/docs/subfolder/page.png", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithRelativeImageLinkGoingUp_ResolvesCorrectly()
+    {
+        // Arrange
+        var markdown = "![Image](../parent.png)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, "docs/admin/settings");
+
+        // Assert
+        Assert.Contains("/wiki/media/docs/parent.png", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithRelativeImageLinkFromRoot_ResolvesCorrectly()
+    {
+        // Arrange
+        var markdown = "![Image](other.png)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, "home");
+
+        // Assert
+        Assert.Contains("/wiki/media/other.png", html);
+    }
+
     #endregion
 
     #region Advanced Extensions Tests
