@@ -29,11 +29,20 @@ The wiki supports serving media files (images, videos, audio, PDFs, etc.) direct
 [Download PDF](documents/guide.pdf)
 ```
 
-Supported media file types:
-- **Images**: `.jpg`, `.jpeg`, `.png`, `.gif`, `.svg`, `.webp`, `.bmp`, `.ico`
+Supported media file types by default :
+- **Images**: `.png`, `.jpg`, `.jpeg`, `.gif`, `.svg`, `.webp`
 - **Videos**: `.mp4`, `.webm`, `.ogg`
-- **Audio**: `.mp3`, `.wav`
 - **Documents**: `.pdf`
+
+You can change allowed extensions by modifying the `AllowedMediaExtensions` property in `WikiOptions`:
+
+```csharp
+builder.Services.AddControllersWithViews()
+    .AddWiki(options =>
+    {
+        options.AllowedMediaExtensions = new () { ... };
+    });
+```
 
 Media files are subject to the same access control rules as wiki pages. When page-level permissions are enabled, media files inherit the access permissions of their containing directory.
 

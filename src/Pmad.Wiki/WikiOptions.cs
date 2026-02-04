@@ -58,6 +58,8 @@ public class WikiOptions
     /// <remarks>This property defines which file types are permitted for media content. Extensions should include the leading period (e.g., ".jpg").</remarks>
     public List<string> AllowedMediaExtensions { get; set; } = new()
     {
-        ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".mp4", ".webm", ".ogg", ".pdf"
+        ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", 
+        ".mp4", ".webm", ".ogg", 
+        ".pdf"
     };
 }
