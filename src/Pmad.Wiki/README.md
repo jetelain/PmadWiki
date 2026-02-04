@@ -21,7 +21,7 @@ Features:
 
 ### Media Files
 
-The wiki supports serving media files (images, videos, audio, PDFs, etc.) directly from the Git repository. Media files can be referenced in your markdown pages using standard markdown syntax:
+The wiki supports serving media files (images, videos, PDFs, etc.) directly from the Git repository. Media files can be referenced in your markdown pages using standard markdown syntax:
 
 ```markdown
 ![Image description](images/logo.png)
