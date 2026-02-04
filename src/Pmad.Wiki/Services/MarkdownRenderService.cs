@@ -1,19 +1,16 @@
 ﻿using System.Collections.Concurrent;
-using System.Text.RegularExpressions;
 using Markdig;
 using Markdig.Parsers;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
+using Pmad.Wiki.Helpers;
 
 namespace Pmad.Wiki.Services;
 
-public sealed partial class MarkdownRenderService : IMarkdownRenderService
+public sealed class MarkdownRenderService : IMarkdownRenderService
 {
-    [GeneratedRegex("^([a-zA-Z0-9_/\\.-]+)\\.md(#.*)?$", RegexOptions.CultureInvariant)]
-    private static partial Regex PageNativePathRegex();
-
     private readonly ConcurrentDictionary<string, MarkdownPipeline> _pipelineCache = new();
     private readonly WikiOptions _options;
     private readonly LinkGenerator _linkGenerator;
@@ -45,7 +42,7 @@ public sealed partial class MarkdownRenderService : IMarkdownRenderService
         {
             if (linkInline.Url != null && !IsAbsoluteUrl(linkInline.Url))
             {
-                var match = PageNativePathRegex().Match(linkInline.Url);
+                var match = WikiInputValidator.PageNativePathRegex().Match(linkInline.Url);
                 if (match.Success)
                 {
                     linkInline.Url = ProcessSingleWikiLink(match.Groups[1].Value, match.Groups[2].Value, currentPageDirectoryParts, culture);
@@ -60,7 +57,7 @@ public sealed partial class MarkdownRenderService : IMarkdownRenderService
 
     private bool IsMedia(string url)
     {
-        return !url.StartsWith("#", StringComparison.Ordinal)
+        return WikiInputValidator.MediaPathRegex().IsMatch(url)
             && _options.AllowedMediaExtensions.Any(ext => url.EndsWith(ext, StringComparison.OrdinalIgnoreCase));
     }
 

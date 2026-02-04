@@ -5,14 +5,21 @@ namespace Pmad.Wiki.Helpers;
 
 public static partial class WikiInputValidator
 {
+    // Links like they appear in the wiki URL structure
     [GeneratedRegex("^[a-zA-Z0-9_/-]+$", RegexOptions.CultureInvariant)]
     private static partial Regex PageNameRegex();
 
+    // Links like they appear in the markdown files
+    [GeneratedRegex("^([a-zA-Z0-9_/\\.-]+)\\.md(#.*)?$", RegexOptions.CultureInvariant)]
+    internal static partial Regex PageNativePathRegex();
+
+    // Culture identifiers like "en" or "en-US"
     [GeneratedRegex("^[a-z]{2}(-[A-Z]{2})?$", RegexOptions.CultureInvariant)]
     private static partial Regex CultureRegex();
 
+    // Media paths like they appear in the markdown files and in the wiki URL structure
     [GeneratedRegex("^[a-zA-Z0-9_/\\.-]+$", RegexOptions.CultureInvariant)]
-    private static partial Regex MediaPathRegex();
+    internal static partial Regex MediaPathRegex();
 
     public static bool IsValidPageName(string pageName, [NotNullWhen(false)] out string? errorMessage)
     {
