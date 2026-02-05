@@ -358,10 +358,6 @@ public class WikiInputValidatorTest
     [InlineData("mixed-Case_123.pdf")]
     [InlineData("file.with.multiple.dots.txt")]
     [InlineData("path/file.ext")]
-    [InlineData("no-extension")]
-    [InlineData("file")]
-    [InlineData(".hidden")]
-    [InlineData("path/.hidden")]
     public void IsValidMediaPath_WithValidPath_ReturnsTrue(string mediaPath)
     {
         // Act
@@ -434,6 +430,10 @@ public class WikiInputValidatorTest
     [InlineData("file!exclamation.jpg")]
     [InlineData("file~tilde.jpg")]
     [InlineData("file`backtick.jpg")]
+    [InlineData(".hidden")]
+    [InlineData("path/.hidden")]
+    [InlineData("no-extension")]
+    [InlineData("file")]
     public void IsValidMediaPath_WithInvalidCharacters_ReturnsFalse(string mediaPath)
     {
         // Act

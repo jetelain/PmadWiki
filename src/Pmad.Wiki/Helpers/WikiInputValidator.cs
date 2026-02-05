@@ -18,7 +18,7 @@ public static partial class WikiInputValidator
     private static partial Regex CultureRegex();
 
     // Media paths like they appear in the markdown files and in the wiki URL structure
-    [GeneratedRegex("^[a-zA-Z0-9_/\\.-]+$", RegexOptions.CultureInvariant)]
+    [GeneratedRegex("^([a-zA-Z0-9_-]+/)*[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9]+)+$", RegexOptions.CultureInvariant)]
     internal static partial Regex MediaPathRegex();
 
     public static bool IsValidPageName(string pageName, [NotNullWhen(false)] out string? errorMessage)
