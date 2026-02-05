@@ -242,7 +242,7 @@ public class WikiControllerTest
     }
 
     [Fact]
-    public async Task Media_WithPageLevelPermissionsEnabled_ChecksDirectoryAccess()
+    public async Task Media_WithPageLevelPermissionsEnabled_ChecksFullMediaFilePath()
     {
         // Arrange
         _options.UsePageLevelPermissions = true;
@@ -264,7 +264,7 @@ public class WikiControllerTest
         };
 
         _mockPageService
-            .Setup(x => x.CheckPageAccessAsync("admin/images", new[] { "users" }, It.IsAny<CancellationToken>()))
+            .Setup(x => x.CheckPageAccessAsync("admin/images/logo.png", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
         _mockPageService
@@ -282,7 +282,7 @@ public class WikiControllerTest
         Assert.Equal(mediaContent, fileResult.FileContents);
         
         _mockPageService.Verify(
-            x => x.CheckPageAccessAsync("admin/images", new[] { "users" }, It.IsAny<CancellationToken>()),
+            x => x.CheckPageAccessAsync("admin/images/logo.png", new[] { "users" }, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -307,7 +307,7 @@ public class WikiControllerTest
         };
 
         _mockPageService
-            .Setup(x => x.CheckPageAccessAsync("admin/images", new[] { "users" }, It.IsAny<CancellationToken>()))
+            .Setup(x => x.CheckPageAccessAsync("admin/images/logo.png", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "testuser") }, "TestAuth"));
@@ -333,7 +333,7 @@ public class WikiControllerTest
         };
 
         _mockPageService
-            .Setup(x => x.CheckPageAccessAsync("admin/images", Array.Empty<string>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.CheckPageAccessAsync("admin/images/logo.png", Array.Empty<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
         // Act
@@ -344,13 +344,23 @@ public class WikiControllerTest
     }
 
     [Fact]
-    public async Task Media_WithFileInRootDirectory_DoesNotCheckPageAccess()
+    public async Task Media_WithFileInRootDirectory_ChecksPageAccessForFullPath()
     {
         // Arrange
         _options.UsePageLevelPermissions = true;
         
         var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
         
+        var pageAccess = new PageAccessPermissions
+        {
+            CanRead = true,
+            CanEdit = false
+        };
+
+        _mockPageService
+            .Setup(x => x.CheckPageAccessAsync("logo.png", Array.Empty<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pageAccess);
+
         _mockPageService
             .Setup(x => x.GetMediaFileAsync("logo.png", It.IsAny<CancellationToken>()))
             .ReturnsAsync(mediaContent);
@@ -362,14 +372,14 @@ public class WikiControllerTest
         var fileResult = Assert.IsType<FileContentResult>(result);
         Assert.Equal(mediaContent, fileResult.FileContents);
         
-        // Should not call CheckPageAccessAsync for files in root
+        // Should call CheckPageAccessAsync with full path even for root files
         _mockPageService.Verify(
-            x => x.CheckPageAccessAsync(It.IsAny<string>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()),
-            Times.Never);
+            x => x.CheckPageAccessAsync("logo.png", Array.Empty<string>(), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
-    public async Task Media_WithNestedDirectory_ChecksCorrectDirectoryPath()
+    public async Task Media_WithNestedDirectory_ChecksFullMediaFilePath()
     {
         // Arrange
         _options.UsePageLevelPermissions = true;
@@ -391,7 +401,7 @@ public class WikiControllerTest
         };
 
         _mockPageService
-            .Setup(x => x.CheckPageAccessAsync("docs/api/images", new[] { "users" }, It.IsAny<CancellationToken>()))
+            .Setup(x => x.CheckPageAccessAsync("docs/api/images/diagram.png", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
         _mockPageService
@@ -409,7 +419,7 @@ public class WikiControllerTest
         Assert.Equal(mediaContent, fileResult.FileContents);
         
         _mockPageService.Verify(
-            x => x.CheckPageAccessAsync("docs/api/images", new[] { "users" }, It.IsAny<CancellationToken>()),
+            x => x.CheckPageAccessAsync("docs/api/images/diagram.png", new[] { "users" }, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -497,6 +507,136 @@ public class WikiControllerTest
         var fileResult = Assert.IsType<FileContentResult>(result);
         Assert.Equal(mediaContent, fileResult.FileContents);
         Assert.Equal("image/gif", fileResult.ContentType);
+    }
+
+    [Fact]
+    public async Task Media_WithRestrictedAdminPath_ChecksFullPathNotDirectory()
+    {
+        // Arrange
+        // This test verifies the fix: admin/config.png should be checked as "admin/config.png"
+        // not as "admin", so patterns like "admin/**" will correctly restrict it
+        _options.UsePageLevelPermissions = true;
+        
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanView).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(new[] { "users" });
+
+        _mockUserService
+            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var pageAccess = new PageAccessPermissions
+        {
+            CanRead = false,
+            CanEdit = false,
+            MatchedPattern = "admin/**"
+        };
+
+        // The controller should check "admin/config.png", not "admin"
+        _mockPageService
+            .Setup(x => x.CheckPageAccessAsync("admin/config.png", new[] { "users" }, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pageAccess);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "testuser") }, "TestAuth"));
+        _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
+        // Act
+        var result = await _controller.Media("admin/config.png", CancellationToken.None);
+
+        // Assert
+        Assert.IsType<ForbidResult>(result);
+        
+        // Verify it checked the full path, not just "admin"
+        _mockPageService.Verify(
+            x => x.CheckPageAccessAsync("admin/config.png", new[] { "users" }, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Media_WithDeeplyNestedAdminFile_ChecksFullPath()
+    {
+        // Arrange
+        // Verify that admin/settings/images/screenshot.png is checked as the full path
+        _options.UsePageLevelPermissions = true;
+        
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanView).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(new[] { "users" });
+
+        _mockUserService
+            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var pageAccess = new PageAccessPermissions
+        {
+            CanRead = false,
+            CanEdit = false,
+            MatchedPattern = "admin/**"
+        };
+
+        _mockPageService
+            .Setup(x => x.CheckPageAccessAsync("admin/settings/images/screenshot.png", new[] { "users" }, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pageAccess);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "testuser") }, "TestAuth"));
+        _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
+        // Act
+        var result = await _controller.Media("admin/settings/images/screenshot.png", CancellationToken.None);
+
+        // Assert
+        Assert.IsType<ForbidResult>(result);
+        
+        _mockPageService.Verify(
+            x => x.CheckPageAccessAsync("admin/settings/images/screenshot.png", new[] { "users" }, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Media_WithSpecificFilePattern_ChecksFullPath()
+    {
+        // Arrange
+        // Verify that a specific file pattern like "admin/*.png" can be matched
+        _options.UsePageLevelPermissions = true;
+        
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanView).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(new[] { "admin" });
+
+        _mockUserService
+            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var pageAccess = new PageAccessPermissions
+        {
+            CanRead = true,
+            CanEdit = false,
+            MatchedPattern = "admin/*.png"
+        };
+
+        _mockPageService
+            .Setup(x => x.CheckPageAccessAsync("admin/logo.png", new[] { "admin" }, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pageAccess);
+
+        var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        _mockPageService
+            .Setup(x => x.GetMediaFileAsync("admin/logo.png", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mediaContent);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "admin") }, "TestAuth"));
+        _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
+        // Act
+        var result = await _controller.Media("admin/logo.png", CancellationToken.None);
+
+        // Assert
+        var fileResult = Assert.IsType<FileContentResult>(result);
+        Assert.Equal(mediaContent, fileResult.FileContents);
+        
+        // Verify the full path was checked
+        _mockPageService.Verify(
+            x => x.CheckPageAccessAsync("admin/logo.png", new[] { "admin" }, It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     #endregion

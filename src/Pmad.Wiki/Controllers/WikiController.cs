@@ -799,13 +799,11 @@ namespace Pmad.Wiki.Controllers
                 }
             }
 
-            // For media files, check access based on the directory they're in
-            // Extract the page/directory path from the media file path
-            var directoryPath = Path.GetDirectoryName(id)?.Replace('\\', '/');
-            if (!string.IsNullOrEmpty(directoryPath) && _options.UsePageLevelPermissions)
+            // For media files, check access based on the full media file path
+            if (_options.UsePageLevelPermissions)
             {
                 var userGroups = wikiUser?.Groups ?? [];
-                var pageAccess = await _pageService.CheckPageAccessAsync(directoryPath, userGroups, cancellationToken);
+                var pageAccess = await _pageService.CheckPageAccessAsync(id, userGroups, cancellationToken);
                 if (!pageAccess.CanRead)
                 {
                     if (User.Identity?.IsAuthenticated != true)
