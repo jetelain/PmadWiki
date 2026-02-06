@@ -295,4 +295,20 @@ public class WikiPageService : IWikiPageService
     {
         return _titleCache.GetPageTitleAsync(pageName, culture, cancellationToken);
     }
+
+    public async Task<byte[]?> GetMediaFileAsync(string filePath, CancellationToken cancellationToken = default)
+    {
+        WikiInputValidator.ValidateMediaPath(filePath);
+
+        var repository = GetRepository();
+
+        try
+        {
+            return await repository.ReadFileAsync(filePath, _options.BranchName, cancellationToken);
+        }
+        catch (FileNotFoundException)
+        {
+            return null;
+        }
+    }
 }

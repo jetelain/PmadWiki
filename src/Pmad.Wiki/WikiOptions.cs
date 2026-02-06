@@ -51,4 +51,15 @@ public class WikiOptions
     /// If not set, the default layout from the host application's _ViewStart.cshtml will be used.
     /// </remarks>
     public string? Layout { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of allowed file extensions for media.
+    /// </summary>
+    /// <remarks>This property defines which file types are permitted for media content. Extensions should include the leading period (e.g., ".jpg").</remarks>
+    public List<string> AllowedMediaExtensions { get; set; } = new()
+    {
+        ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", 
+        ".mp4", ".webm", ".ogg", 
+        ".pdf"
+    };
 }

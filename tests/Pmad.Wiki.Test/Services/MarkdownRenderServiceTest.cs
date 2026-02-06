@@ -365,7 +365,7 @@ public class Test
     }
 
     [Fact]
-    public void ToHtml_WithAbsoluteWikiLink_ConvertsToWikiRoute()
+    public void ToHtml_WithAbsoluteLink_DoesNotConvert()
     {
         // Arrange
         var markdown = "[Root Page](/root.md)";
@@ -374,7 +374,8 @@ public class Test
         var html = _service.ToHtml(markdown, null, "docs/page");
 
         // Assert
-        Assert.Contains("/wiki/view/root", html);
+        Assert.Contains("/root.md", html);
+        Assert.DoesNotContain("/wiki/view/root", html);
     }
 
     [Fact]
@@ -420,17 +421,83 @@ public class Test
     }
 
     [Fact]
-    public void ToHtml_WithNonMarkdownLink_DoesNotConvert()
+    public void ToHtml_WithImageLink_ConvertsToMediaRoute()
     {
         // Arrange
-        var markdown = "[Image](image.png)";
+        var markdown = "![Image](image.png)";
 
         // Act
         var html = _service.ToHtml(markdown);
 
         // Assert
-        Assert.Contains("image.png", html);
-        Assert.DoesNotContain("/wiki/view/", html);
+        Assert.Contains("/wiki/media/image.png", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithImageLinkInSubfolder_ConvertsToMediaRoute()
+    {
+        // Arrange
+        var markdown = "![Image](images/logo.png)";
+
+        // Act
+        var html = _service.ToHtml(markdown);
+
+        // Assert
+        Assert.Contains("/wiki/media/images/logo.png", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithVideoLink_ConvertsToMediaRoute()
+    {
+        // Arrange
+        var markdown = "[Video](video.mp4)";
+
+        // Act
+        var html = _service.ToHtml(markdown);
+
+        // Assert
+        Assert.Contains("/wiki/media/video.mp4", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithPdfLink_ConvertsToMediaRoute()
+    {
+        // Arrange
+        var markdown = "[Document](document.pdf)";
+
+        // Act
+        var html = _service.ToHtml(markdown);
+
+        // Assert
+        Assert.Contains("/wiki/media/document.pdf", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithExternalImage_DoesNotConvert()
+    {
+        // Arrange
+        var markdown = "![External](https://example.com/image.png)";
+
+        // Act
+        var html = _service.ToHtml(markdown);
+
+        // Assert
+        Assert.Contains("https://example.com/image.png", html);
+        Assert.DoesNotContain("/wiki/media/", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithNonMediaExtension_DoesNotConvert()
+    {
+        // Arrange
+        var markdown = "[Document](document.txt)";
+
+        // Act
+        var html = _service.ToHtml(markdown);
+
+        // Assert
+        Assert.Contains("document.txt", html);
+        Assert.DoesNotContain("/wiki/media/", html);
     }
 
     [Fact]
@@ -501,6 +568,58 @@ public class Test
         // Assert
         // Without currentPageName, links should not be processed
         Assert.Contains("/wiki/view/test", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithRelativeImageLink_ResolvesRelativeToCurrentPage()
+    {
+        // Arrange
+        var markdown = "![Image](settings.png)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, "docs/admin/intro");
+
+        // Assert
+        Assert.Contains("/wiki/media/docs/admin/settings.png", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithRelativeImageLinkInSubfolder_ResolvesCorrectly()
+    {
+        // Arrange
+        var markdown = "![Image](subfolder/page.png)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, "docs/intro");
+
+        // Assert
+        Assert.Contains("/wiki/media/docs/subfolder/page.png", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithRelativeImageLinkGoingUp_ResolvesCorrectly()
+    {
+        // Arrange
+        var markdown = "![Image](../parent.png)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, "docs/admin/settings");
+
+        // Assert
+        Assert.Contains("/wiki/media/docs/parent.png", html);
+    }
+
+    [Fact]
+    public void ToHtml_WithRelativeImageLinkFromRoot_ResolvesCorrectly()
+    {
+        // Arrange
+        var markdown = "![Image](other.png)";
+
+        // Act
+        var html = _service.ToHtml(markdown, null, "home");
+
+        // Assert
+        Assert.Contains("/wiki/media/other.png", html);
     }
 
     #endregion

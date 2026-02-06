@@ -10,6 +10,7 @@ Features:
 - Customizable layout support - use your own application's layout
 - Page localization support
 - Automatic page title extraction from H1 headings
+- Media file support (images, videos, PDFs, and other files from the Git repository)
 - Optional page-level access control with group-based permissions
 - Pattern-based access rules (supports wildcards)
 - In-memory caching for optimal performance
@@ -17,6 +18,35 @@ Features:
 - Version history with visual diff comparison
 
 ## Configuration
+
+### Media Files
+
+The wiki supports serving media files (images, videos, PDFs, etc.) directly from the Git repository. Media files can be referenced in your markdown pages using standard markdown syntax:
+
+```markdown
+![Image description](images/logo.png)
+![Relative path](../shared/banner.jpg)
+[Download PDF](documents/guide.pdf)
+```
+
+Supported media file types by default:
+- **Images**: `.png`, `.jpg`, `.jpeg`, `.gif`, `.svg`, `.webp`
+- **Videos**: `.mp4`, `.webm`, `.ogg`
+- **Documents**: `.pdf`
+
+You can change allowed extensions by modifying the `AllowedMediaExtensions` property in `WikiOptions`:
+
+```csharp
+builder.Services.AddControllersWithViews()
+    .AddWiki(options =>
+    {
+        options.AllowedMediaExtensions = new () { ... };
+    });
+```
+
+Media files are subject to the same access control rules as wiki pages. When page-level permissions are enabled, media files are tested against access rules with their full path.
+
+The media files are served through the `/wiki/media/{path}` route and are automatically linked when you use relative paths in your markdown.
 
 ### Custom Layout
 
@@ -43,7 +73,7 @@ This project uses the following third-party libraries:
 - **Bootstrap 5** - Front-end framework
 - **Bootstrap Icons** - Icon library
 - **Mergely** - Text diff and merge library (Mozilla Public License Version 1.1)
-  - Copyright © Jamie Peabody
+  - Copyright Â© Jamie Peabody
   - Used for displaying side-by-side diff comparisons
   - See `wwwroot/lib/mergely/LICENSE` for full license text
 

@@ -338,4 +338,219 @@ public class WikiInputValidatorTest
     }
 
     #endregion
+
+    #region IsValidMediaPath Tests
+
+    [Theory]
+    [InlineData("image.jpg")]
+    [InlineData("document.pdf")]
+    [InlineData("valid-file.png")]
+    [InlineData("valid_file.gif")]
+    [InlineData("file123.txt")]
+    [InlineData("VALID.PNG")]
+    [InlineData("path/to/file.jpg")]
+    [InlineData("a.b")]
+    [InlineData("file.tar.gz")]
+    [InlineData("path/to/deep/nested/file.pdf")]
+    [InlineData("CamelCase.jpg")]
+    [InlineData("snake_case.png")]
+    [InlineData("kebab-case.gif")]
+    [InlineData("mixed-Case_123.pdf")]
+    [InlineData("file.with.multiple.dots.txt")]
+    [InlineData("path/file.ext")]
+    public void IsValidMediaPath_WithValidPath_ReturnsTrue(string mediaPath)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidMediaPath(mediaPath, out var errorMessage);
+
+        // Assert
+        Assert.True(result);
+        Assert.Null(errorMessage);
+    }
+
+    [Fact]
+    public void IsValidMediaPath_WithNull_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidMediaPath(null!, out var errorMessage);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal("Media path cannot be null or empty.", errorMessage);
+    }
+
+    [Fact]
+    public void IsValidMediaPath_WithEmptyString_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidMediaPath("", out var errorMessage);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal("Media path cannot be null or empty.", errorMessage);
+    }
+
+    [Fact]
+    public void IsValidMediaPath_WithWhitespace_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidMediaPath("   ", out var errorMessage);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal("Media path cannot be null or empty.", errorMessage);
+    }
+
+    [Theory]
+    [InlineData("file with spaces.jpg")]
+    [InlineData("file@special.jpg")]
+    [InlineData("file#hash.jpg")]
+    [InlineData("file$dollar.jpg")]
+    [InlineData("file%percent.jpg")]
+    [InlineData("file&ampersand.jpg")]
+    [InlineData("file*asterisk.jpg")]
+    [InlineData("file(paren.jpg")]
+    [InlineData("file)paren.jpg")]
+    [InlineData("file+plus.jpg")]
+    [InlineData("file=equals.jpg")]
+    [InlineData("file[bracket.jpg")]
+    [InlineData("file]bracket.jpg")]
+    [InlineData("file{brace.jpg")]
+    [InlineData("file}brace.jpg")]
+    [InlineData("file|pipe.jpg")]
+    [InlineData("file\\backslash.jpg")]
+    [InlineData("file:colon.jpg")]
+    [InlineData("file;semicolon.jpg")]
+    [InlineData("file'quote.jpg")]
+    [InlineData("file\"doublequote.jpg")]
+    [InlineData("file<less.jpg")]
+    [InlineData("file>greater.jpg")]
+    [InlineData("file,comma.jpg")]
+    [InlineData("file?question.jpg")]
+    [InlineData("file!exclamation.jpg")]
+    [InlineData("file~tilde.jpg")]
+    [InlineData("file`backtick.jpg")]
+    [InlineData(".hidden")]
+    [InlineData("path/.hidden")]
+    [InlineData("no-extension")]
+    [InlineData("file")]
+    public void IsValidMediaPath_WithInvalidCharacters_ReturnsFalse(string mediaPath)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidMediaPath(mediaPath, out var errorMessage);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal("Invalid path.", errorMessage);
+    }
+
+    [Theory]
+    [InlineData("..")]
+    [InlineData("path/../other.jpg")]
+    [InlineData("../parent.jpg")]
+    [InlineData("path/to/../file.jpg")]
+    [InlineData("file..jpg")]
+    public void IsValidMediaPath_WithDoubleDot_ReturnsFalse(string mediaPath)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidMediaPath(mediaPath, out var errorMessage);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal("Invalid path.", errorMessage);
+    }
+
+    [Theory]
+    [InlineData("//")]
+    [InlineData("path//file.jpg")]
+    [InlineData("path//to//file.jpg")]
+    public void IsValidMediaPath_WithDoubleSlash_ReturnsFalse(string mediaPath)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidMediaPath(mediaPath, out var errorMessage);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal("Invalid path.", errorMessage);
+    }
+
+    [Theory]
+    [InlineData("/path/file.jpg")]
+    [InlineData("/file.jpg")]
+    [InlineData("/path/to/file.jpg")]
+    public void IsValidMediaPath_StartingWithSlash_ReturnsFalse(string mediaPath)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidMediaPath(mediaPath, out var errorMessage);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal("Invalid path.", errorMessage);
+    }
+
+    [Theory]
+    [InlineData("path/")]
+    [InlineData("file.jpg/")]
+    [InlineData("path/to/file.jpg/")]
+    public void IsValidMediaPath_EndingWithSlash_ReturnsFalse(string mediaPath)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidMediaPath(mediaPath, out var errorMessage);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal("Invalid path.", errorMessage);
+    }
+
+    #endregion
+
+    #region ValidateMediaPath Tests
+
+    [Theory]
+    [InlineData("image.jpg")]
+    [InlineData("path/to/file.pdf")]
+    [InlineData("file.with.dots.txt")]
+    public void ValidateMediaPath_WithValidPath_DoesNotThrow(string mediaPath)
+    {
+        // Act & Assert
+        var exception = Record.Exception(() => WikiInputValidator.ValidateMediaPath(mediaPath));
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void ValidateMediaPath_WithNull_ThrowsArgumentException()
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => 
+            WikiInputValidator.ValidateMediaPath(null!));
+        Assert.Equal("mediaPath", exception.ParamName);
+        Assert.Contains("Media path cannot be null or empty.", exception.Message);
+    }
+
+    [Fact]
+    public void ValidateMediaPath_WithEmptyString_ThrowsArgumentException()
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => 
+            WikiInputValidator.ValidateMediaPath(""));
+        Assert.Equal("mediaPath", exception.ParamName);
+        Assert.Contains("Media path cannot be null or empty.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("invalid file.jpg")]
+    [InlineData("path/../other.jpg")]
+    [InlineData("/path/file.jpg")]
+    [InlineData("path/file.jpg/")]
+    public void ValidateMediaPath_WithInvalidPath_ThrowsArgumentException(string mediaPath)
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => 
+            WikiInputValidator.ValidateMediaPath(mediaPath));
+        Assert.Equal("mediaPath", exception.ParamName);
+        Assert.Contains("Invalid path.", exception.Message);
+    }
+
+    #endregion
 }
+

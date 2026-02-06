@@ -1,19 +1,16 @@
 ﻿using System.Collections.Concurrent;
-using System.Text.RegularExpressions;
 using Markdig;
 using Markdig.Parsers;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
+using Pmad.Wiki.Helpers;
 
 namespace Pmad.Wiki.Services;
 
-public sealed partial class MarkdownRenderService : IMarkdownRenderService
+public sealed class MarkdownRenderService : IMarkdownRenderService
 {
-    [GeneratedRegex("^([a-zA-Z0-9_/\\.-]+)\\.md(#.*)?$", RegexOptions.CultureInvariant)]
-    private static partial Regex PageNativePathRegex();
-
     private readonly ConcurrentDictionary<string, MarkdownPipeline> _pipelineCache = new();
     private readonly WikiOptions _options;
     private readonly LinkGenerator _linkGenerator;
@@ -45,33 +42,37 @@ public sealed partial class MarkdownRenderService : IMarkdownRenderService
         {
             if (linkInline.Url != null && !IsAbsoluteUrl(linkInline.Url))
             {
-                var match = PageNativePathRegex().Match(linkInline.Url);
+                var match = WikiInputValidator.PagePathMarkdownRegex().Match(linkInline.Url);
                 if (match.Success)
                 {
                     linkInline.Url = ProcessSingleWikiLink(match.Groups[1].Value, match.Groups[2].Value, currentPageDirectoryParts, culture);
+                }
+                else if (IsMedia(linkInline.Url))
+                {
+                    linkInline.Url = ProcessMediaLink(linkInline.Url, currentPageDirectoryParts);
                 }
             }
         }
     }
 
-    private string ProcessSingleWikiLink(string urlWithoutExtension, string anchor, List<string> currentPageDirectoryParts, string? culture)
+    private bool IsMedia(string url)
     {
-        var targetPageName = ResolveTargetPageName(urlWithoutExtension, currentPageDirectoryParts);
-        var generatedUrl = GenerateWikiUrl(targetPageName, culture);
-        return generatedUrl + anchor;
+        return WikiInputValidator.MediaPathMarkdownRegex().IsMatch(url)
+            && _options.AllowedMediaExtensions.Any(ext => url.EndsWith(ext, StringComparison.OrdinalIgnoreCase));
     }
 
-
-    private static string ResolveTargetPageName(string url, List<string> currentPageDirectoryParts)
+    private string ProcessMediaLink(string url, List<string> currentPageDirectoryParts)
     {
-        if (url.StartsWith("/"))
-        {
-            // Absolute path from wiki root
-            return url.TrimStart('/');
-        }
-        
-        // Relative path - resolve against current page directory
-        return ResolveRelativePath(currentPageDirectoryParts, url);
+        var targetMedia = ResolveRelativePath(currentPageDirectoryParts, url);
+
+        return GenerateMediaUrl(targetMedia);
+    }
+
+    private string ProcessSingleWikiLink(string urlWithoutExtension, string anchor, List<string> currentPageDirectoryParts, string? culture)
+    {
+        var targetPageName = ResolveRelativePath(currentPageDirectoryParts, urlWithoutExtension);
+        var generatedUrl = GenerateWikiUrl(targetPageName, culture);
+        return generatedUrl + anchor;
     }
 
     private string GenerateWikiUrl(string targetPageName, string? culture)
@@ -86,8 +87,22 @@ public sealed partial class MarkdownRenderService : IMarkdownRenderService
             return generatedUrl;
         }
         
-        // Fallback if LinkGenerator fails
-        return $"/wiki/view/{targetPageName}";
+        throw new System.InvalidOperationException($"Failed to generate wiki URL for '{targetPageName}' using LinkGenerator.");
+    }
+
+    private string GenerateMediaUrl(string mediaPath)
+    {
+        var generatedUrl = _linkGenerator.GetPathByAction(
+            action: "Media",
+            controller: "Wiki",
+            values: new { id = mediaPath });
+
+        if (generatedUrl != null)
+        {
+            return generatedUrl;
+        }
+
+        throw new System.InvalidOperationException($"Failed to generate media URL for '{mediaPath}' using LinkGenerator.");
     }
 
     private static List<string> GetDirectoryParts(string pagePath)
@@ -129,7 +144,7 @@ public sealed partial class MarkdownRenderService : IMarkdownRenderService
     {
         return url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
-               url.StartsWith("//", StringComparison.Ordinal);
+               url.StartsWith("/", StringComparison.Ordinal);
     }
 
     private MarkdownPipeline GetOrCreatePipeline(string? culture)

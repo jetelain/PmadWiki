@@ -1026,6 +1026,172 @@ public class WikiPageServiceTest
 
     #endregion
 
+    #region GetMediaFileAsync Tests
+
+    [Fact]
+    public async Task GetMediaFileAsync_WhenMediaExists_ReturnsFileBytes()
+    {
+        // Arrange
+        var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 }; // PNG header bytes
+        
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("images/logo.png", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mediaContent);
+
+        // Act
+        var result = await _service.GetMediaFileAsync("images/logo.png", CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(mediaContent, result);
+    }
+
+    [Fact]
+    public async Task GetMediaFileAsync_WhenMediaDoesNotExist_ReturnsNull()
+    {
+        // Arrange
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("images/nonexistent.png", "main", It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new FileNotFoundException());
+
+        // Act
+        var result = await _service.GetMediaFileAsync("images/nonexistent.png", CancellationToken.None);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetMediaFileAsync_WithNestedPath_ReturnsCorrectFile()
+    {
+        // Arrange
+        var mediaContent = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 }; // JPEG header bytes
+        
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("docs/images/screenshot.jpg", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mediaContent);
+
+        // Act
+        var result = await _service.GetMediaFileAsync("docs/images/screenshot.jpg", CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(mediaContent, result);
+    }
+
+    [Fact]
+    public async Task GetMediaFileAsync_WithVideoFile_ReturnsFileBytes()
+    {
+        // Arrange
+        var mediaContent = new byte[] { 0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70 }; // MP4 header
+        
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("videos/demo.mp4", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mediaContent);
+
+        // Act
+        var result = await _service.GetMediaFileAsync("videos/demo.mp4", CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(mediaContent, result);
+    }
+
+    [Fact]
+    public async Task GetMediaFileAsync_WithPdfFile_ReturnsFileBytes()
+    {
+        // Arrange
+        var mediaContent = new byte[] { 0x25, 0x50, 0x44, 0x46 }; // PDF header "%PDF"
+        
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("documents/manual.pdf", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mediaContent);
+
+        // Act
+        var result = await _service.GetMediaFileAsync("documents/manual.pdf", CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(mediaContent, result);
+    }
+
+    [Fact]
+    public async Task GetMediaFileAsync_WithInvalidPath_ThrowsArgumentException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.GetMediaFileAsync("../../../etc/passwd", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetMediaFileAsync_WithPathContainingDoubleSlash_ThrowsArgumentException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.GetMediaFileAsync("images//logo.png", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetMediaFileAsync_WithAbsolutePath_ThrowsArgumentException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.GetMediaFileAsync("/images/logo.png", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetMediaFileAsync_WithTrailingSlash_ThrowsArgumentException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.GetMediaFileAsync("images/", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetMediaFileAsync_WithDotFile_ThrowsArgumentException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.GetMediaFileAsync("images/.hidden.gif", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetMediaFileAsync_UsesConfiguredBranchName()
+    {
+        // Arrange
+        var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("images/logo.png", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mediaContent);
+
+        // Act
+        await _service.GetMediaFileAsync("images/logo.png", CancellationToken.None);
+
+        // Assert
+        _mockRepository.Verify(
+            x => x.ReadFileAsync("images/logo.png", "main", It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetMediaFileAsync_WithEmptyPath_ThrowsArgumentException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.GetMediaFileAsync("", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetMediaFileAsync_WithWhitespacePath_ThrowsArgumentException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.GetMediaFileAsync("   ", CancellationToken.None));
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private static GitCommit CreateMockCommit(string id, string authorName, string authorEmail, string message)

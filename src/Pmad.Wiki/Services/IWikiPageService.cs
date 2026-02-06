@@ -21,4 +21,6 @@ public interface IWikiPageService
     Task<PageAccessPermissions> CheckPageAccessAsync(string pageName, string[] userGroups, CancellationToken cancellationToken = default);
 
     Task<string?> GetPageTitleAsync(string pageName, string? culture, CancellationToken cancellationToken = default);
+
+    Task<byte[]?> GetMediaFileAsync(string filePath, CancellationToken cancellationToken = default);
 }
