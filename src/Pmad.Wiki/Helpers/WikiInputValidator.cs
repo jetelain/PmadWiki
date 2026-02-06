@@ -5,21 +5,52 @@ namespace Pmad.Wiki.Helpers;
 
 public static partial class WikiInputValidator
 {
-    // Links like they appear in the wiki URL structure
+    /// <summary>
+    /// Links like they appear in the wiki URL structure
+    /// </summary>
+    /// <remarks>
+    /// Not suitable for validating page names in markdown files, as it doesn't allow relative paths, anchors and does not use md extension. Use <see cref="PagePathMarkdownRegex"/> for that.
+    /// </remarks>
+    /// <returns></returns>
     [GeneratedRegex("^[a-zA-Z0-9_/-]+$", RegexOptions.CultureInvariant)]
     private static partial Regex PageNameRegex();
 
-    // Links like they appear in the markdown files
+    /// <summary>
+    /// Links like they appear in the markdown files
+    /// </summary>
+    /// <remarks>
+    /// Not suitable for security validation of page names, as it allows relative paths. Use <see cref="PageNameRegex"/> for that.
+    /// </remarks>
+    /// <returns></returns>
     [GeneratedRegex("^([a-zA-Z0-9_/\\.-]+)\\.md(#.*)?$", RegexOptions.CultureInvariant)]
-    internal static partial Regex PageNativePathRegex();
+    internal static partial Regex PagePathMarkdownRegex();
 
-    // Culture identifiers like "en" or "en-US"
+    /// <summary>
+    /// Culture identifiers like "en" or "en-US"
+    /// </summary>
+    /// <returns></returns>
     [GeneratedRegex("^[a-z]{2}(-[A-Z]{2})?$", RegexOptions.CultureInvariant)]
     private static partial Regex CultureRegex();
 
-    // Media paths like they appear in the markdown files and in the wiki URL structure
+    /// <summary>
+    /// Media paths like they appear in the wiki URL structure
+    /// </summary>
+    /// <remarks>
+    /// Not suitable for validating media paths in markdown files, as it doesn't allow relative paths. Use <see cref="MediaPathMarkdownRegex"/> for that.
+    /// </remarks>
+    /// <returns></returns>
     [GeneratedRegex("^([a-zA-Z0-9_-]+/)*[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9]+)+$", RegexOptions.CultureInvariant)]
-    internal static partial Regex MediaPathRegex();
+    private static partial Regex MediaPathRegex();
+
+    /// <summary>
+    /// Media paths like they appear in the markdown files.
+    /// </summary>
+    /// <remarks>
+    /// Not suitable for security validation of media paths, as it allows relative paths and doesn't enforce file extensions. Use <see cref="MediaPathRegex"/> for that.
+    /// </remarks>
+    /// <returns></returns>
+    [GeneratedRegex("^([a-zA-Z0-9_/\\.-]+)$", RegexOptions.CultureInvariant)]
+    internal static partial Regex MediaPathMarkdownRegex();
 
     public static bool IsValidPageName(string pageName, [NotNullWhen(false)] out string? errorMessage)
     {

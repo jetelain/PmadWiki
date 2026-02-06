@@ -42,7 +42,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
         {
             if (linkInline.Url != null && !IsAbsoluteUrl(linkInline.Url))
             {
-                var match = WikiInputValidator.PageNativePathRegex().Match(linkInline.Url);
+                var match = WikiInputValidator.PagePathMarkdownRegex().Match(linkInline.Url);
                 if (match.Success)
                 {
                     linkInline.Url = ProcessSingleWikiLink(match.Groups[1].Value, match.Groups[2].Value, currentPageDirectoryParts, culture);
@@ -57,7 +57,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
 
     private bool IsMedia(string url)
     {
-        return WikiInputValidator.MediaPathRegex().IsMatch(url)
+        return WikiInputValidator.MediaPathMarkdownRegex().IsMatch(url)
             && _options.AllowedMediaExtensions.Any(ext => url.EndsWith(ext, StringComparison.OrdinalIgnoreCase));
     }
 
