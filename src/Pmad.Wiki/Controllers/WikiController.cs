@@ -774,9 +774,9 @@ namespace Pmad.Wiki.Controllers
         [HttpGet]
         public async Task<IActionResult> Media(string id, CancellationToken cancellationToken)
         {
-            if (!WikiInputValidator.IsValidMediaPath(id, out var pageNameError))
+            if (!WikiInputValidator.IsValidMediaPath(id, out var mediaPathError))
             {
-                return BadRequest(pageNameError);
+                return BadRequest(mediaPathError);
             }
 
             if (!_options.AllowedMediaExtensions.Any(ext => id.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))

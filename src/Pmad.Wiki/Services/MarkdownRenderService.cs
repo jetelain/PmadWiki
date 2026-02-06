@@ -87,8 +87,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
             return generatedUrl;
         }
         
-        // Fallback if LinkGenerator fails
-        return $"/wiki/view/{targetPageName}";
+        throw new System.InvalidOperationException($"Failed to generate wiki URL for '{targetPageName}' using LinkGenerator.");
     }
 
     private string GenerateMediaUrl(string mediaPath)
@@ -103,8 +102,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
             return generatedUrl;
         }
 
-        // Fallback if LinkGenerator fails
-        return $"/wiki/media/{mediaPath}";
+        throw new System.InvalidOperationException($"Failed to generate media URL for '{mediaPath}' using LinkGenerator.");
     }
 
     private static List<string> GetDirectoryParts(string pagePath)
