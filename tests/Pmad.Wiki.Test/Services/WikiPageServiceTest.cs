@@ -1148,21 +1148,11 @@ public class WikiPageServiceTest
     }
 
     [Fact]
-    public async Task GetMediaFileAsync_WithDotFile_ReturnsFileBytes()
+    public async Task GetMediaFileAsync_WithDotFile_ThrowsArgumentException()
     {
-        // Arrange
-        var mediaContent = new byte[] { 0x47, 0x49, 0x46 }; // GIF header
-        
-        _mockRepository
-            .Setup(x => x.ReadFileAsync("images/.hidden.gif", "main", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(mediaContent);
-
-        // Act
-        var result = await _service.GetMediaFileAsync("images/.hidden.gif", CancellationToken.None);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(mediaContent, result);
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.GetMediaFileAsync("images/.hidden.gif", CancellationToken.None));
     }
 
     [Fact]
