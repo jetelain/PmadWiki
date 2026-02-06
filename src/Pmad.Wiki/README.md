@@ -44,7 +44,7 @@ builder.Services.AddControllersWithViews()
     });
 ```
 
-Media files are subject to the same access control rules as wiki pages. When page-level permissions are enabled, media files inherit the access permissions of their containing directory.
+Media files are subject to the same access control rules as wiki pages. When page-level permissions are enabled, media files are tested against access rules with their full path.
 
 The media files are served through the `/wiki/media/{path}` route and are automatically linked when you use relative paths in your markdown.
 
