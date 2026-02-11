@@ -4,6 +4,13 @@ namespace Pmad.Wiki.Helpers;
 
 public static class WikiFilePathHelper
 {
+    public static string GetDirectoryName(string pageName)
+    {
+        var lastSlashIndex = pageName.LastIndexOf('/');
+
+        return lastSlashIndex >= 0 ? pageName[..lastSlashIndex] : string.Empty;
+    }
+
     public static string GetFilePath(string pageName, string? culture, string neutralCulture)
     {
         WikiInputValidator.ValidatePageName(pageName);

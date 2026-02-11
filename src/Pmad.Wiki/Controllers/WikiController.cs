@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Pmad.Wiki.Helpers;
@@ -10,10 +11,14 @@ namespace Pmad.Wiki.Controllers
 {
     public class WikiController : Controller
     {
+        private const int CacheDurationSeconds = 14400; // 4 hours
+
         private readonly IWikiPageService _pageService;
         private readonly IWikiUserService _userService;
         private readonly IPageAccessControlService _accessControlService;
         private readonly IMarkdownRenderService _markdownRenderService;
+        private readonly ITemporaryMediaStorageService _temporaryMediaStorage;
+        private readonly IWikiPageEditService _wikiPageEditService;
         private readonly WikiOptions _options;
 
         public WikiController(
@@ -21,12 +26,16 @@ namespace Pmad.Wiki.Controllers
             IWikiUserService userService,
             IPageAccessControlService accessControlService,
             IMarkdownRenderService markdownRenderService,
+            ITemporaryMediaStorageService temporaryMediaStorage,
+            IWikiPageEditService wikiPageEditService,
             IOptions<WikiOptions> options)
         {
             _pageService = pageService;
             _userService = userService;
             _accessControlService = accessControlService;
             _markdownRenderService = markdownRenderService;
+            _temporaryMediaStorage = temporaryMediaStorage;
+            _wikiPageEditService = wikiPageEditService;
             _options = options.Value;
         }
 
@@ -672,8 +681,8 @@ namespace Pmad.Wiki.Controllers
                     return View(model);
                 }
             }
-
-            await _pageService.SavePageAsync(
+            
+            await _wikiPageEditService.SavePageAsync(
                 model.PageName,
                 model.Culture,
                 model.Content,
@@ -681,7 +690,88 @@ namespace Pmad.Wiki.Controllers
                 wikiUser.User,
                 cancellationToken);
 
+            if (!string.IsNullOrEmpty(model.TemporaryMediaIds))
+            {                
+                // Cleanup temporary files
+                var tempMediaIds = model.TemporaryMediaIds.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                await _temporaryMediaStorage.CleanupUserTemporaryMediaAsync(wikiUser.User, tempMediaIds, cancellationToken);
+            }
+
             return RedirectToAction(nameof(View), new { id = model.PageName, culture = model.Culture });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadMedia(IFormFile file, CancellationToken cancellationToken)
+        {
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            if (wikiUser == null || !wikiUser.CanEdit)
+            {
+                return Forbid();
+            }
+
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new UploadMediaErrorResponse { Error = "No file uploaded." });
+            }
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!_options.AllowedMediaExtensions.Contains(extension))
+            {
+                return BadRequest(new UploadMediaErrorResponse { Error = $"File type {extension} is not allowed." });
+            }
+
+            // Check file size (limit to 10MB)
+            if (file.Length > 10 * 1024 * 1024)
+            {
+                return BadRequest(new UploadMediaErrorResponse { Error = "File size exceeds 10MB limit." });
+            }
+
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream, cancellationToken);
+            var fileContent = memoryStream.ToArray();
+
+            var temporaryId = await _temporaryMediaStorage.StoreTemporaryMediaAsync(wikiUser.User, file.FileName, fileContent, cancellationToken);
+
+            return Ok(new UploadMediaResponse
+            { 
+                TemporaryId = temporaryId,
+                FileName = file.FileName,
+                Url = Url.Action("TempMedia", "Wiki", new { id = temporaryId }) ?? string.Empty,
+                Size = file.Length
+            });
+        }
+
+        [HttpGet]
+        [Authorize]
+        [ResponseCache(Duration = CacheDurationSeconds, Location = ResponseCacheLocation.Client)]
+        public async Task<IActionResult> TempMedia(string id, CancellationToken cancellationToken)
+        {
+            if (!WikiInputValidator.IsValidTempMediaId(id, out var tempMediaIdError))
+            {
+                return BadRequest(tempMediaIdError);
+            }
+
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            if (wikiUser == null || !wikiUser.CanEdit)
+            {
+                return Forbid();
+            }
+
+            var fileContent = await _temporaryMediaStorage.GetTemporaryMediaAsync(wikiUser.User, id, cancellationToken);
+            if (fileContent == null)
+            {
+                return NotFound();
+            }
+
+            var tempMedia = await _temporaryMediaStorage.GetUserTemporaryMediaAsync(wikiUser.User, cancellationToken);
+            if (tempMedia.TryGetValue(id, out var mediaInfo))
+            {
+                return File(fileContent, ContentTypeHelper.GetContentType(mediaInfo.OriginalFileName));
+            }
+
+            return File(fileContent, "application/octet-stream");
         }
 
         [HttpGet]
@@ -772,6 +862,7 @@ namespace Pmad.Wiki.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = CacheDurationSeconds, Location = ResponseCacheLocation.Client)]
         public async Task<IActionResult> Media(string id, CancellationToken cancellationToken)
         {
             if (!WikiInputValidator.IsValidMediaPath(id, out var mediaPathError))

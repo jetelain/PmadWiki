@@ -288,5 +288,55 @@ public class WikiFilePathHelperTest
         // Assert
         Assert.Equal("../home", result);
     }
+
+    [Fact]
+    public void GetDirectoryName_WithNoSlash_ReturnsEmptyString()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetDirectoryName("home");
+
+        // Assert
+        Assert.Equal(string.Empty, result);
+    }
+
+    [Fact]
+    public void GetDirectoryName_WithSingleLevel_ReturnsDirectory()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetDirectoryName("admin/settings");
+
+        // Assert
+        Assert.Equal("admin", result);
+    }
+
+    [Fact]
+    public void GetDirectoryName_WithMultipleLevels_ReturnsFullDirectoryPath()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetDirectoryName("admin/users/permissions");
+
+        // Assert
+        Assert.Equal("admin/users", result);
+    }
+
+    [Fact]
+    public void GetDirectoryName_WithDeeplyNested_ReturnsFullDirectoryPath()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetDirectoryName("a/b/c/d/page");
+
+        // Assert
+        Assert.Equal("a/b/c/d", result);
+    }
+
+    [Fact]
+    public void GetDirectoryName_WithEmptyString_ReturnsEmptyString()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetDirectoryName("");
+
+        // Assert
+        Assert.Equal(string.Empty, result);
+    }
 }
 

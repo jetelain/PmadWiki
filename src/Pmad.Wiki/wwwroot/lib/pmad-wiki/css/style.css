@@ -105,3 +105,14 @@
 {
     height: 50vh;
 }
+
+/* Media upload drag and drop support */
+#content-textarea.drag-over {
+    border-color: #0d6efd;
+    background-color: #f0f8ff;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+#upload-indicator {
+    margin-bottom: 0.5rem;
+}

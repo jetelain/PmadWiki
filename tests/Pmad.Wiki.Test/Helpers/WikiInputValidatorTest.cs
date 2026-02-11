@@ -552,5 +552,140 @@ public class WikiInputValidatorTest
     }
 
     #endregion
+
+    #region IsValidTempMediaId Tests
+
+    [Theory]
+    [InlineData("a3f1e2b4c5d67890e1f2a3b4c5d67890")]
+    [InlineData("0123456789abcdef0123456789abcdef")]
+    [InlineData("00000000000000000000000000000000")]
+    [InlineData("ffffffffffffffffffffffffffffffff")]
+    [InlineData("abc123")]
+    [InlineData("a")]
+    [InlineData("0")]
+    [InlineData("deadbeef")]
+    [InlineData("cafebabe")]
+    [InlineData("0a1b2c3d4e5f")]
+    public void IsValidTempMediaId_WithValidId_ReturnsTrue(string tempMediaId)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidTempMediaId(tempMediaId, out var errorMessage);
+
+        // Assert
+        Assert.True(result);
+        Assert.Null(errorMessage);
+    }
+
+    [Fact]
+    public void IsValidTempMediaId_WithNull_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidTempMediaId(null!, out var errorMessage);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal("Temporary media ID cannot be null or empty.", errorMessage);
+    }
+
+    [Fact]
+    public void IsValidTempMediaId_WithEmptyString_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidTempMediaId("", out var errorMessage);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal("Temporary media ID cannot be null or empty.", errorMessage);
+    }
+
+    [Fact]
+    public void IsValidTempMediaId_WithWhitespace_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidTempMediaId("   ", out var errorMessage);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal("Temporary media ID cannot be null or empty.", errorMessage);
+    }
+
+    [Theory]
+    [InlineData("A3F1E2B4C5D67890E1F2A3B4C5D67890")] // uppercase
+    [InlineData("a3f1e2b4-c5d6-7890-e1f2-a3b4c5d67890")] // GUID format with dashes
+    [InlineData("g123")] // invalid hex character
+    [InlineData("xyz")] // invalid hex characters
+    [InlineData("123 456")] // contains space
+    [InlineData("abc-def")] // contains dash
+    [InlineData("abc_def")] // contains underscore
+    [InlineData("abc.def")] // contains dot
+    [InlineData("abc/def")] // contains slash
+    [InlineData("abc\\def")] // contains backslash
+    [InlineData("abc@def")] // contains special character
+    [InlineData("abc#def")] // contains hash
+    [InlineData("abc$def")] // contains dollar sign
+    [InlineData("123Z")] // uppercase letter
+    [InlineData("123G")] // invalid hex character (uppercase)
+    public void IsValidTempMediaId_WithInvalidFormat_ReturnsFalse(string tempMediaId)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidTempMediaId(tempMediaId, out var errorMessage);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal("Invalid temporary media ID.", errorMessage);
+    }
+
+    #endregion
+
+    #region ValidateTempMediaId Tests
+
+    [Theory]
+    [InlineData("a3f1e2b4c5d67890e1f2a3b4c5d67890")]
+    [InlineData("0123456789abcdef")]
+    [InlineData("deadbeef")]
+    public void ValidateTempMediaId_WithValidId_DoesNotThrow(string tempMediaId)
+    {
+        // Act & Assert
+        var exception = Record.Exception(() => WikiInputValidator.ValidateTempMediaId(tempMediaId));
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void ValidateTempMediaId_WithNull_ThrowsArgumentException()
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => 
+            WikiInputValidator.ValidateTempMediaId(null!));
+        Assert.Equal("tempMediaId", exception.ParamName);
+        Assert.Contains("Temporary media ID cannot be null or empty.", exception.Message);
+    }
+
+    [Fact]
+    public void ValidateTempMediaId_WithEmptyString_ThrowsArgumentException()
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => 
+            WikiInputValidator.ValidateTempMediaId(""));
+        Assert.Equal("tempMediaId", exception.ParamName);
+        Assert.Contains("Temporary media ID cannot be null or empty.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("A3F1E2B4C5D67890E1F2A3B4C5D67890")]
+    [InlineData("a3f1e2b4-c5d6-7890-e1f2-a3b4c5d67890")]
+    [InlineData("invalid")]
+    [InlineData("123 456")]
+    public void ValidateTempMediaId_WithInvalidId_ThrowsArgumentException(string tempMediaId)
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => 
+            WikiInputValidator.ValidateTempMediaId(tempMediaId));
+        Assert.Equal("tempMediaId", exception.ParamName);
+        Assert.Contains("Invalid temporary media ID.", exception.Message);
+    }
+
+    #endregion
 }
+
+
 

@@ -15,9 +15,18 @@ public static class WikiServiceCollectionExtensions
         services.AddScoped<IWikiPageService, WikiPageService>();
         services.AddScoped<IPageAccessControlService, PageAccessControlService>();
         services.AddSingleton<IWikiPageTitleCache, WikiPageTitleCache>();
+        services.AddSingleton<ITemporaryMediaStorageService, TemporaryMediaStorageService>();
+        services.AddScoped<IWikiPageEditService, WikiPageEditService>();
+
         services.AddMemoryCache();
         services.AddGitRepositoryService();
 
+        return services;
+    }
+
+    public static IServiceCollection AddWikiTemporaryMediaCleanup(this IServiceCollection services)
+    {
+        services.AddHostedService<TemporaryMediaCleanupService>();
         return services;
     }
 

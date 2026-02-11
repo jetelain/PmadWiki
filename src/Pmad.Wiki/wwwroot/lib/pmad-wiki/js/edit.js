@@ -2,6 +2,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const textarea = document.getElementById('content-textarea');
     if (!textarea) return;
 
+    // Track uploaded media files
+    const uploadedMedia = new Set();
+    const temporaryMediaIdsInput = document.getElementById('temporary-media-ids');
+
     // Preview toggle functionality
     const togglePreviewBtn = document.getElementById('togglePreview');
     const previewContainer = document.getElementById('preview-container');
@@ -88,6 +92,144 @@ document.addEventListener('DOMContentLoaded', function () {
                 }, 1000);
             }
         });
+    }
+
+    // Drag and drop support for media upload
+    textarea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.classList.add('drag-over');
+    });
+
+    textarea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.classList.remove('drag-over');
+    });
+
+    textarea.addEventListener('drop', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.classList.remove('drag-over');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            await handleFileUploads(files);
+        }
+    });
+
+    // Paste support for media upload
+    textarea.addEventListener('paste', async function(e) {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        const files = [];
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].kind === 'file') {
+                const file = items[i].getAsFile();
+                if (file) {
+                    files.push(file);
+                }
+            }
+        }
+
+        if (files.length > 0) {
+            e.preventDefault();
+            await handleFileUploads(files);
+        }
+    });
+
+    async function handleFileUploads(files) {
+        for (const file of files) {
+            await uploadFile(file);
+        }
+    }
+
+    async function uploadFile(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            showUploadIndicator(file.name);
+
+            const response = await fetch('/Wiki/UploadMedia', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Upload failed');
+            }
+
+            const result = await response.json();
+            
+            // Track the uploaded media
+            uploadedMedia.add(result.temporaryId);
+            updateTemporaryMediaIds();
+
+            // Insert markdown reference at cursor position
+            const markdownRef = isImageFile(file.name) 
+                ? `![${file.name}](${result.url})`
+                : `[${file.name}](${result.url})`;
+            
+            insertTextWithUndo(textarea, textarea.selectionStart, textarea.selectionEnd, markdownRef, markdownRef.length);
+
+            hideUploadIndicator();
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert(`Failed to upload ${file.name}: ${error.message}`);
+            hideUploadIndicator();
+        }
+    }
+
+    function updateTemporaryMediaIds() {
+        if (temporaryMediaIdsInput) {
+            temporaryMediaIdsInput.value = Array.from(uploadedMedia).join(',');
+        }
+    }
+
+    function isImageFile(fileName) {
+        const ext = fileName.toLowerCase().split('.').pop();
+        return ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext);
+    }
+
+    function showUploadIndicator(fileName) {
+        const indicator = document.createElement('div');
+        indicator.id = 'upload-indicator';
+        indicator.className = 'alert alert-info';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'd-flex align-items-center';
+
+        const spinner = document.createElement('div');
+        spinner.className = 'spinner-border spinner-border-sm me-2';
+        spinner.setAttribute('role', 'status');
+
+        const visuallyHidden = document.createElement('span');
+        visuallyHidden.className = 'visually-hidden';
+        visuallyHidden.textContent = 'Uploading...';
+
+        spinner.appendChild(visuallyHidden);
+
+        const textDiv = document.createElement('div');
+        textDiv.textContent = 'Uploading ' + fileName + '...';
+
+        wrapper.appendChild(spinner);
+        wrapper.appendChild(textDiv);
+
+        indicator.appendChild(wrapper);
+        textarea.parentElement.insertBefore(indicator, textarea);
+    }
+
+    function hideUploadIndicator() {
+        const indicator = document.getElementById('upload-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
     }
 
     // Markdown formatting toolbar handlers

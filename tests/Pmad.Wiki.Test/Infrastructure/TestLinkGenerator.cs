@@ -55,6 +55,11 @@ internal class TestLinkGenerator : LinkGenerator
             var path = $"/{_basePath}/media/{id}";
             return path;
         }
+        else if (action == "TempMedia" && controller == "Wiki")
+        {
+            var path = $"/{_basePath}/tempmedia/{id}";
+            return path;
+        }
 
         return null;
     }

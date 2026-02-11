@@ -6,7 +6,7 @@ using Pmad.Wiki.Helpers;
 
 namespace Pmad.Wiki.Services;
 
-public class WikiPageService : IWikiPageService
+public sealed class WikiPageService : IWikiPageService
 {
     private readonly IGitRepositoryService _gitRepositoryService;
     private readonly IWikiUserService _wikiUserService;
@@ -249,7 +249,7 @@ public class WikiPageService : IWikiPageService
         return pages.Values.OrderBy(p => p.PageName).ToList();
     }
 
-    public async Task SavePageAsync(string pageName, string? culture, string content, string commitMessage, IWikiUser author, CancellationToken cancellationToken = default)
+    public async Task SavePageWithMediaAsync(string pageName, string? culture, string content, string commitMessage, IWikiUser author, Dictionary<string, byte[]> mediaFiles, CancellationToken cancellationToken = default)
     {
         var repository = GetRepository();
         var filePath = WikiFilePathHelper.GetFilePath(pageName, culture, _options.NeutralMarkdownPageCulture);
@@ -262,14 +262,25 @@ public class WikiPageService : IWikiPageService
             throw new InvalidOperationException("Cannot save a page where a directory exists with the same name.");
         }
 
-        GitCommitOperation operation = type == GitTreeEntryKind.Blob
+        var operations = new List<GitCommitOperation>();
+
+        // Add the main page operation
+        GitCommitOperation pageOperation = type == GitTreeEntryKind.Blob
             ? new UpdateFileOperation(filePath, contentBytes)
             : new AddFileOperation(filePath, contentBytes);
+        operations.Add(pageOperation);
+
+        // Add media file operations
+        foreach (var (mediaPath, mediaContent) in mediaFiles)
+        {
+            WikiInputValidator.ValidateMediaPath(mediaPath);
+            operations.Add(new AddFileOperation(mediaPath, mediaContent));
+        }
 
         var authorSignature = new GitCommitSignature(author.GitName, author.GitEmail, DateTimeOffset.UtcNow);
         var metadata = new GitCommitMetadata(commitMessage, authorSignature);
 
-        await repository.CreateCommitAsync(_options.BranchName, new[] { operation }, metadata, cancellationToken);
+        await repository.CreateCommitAsync(_options.BranchName, operations, metadata, cancellationToken);
 
         // Update the title cache immediately with the new content
         _titleCache.ExtractAndCacheTitle(pageName, culture, content);
