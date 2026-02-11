@@ -689,9 +689,6 @@ public class TemporaryMediaStorageServiceTest : IDisposable
         File.SetLastWriteTimeUtc(filePath, oldTime);
         File.SetCreationTimeUtc(filePath, oldTime);
 
-        // Force file system flush by opening and closing
-        File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read).Dispose();
-
         // Just opening and closing should flush metadata
         // Verify the time was set correctly
         var actualTime = File.GetLastWriteTimeUtc(filePath);
