@@ -61,8 +61,8 @@ public class TemporaryMediaStorageServiceTest : IDisposable
 
         var media = await _service.GetUserTemporaryMediaAsync(user, CancellationToken.None);
         Assert.Single(media);
-        Assert.True(media.ContainsKey(temporaryId));
-        Assert.Equal(fileName, media[temporaryId].OriginalFileName);
+        Assert.True(media.TryGetValue(temporaryId, out var temporaryMedia));
+        Assert.Equal(fileName, temporaryMedia.OriginalFileName);
     }
 
     [Fact]
@@ -690,11 +690,9 @@ public class TemporaryMediaStorageServiceTest : IDisposable
         File.SetCreationTimeUtc(filePath, oldTime);
 
         // Force file system flush by opening and closing
-        using (var fs = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-        {
-            // Just opening and closing should flush metadata
-        }
+        File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read).Dispose();
 
+        // Just opening and closing should flush metadata
         // Verify the time was set correctly
         var actualTime = File.GetLastWriteTimeUtc(filePath);
         Assert.True(actualTime < DateTime.UtcNow.AddHours(-47), $"File time not set correctly: {actualTime}, expected before {DateTime.UtcNow.AddHours(-47)}");

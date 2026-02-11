@@ -26,7 +26,9 @@ internal class WikiPageEditService : IWikiPageEditService
 
         var wikiBaseUrl = _linkGenerator.GetPathByAction("TempMedia", "Wiki", new { id = IdPlaceholder })!;
 
-        var usedTempIdRegex = new Regex(wikiBaseUrl.Replace(IdPlaceholder, "([a-f0-9]+)"));
+        var escapedWikiBaseUrl = Regex.Escape(wikiBaseUrl);
+        var pattern = escapedWikiBaseUrl.Replace(Regex.Escape(IdPlaceholder), "([a-f0-9]+)");
+        var usedTempIdRegex = new Regex(pattern, RegexOptions.IgnoreCase);
 
         var usedTempIds = usedTempIdRegex.Matches(updatedContent)
             .Select(m => m.Groups[1].Value)
