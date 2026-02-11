@@ -201,14 +201,27 @@ document.addEventListener('DOMContentLoaded', function () {
         const indicator = document.createElement('div');
         indicator.id = 'upload-indicator';
         indicator.className = 'alert alert-info';
-        indicator.innerHTML = `
-            <div class="d-flex align-items-center">
-                <div class="spinner-border spinner-border-sm me-2" role="status">
-                    <span class="visually-hidden">Uploading...</span>
-                </div>
-                <div>Uploading ${fileName}...</div>
-            </div>
-        `;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'd-flex align-items-center';
+
+        const spinner = document.createElement('div');
+        spinner.className = 'spinner-border spinner-border-sm me-2';
+        spinner.setAttribute('role', 'status');
+
+        const visuallyHidden = document.createElement('span');
+        visuallyHidden.className = 'visually-hidden';
+        visuallyHidden.textContent = 'Uploading...';
+
+        spinner.appendChild(visuallyHidden);
+
+        const textDiv = document.createElement('div');
+        textDiv.textContent = 'Uploading ' + fileName + '...';
+
+        wrapper.appendChild(spinner);
+        wrapper.appendChild(textDiv);
+
+        indicator.appendChild(wrapper);
         textarea.parentElement.insertBefore(indicator, textarea);
     }
 

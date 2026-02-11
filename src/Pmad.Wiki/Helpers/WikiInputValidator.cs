@@ -53,7 +53,7 @@ public static partial class WikiInputValidator
     internal static partial Regex MediaPathMarkdownRegex();
 
     /// <summary>
-    /// Temporary media identifiers, which are a lowercasse GUID without dashes, like "a3f1e2b4c5d67890e1f2a3b4c5d67890"
+    /// Temporary media identifiers, which are a lowercase GUID without dashes, like "a3f1e2b4c5d67890e1f2a3b4c5d67890"
     /// </summary>
     /// <returns></returns>
     [GeneratedRegex("^([a-f0-9]+)$", RegexOptions.CultureInvariant)]
