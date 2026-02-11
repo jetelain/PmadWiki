@@ -799,10 +799,10 @@ public class WikiPageServiceTest
 
     #endregion
 
-    #region SavePageAsync Tests
+    #region SavePageWithMediaAsync Tests
 
     [Fact]
-    public async Task SavePageAsync_WhenPageIsNew_AddsFile()
+    public async Task SavePageWithMediaAsync_WhenPageIsNew_AddsFile()
     {
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
@@ -825,7 +825,7 @@ public class WikiPageServiceTest
             .Returns("New Page");
 
         // Act
-        await _service.SavePageAsync("test", null, content, "Create new page", author, CancellationToken.None);
+        await _service.SavePageWithMediaAsync("test", null, content, "Create new page", author, new(), CancellationToken.None);
 
         // Assert
         _mockRepository.Verify(x => x.CreateCommitAsync(
@@ -841,7 +841,7 @@ public class WikiPageServiceTest
     }
 
     [Fact]
-    public async Task SavePageAsync_WhenPageExists_UpdatesFile()
+    public async Task SavePageWithMediaAsync_WhenPageExists_UpdatesFile()
     {
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
@@ -864,7 +864,7 @@ public class WikiPageServiceTest
             .Returns("Updated Page");
 
         // Act
-        await _service.SavePageAsync("test", null, content, "Update page", author, CancellationToken.None);
+        await _service.SavePageWithMediaAsync("test", null, content, "Update page", author, new(), CancellationToken.None);
 
         // Assert
         _mockRepository.Verify(x => x.CreateCommitAsync(
@@ -875,7 +875,7 @@ public class WikiPageServiceTest
     }
 
     [Fact]
-    public async Task SavePageAsync_WhenPathIsDirectory_ThrowsInvalidOperationException()
+    public async Task SavePageWithMediaAsync_WhenPathIsDirectory_ThrowsInvalidOperationException()
     {
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
@@ -887,11 +887,11 @@ public class WikiPageServiceTest
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _service.SavePageAsync("test", null, content, "Create page", author, CancellationToken.None));
+            _service.SavePageWithMediaAsync("test", null, content, "Create page", author, new(), CancellationToken.None));
     }
 
     [Fact]
-    public async Task SavePageAsync_WithCulture_UsesCorrectFilePath()
+    public async Task SavePageWithMediaAsync_WithCulture_UsesCorrectFilePath()
     {
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
@@ -914,7 +914,7 @@ public class WikiPageServiceTest
             .Returns("Page Française");
 
         // Act
-        await _service.SavePageAsync("test", "fr", content, "Add French page", author, CancellationToken.None);
+        await _service.SavePageWithMediaAsync("test", "fr", content, "Add French page", author, new(), CancellationToken.None);
 
         // Assert
         _mockRepository.Verify(x => x.GetPathTypeAsync("test.fr.md", "main", It.IsAny<CancellationToken>()), Times.Once);
@@ -922,7 +922,7 @@ public class WikiPageServiceTest
     }
 
     [Fact]
-    public async Task SavePageAsync_WithNestedPath_SavesCorrectly()
+    public async Task SavePageWithMediaAsync_WithNestedPath_SavesCorrectly()
     {
         // Arrange
         var author = CreateMockWikiUser("admin@example.com", "Admin");
@@ -945,10 +945,473 @@ public class WikiPageServiceTest
             .Returns("Admin Settings");
 
         // Act
-        await _service.SavePageAsync("admin/settings", null, content, "Add settings page", author, CancellationToken.None);
+        await _service.SavePageWithMediaAsync("admin/settings", null, content, "Add settings page", author, new (), CancellationToken.None);
 
         // Assert
         _mockRepository.Verify(x => x.GetPathTypeAsync("admin/settings.md", "main", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithSingleMediaFile_AddsMediaFile()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Page with Image\n\n![Logo](images/logo.png)";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images/logo.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 } // PNG header
+        };
+
+        _mockRepository
+            .Setup(x => x.GetPathTypeAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GitTreeEntryKind?)null);
+
+        GitCommitOperation[]? capturedOps = null;
+        _mockRepository
+            .Setup(x => x.CreateCommitAsync(
+                "main",
+                It.IsAny<IEnumerable<GitCommitOperation>>(),
+                It.IsAny<GitCommitMetadata>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, IEnumerable<GitCommitOperation>, GitCommitMetadata, CancellationToken>(
+                (_, ops, _, _) => capturedOps = ops.ToArray())
+            .ReturnsAsync(GitHash.FromBytes(new byte[20]));
+
+        _mockTitleCache
+            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
+            .Returns("Page with Image");
+
+        // Act
+        await _service.SavePageWithMediaAsync("test", null, content, "Add page with image", author, mediaFiles, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(capturedOps);
+        Assert.Equal(2, capturedOps.Length);
+        
+        var pageOp = capturedOps.OfType<AddFileOperation>().FirstOrDefault(op => op.Path == "test.md");
+        Assert.NotNull(pageOp);
+        
+        var mediaOp = capturedOps.OfType<AddFileOperation>().FirstOrDefault(op => op.Path == "images/logo.png");
+        Assert.NotNull(mediaOp);
+
+        _mockTitleCache.Verify(x => x.ExtractAndCacheTitle("test", null, content), Times.Once);
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithMultipleMediaFiles_AddsAllMediaFiles()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Gallery\n\n![Image 1](images/img1.png)\n![Image 2](images/img2.jpg)\n[Document](docs/manual.pdf)";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images/img1.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 },
+            ["images/img2.jpg"] = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 },
+            ["docs/manual.pdf"] = new byte[] { 0x25, 0x50, 0x44, 0x46 }
+        };
+
+        _mockRepository
+            .Setup(x => x.GetPathTypeAsync("gallery.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GitTreeEntryKind?)null);
+
+        GitCommitOperation[]? capturedOps = null;
+        _mockRepository
+            .Setup(x => x.CreateCommitAsync(
+                "main",
+                It.IsAny<IEnumerable<GitCommitOperation>>(),
+                It.IsAny<GitCommitMetadata>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, IEnumerable<GitCommitOperation>, GitCommitMetadata, CancellationToken>(
+                (_, ops, _, _) => capturedOps = ops.ToArray())
+            .ReturnsAsync(GitHash.FromBytes(new byte[20]));
+
+        _mockTitleCache
+            .Setup(x => x.ExtractAndCacheTitle("gallery", null, content))
+            .Returns("Gallery");
+
+        // Act
+        await _service.SavePageWithMediaAsync("gallery", null, content, "Add gallery with media", author, mediaFiles, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(capturedOps);
+        Assert.Equal(4, capturedOps.Length);
+        
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "gallery.md");
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "images/img1.png");
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "images/img2.jpg");
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "docs/manual.pdf");
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithExistingPageAndNewMedia_UpdatesPageAndAddsMedia()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Updated Page\n\n![New Image](images/new.png)";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images/new.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+        };
+
+        _mockRepository
+            .Setup(x => x.GetPathTypeAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GitTreeEntryKind.Blob);
+
+        GitCommitOperation[]? capturedOps = null;
+        _mockRepository
+            .Setup(x => x.CreateCommitAsync(
+                "main",
+                It.IsAny<IEnumerable<GitCommitOperation>>(),
+                It.IsAny<GitCommitMetadata>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, IEnumerable<GitCommitOperation>, GitCommitMetadata, CancellationToken>(
+                (_, ops, _, _) => capturedOps = ops.ToArray())
+            .ReturnsAsync(GitHash.FromBytes(new byte[20]));
+
+        _mockTitleCache
+            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
+            .Returns("Updated Page");
+
+        // Act
+        await _service.SavePageWithMediaAsync("test", null, content, "Update page and add media", author, mediaFiles, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(capturedOps);
+        Assert.Equal(2, capturedOps.Length);
+        
+        Assert.Contains(capturedOps.OfType<UpdateFileOperation>(), op => op.Path == "test.md");
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "images/new.png");
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithInvalidMediaPath_ThrowsArgumentException()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Test Page";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["../../../etc/passwd"] = new byte[] { 0x01, 0x02, 0x03 }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.SavePageWithMediaAsync("test", null, content, "Attempt bad path", author, mediaFiles, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithMediaPathContainingDoubleSlash_ThrowsArgumentException()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Test Page";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images//logo.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.SavePageWithMediaAsync("test", null, content, "Attempt double slash", author, mediaFiles, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithAbsoluteMediaPath_ThrowsArgumentException()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Test Page";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["/images/logo.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.SavePageWithMediaAsync("test", null, content, "Attempt absolute path", author, mediaFiles, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithMediaPathEndingWithSlash_ThrowsArgumentException()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Test Page";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images/"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.SavePageWithMediaAsync("test", null, content, "Attempt trailing slash", author, mediaFiles, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithDotFile_ThrowsArgumentException()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Test Page";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images/.hidden.gif"] = new byte[] { 0x47, 0x49, 0x46 }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.SavePageWithMediaAsync("test", null, content, "Attempt hidden file", author, mediaFiles, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithNoExtensionMediaPath_ThrowsArgumentException()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Test Page";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images/logo"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.SavePageWithMediaAsync("test", null, content, "Attempt no extension", author, mediaFiles, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithEmptyMediaFiles_SavesOnlyPage()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Simple Page";
+        var mediaFiles = new Dictionary<string, byte[]>();
+
+        _mockRepository
+            .Setup(x => x.GetPathTypeAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GitTreeEntryKind?)null);
+
+        GitCommitOperation[]? capturedOps = null;
+        _mockRepository
+            .Setup(x => x.CreateCommitAsync(
+                "main",
+                It.IsAny<IEnumerable<GitCommitOperation>>(),
+                It.IsAny<GitCommitMetadata>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, IEnumerable<GitCommitOperation>, GitCommitMetadata, CancellationToken>(
+                (_, ops, _, _) => capturedOps = ops.ToArray())
+            .ReturnsAsync(GitHash.FromBytes(new byte[20]));
+
+        _mockTitleCache
+            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
+            .Returns("Simple Page");
+
+        // Act
+        await _service.SavePageWithMediaAsync("test", null, content, "Add simple page", author, mediaFiles, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(capturedOps);
+        Assert.Single(capturedOps);
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "test.md");
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithCultureAndMediaFiles_SavesBothCorrectly()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Page Française\n\n![Image](images/banner.jpg)";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images/banner.jpg"] = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 }
+        };
+
+        _mockRepository
+            .Setup(x => x.GetPathTypeAsync("test.fr.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GitTreeEntryKind?)null);
+
+        GitCommitOperation[]? capturedOps = null;
+        _mockRepository
+            .Setup(x => x.CreateCommitAsync(
+                "main",
+                It.IsAny<IEnumerable<GitCommitOperation>>(),
+                It.IsAny<GitCommitMetadata>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, IEnumerable<GitCommitOperation>, GitCommitMetadata, CancellationToken>(
+                (_, ops, _, _) => capturedOps = ops.ToArray())
+            .ReturnsAsync(GitHash.FromBytes(new byte[20]));
+
+        _mockTitleCache
+            .Setup(x => x.ExtractAndCacheTitle("test", "fr", content))
+            .Returns("Page Française");
+
+        // Act
+        await _service.SavePageWithMediaAsync("test", "fr", content, "Add French page with media", author, mediaFiles, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(capturedOps);
+        Assert.Equal(2, capturedOps.Length);
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "test.fr.md");
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "images/banner.jpg");
+
+        _mockTitleCache.Verify(x => x.ExtractAndCacheTitle("test", "fr", content), Times.Once);
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithNestedPathAndMediaFiles_SavesCorrectly()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("admin@example.com", "Admin");
+        var content = "# Admin Guide\n\n![Screenshot](docs/admin/screenshot.png)";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["docs/admin/screenshot.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+        };
+
+        _mockRepository
+            .Setup(x => x.GetPathTypeAsync("admin/guide.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GitTreeEntryKind?)null);
+
+        GitCommitOperation[]? capturedOps = null;
+        _mockRepository
+            .Setup(x => x.CreateCommitAsync(
+                "main",
+                It.IsAny<IEnumerable<GitCommitOperation>>(),
+                It.IsAny<GitCommitMetadata>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, IEnumerable<GitCommitOperation>, GitCommitMetadata, CancellationToken>(
+                (_, ops, _, _) => capturedOps = ops.ToArray())
+            .ReturnsAsync(GitHash.FromBytes(new byte[20]));
+
+        _mockTitleCache
+            .Setup(x => x.ExtractAndCacheTitle("admin/guide", null, content))
+            .Returns("Admin Guide");
+
+        // Act
+        await _service.SavePageWithMediaAsync("admin/guide", null, content, "Add admin guide with screenshot", author, mediaFiles, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(capturedOps);
+        Assert.Equal(2, capturedOps.Length);
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "admin/guide.md");
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "docs/admin/screenshot.png");
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithMediaFilesOfVariousTypes_SavesAll()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Rich Media Page\n\nMultiple media types.";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images/photo.jpg"] = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 },
+            ["images/diagram.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 },
+            ["videos/tutorial.mp4"] = new byte[] { 0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70 },
+            ["documents/spec.pdf"] = new byte[] { 0x25, 0x50, 0x44, 0x46 },
+            ["data/info.json"] = new byte[] { 0x7B, 0x7D }
+        };
+
+        _mockRepository
+            .Setup(x => x.GetPathTypeAsync("media.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GitTreeEntryKind?)null);
+
+        GitCommitOperation[]? capturedOps = null;
+        _mockRepository
+            .Setup(x => x.CreateCommitAsync(
+                "main",
+                It.IsAny<IEnumerable<GitCommitOperation>>(),
+                It.IsAny<GitCommitMetadata>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, IEnumerable<GitCommitOperation>, GitCommitMetadata, CancellationToken>(
+                (_, ops, _, _) => capturedOps = ops.ToArray())
+            .ReturnsAsync(GitHash.FromBytes(new byte[20]));
+
+        _mockTitleCache
+            .Setup(x => x.ExtractAndCacheTitle("media", null, content))
+            .Returns("Rich Media Page");
+
+        // Act
+        await _service.SavePageWithMediaAsync("media", null, content, "Add page with various media", author, mediaFiles, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(capturedOps);
+        Assert.Equal(6, capturedOps.Length);
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "media.md");
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "images/photo.jpg");
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "images/diagram.png");
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "videos/tutorial.mp4");
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "documents/spec.pdf");
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "data/info.json");
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithMediaContentVerification_SavesCorrectContent()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Test Page";
+        var imageContent = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images/test.png"] = imageContent
+        };
+
+        _mockRepository
+            .Setup(x => x.GetPathTypeAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GitTreeEntryKind?)null);
+
+        GitCommitOperation[]? capturedOps = null;
+        _mockRepository
+            .Setup(x => x.CreateCommitAsync(
+                "main",
+                It.IsAny<IEnumerable<GitCommitOperation>>(),
+                It.IsAny<GitCommitMetadata>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, IEnumerable<GitCommitOperation>, GitCommitMetadata, CancellationToken>(
+                (_, ops, _, _) => capturedOps = ops.ToArray())
+            .ReturnsAsync(GitHash.FromBytes(new byte[20]));
+
+        _mockTitleCache
+            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
+            .Returns("Test Page");
+
+        // Act
+        await _service.SavePageWithMediaAsync("test", null, content, "Add page with image", author, mediaFiles, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(capturedOps);
+        var mediaOp = capturedOps.OfType<AddFileOperation>().FirstOrDefault(op => op.Path == "images/test.png");
+        Assert.NotNull(mediaOp);
+        Assert.True(mediaOp.Content.SequenceEqual(imageContent));
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_ValidatesAllMediaPathsBeforeCommit()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Test Page";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images/valid.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 },
+            ["../invalid.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+        };
+
+        _mockRepository
+            .Setup(x => x.GetPathTypeAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GitTreeEntryKind?)null);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.SavePageWithMediaAsync("test", null, content, "Attempt mixed validity", author, mediaFiles, CancellationToken.None));
+
+        // Verify CreateCommitAsync was never called since validation failed
+        _mockRepository.Verify(x => x.CreateCommitAsync(
+            It.IsAny<string>(),
+            It.IsAny<IEnumerable<GitCommitOperation>>(),
+            It.IsAny<GitCommitMetadata>(),
+            It.IsAny<CancellationToken>()), Times.Never);
     }
 
     #endregion

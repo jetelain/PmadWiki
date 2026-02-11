@@ -30,6 +30,7 @@
         <input type="hidden" asp-for="Culture" />
         <input type="hidden" asp-for="IsNew" />
         <input type="hidden" asp-for="OriginalContentHash" />
+        <input type="hidden" asp-for="TemporaryMediaIds" id="temporary-media-ids" />
 
         <div asp-validation-summary="ModelOnly" class="alert alert-warning" role="alert"></div>
 
@@ -114,6 +115,7 @@
             <span asp-validation-for="Content" class="text-danger"></span>
             <div class="form-text">
                 Use <a href="https://www.markdownguide.org/basic-syntax/" target="_blank">Markdown syntax</a> to format your content.
+                You can drag and drop or paste images and media files directly into the text area.
             </div>
         </div>
 
@@ -161,6 +163,10 @@
         </div>
     </div>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/pmad-wiki/css/style.css" />
+}
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

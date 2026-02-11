@@ -52,6 +52,13 @@ public static partial class WikiInputValidator
     [GeneratedRegex("^([a-zA-Z0-9_/\\.-]+)$", RegexOptions.CultureInvariant)]
     internal static partial Regex MediaPathMarkdownRegex();
 
+    /// <summary>
+    /// Temporary media identifiers, which are a lowercasse GUID without dashes, like "a3f1e2b4c5d67890e1f2a3b4c5d67890"
+    /// </summary>
+    /// <returns></returns>
+    [GeneratedRegex("^([a-f0-9]+)$", RegexOptions.CultureInvariant)]
+    internal static partial Regex TempMediaIdRegex();
+
     public static bool IsValidPageName(string pageName, [NotNullWhen(false)] out string? errorMessage)
     {
         if (string.IsNullOrWhiteSpace(pageName))
@@ -126,6 +133,22 @@ public static partial class WikiInputValidator
         return true;
     }
 
+    public static bool IsValidTempMediaId(string tempMediaId, [NotNullWhen(false)] out string? errorMessage)
+    {
+        if (string.IsNullOrWhiteSpace(tempMediaId))
+        {
+            errorMessage = "Temporary media ID cannot be null or empty.";
+            return false;
+        }
+        if (!TempMediaIdRegex().IsMatch(tempMediaId))
+        {
+            errorMessage = "Invalid temporary media ID.";
+            return false;
+        }
+        errorMessage = null;
+        return true;
+    }
+
     public static void ValidatePageName(string pageName)
     {
         if (!IsValidPageName(pageName, out var errorMessage))
@@ -147,6 +170,14 @@ public static partial class WikiInputValidator
         if (!IsValidCulture(culture, out var errorMessage))
         {
             throw new ArgumentException(errorMessage, nameof(culture));
+        }
+    }
+
+    public static void ValidateTempMediaId(string tempMediaId)
+    {
+        if (!IsValidTempMediaId(tempMediaId, out var errorMessage))
+        {
+            throw new ArgumentException(errorMessage, nameof(tempMediaId));
         }
     }
 }
