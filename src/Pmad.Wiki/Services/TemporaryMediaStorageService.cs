@@ -33,12 +33,18 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
 
     public async Task<string> StoreTemporaryMediaAsync(IWikiUser user, string fileName, byte[] fileContent, CancellationToken cancellationToken = default)
     {
+        var extension = Path.GetExtension(fileName);
+        if (string.IsNullOrEmpty(extension))
+        {
+            throw new ArgumentException("File name must have an extension", nameof(fileName));
+        }
+
         var (userDir, cacheKey) = GetUserTemporaryDirectory(user);
         Directory.CreateDirectory(userDir);
 
         // Generate a unique ID for this file
         var temporaryId = Guid.NewGuid().ToString("N");
-        var extension = Path.GetExtension(fileName);
+
         var tempFileName = temporaryId + extension;
         var filePath = Path.Combine(userDir, tempFileName);
 
@@ -65,12 +71,10 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
         var (userDir, cacheKey) = GetUserTemporaryDirectory(user);
 
         if (_userMediaCache.TryGetValue(cacheKey, out var userCache) && 
-            userCache.TryGetValue(temporaryId, out var mediaInfo))
+            userCache.TryGetValue(temporaryId, out var mediaInfo) &&
+            File.Exists(mediaInfo.FilePath))
         {
-            if (File.Exists(mediaInfo.FilePath))
-            {
-                return await File.ReadAllBytesAsync(mediaInfo.FilePath, cancellationToken);
-            }
+            return await File.ReadAllBytesAsync(mediaInfo.FilePath, cancellationToken);
         }
 
         // Try to locate file if not in cache

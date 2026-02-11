@@ -217,6 +217,77 @@ public class TemporaryMediaStorageServiceTest : IDisposable
         Assert.Equal(fileContent, retrievedContent);
     }
 
+    [Fact]
+    public async Task StoreTemporaryMediaAsync_WithoutExtension_ThrowsArgumentException()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var fileContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var fileNameWithoutExtension = "filename_without_extension";
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.StoreTemporaryMediaAsync(user, fileNameWithoutExtension, fileContent, CancellationToken.None));
+        
+        Assert.Equal("fileName", exception.ParamName);
+        Assert.Contains("must have an extension", exception.Message);
+    }
+
+    [Fact]
+    public async Task StoreTemporaryMediaAsync_WithEmptyExtension_ThrowsArgumentException()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var fileContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var fileNameWithDotOnly = "filename.";
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.StoreTemporaryMediaAsync(user, fileNameWithDotOnly, fileContent, CancellationToken.None));
+        
+        Assert.Equal("fileName", exception.ParamName);
+        Assert.Contains("must have an extension", exception.Message);
+    }
+
+    [Fact]
+    public async Task StoreTemporaryMediaAsync_WithValidExtensionVariations_Succeeds()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var fileContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+
+        // Act & Assert - Various valid extensions
+        var id1 = await _service.StoreTemporaryMediaAsync(user, "file.png", fileContent, CancellationToken.None);
+        var id2 = await _service.StoreTemporaryMediaAsync(user, "file.JPG", fileContent, CancellationToken.None);
+        var id3 = await _service.StoreTemporaryMediaAsync(user, "file.tar.gz", fileContent, CancellationToken.None);
+        var id4 = await _service.StoreTemporaryMediaAsync(user, "file.backup.2023.zip", fileContent, CancellationToken.None);
+
+        Assert.NotNull(id1);
+        Assert.NotNull(id2);
+        Assert.NotNull(id3);
+        Assert.NotNull(id4);
+
+        var media = await _service.GetUserTemporaryMediaAsync(user, CancellationToken.None);
+        Assert.Equal(4, media.Count);
+    }
+
+    [Fact]
+    public async Task StoreTemporaryMediaAsync_WithSingleCharacterExtension_Succeeds()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var fileContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+
+        // Act
+        var temporaryId = await _service.StoreTemporaryMediaAsync(user, "file.c", fileContent, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(temporaryId);
+        var media = await _service.GetUserTemporaryMediaAsync(user, CancellationToken.None);
+        Assert.Single(media);
+        Assert.EndsWith(".c", media[temporaryId].FilePath);
+    }
+
     #endregion
 
     #region GetTemporaryMediaAsync Tests
