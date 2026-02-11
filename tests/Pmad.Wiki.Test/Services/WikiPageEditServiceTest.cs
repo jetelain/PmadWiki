@@ -149,7 +149,7 @@ public class WikiPageEditServiceTest
         var tempId = "abc123def456";
         var originalFileName = "screenshot.png";
         var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
-        
+
         var content = $"# Test Page\n\n![Screenshot](/wiki/tempmedia/{tempId})";
         var commitMessage = "Add page with image";
 
@@ -176,7 +176,6 @@ public class WikiPageEditServiceTest
         await _service.SavePageAsync("test", null, content, commitMessage, author, CancellationToken.None);
 
         // Assert
-        const string expectedMediaKey = "medias/abc123def456.png";
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "test",
             null,
@@ -185,8 +184,8 @@ public class WikiPageEditServiceTest
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.TryGetValue(expectedMediaKey, out var mediaBytes) &&
-                mediaBytes.SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/abc123def456.png") &&
+                m["medias/abc123def456.png"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -198,7 +197,7 @@ public class WikiPageEditServiceTest
         var tempId = "abc789def012";
         var originalFileName = "diagram.svg";
         var mediaContent = new byte[] { 0x3C, 0x73, 0x76, 0x67 }; // <svg
-        
+
         var content = $"# Guide\n\n![Diagram](/wiki/tempmedia/{tempId})";
         var commitMessage = "Add guide with diagram";
 
@@ -232,11 +231,9 @@ public class WikiPageEditServiceTest
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
-            {
-                return m.Count == 1
-                    && m.TryGetValue("docs/medias/abc789def012.svg", out var value)
-                    && value.SequenceEqual(mediaContent);
-            }),
+                m.Count == 1 &&
+                m.ContainsKey("docs/medias/abc789def012.svg") &&
+                m["docs/medias/abc789def012.svg"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -248,7 +245,7 @@ public class WikiPageEditServiceTest
         var tempId = "abcdef123456";
         var originalFileName = "datafile";
         var mediaContent = new byte[] { 0x01, 0x02, 0x03 };
-        
+
         var content = $"# Page\n\n[Download](/wiki/tempmedia/{tempId})";
         var commitMessage = "Add page";
 
@@ -281,10 +278,10 @@ public class WikiPageEditServiceTest
             It.Is<string>(c => c.Contains("[Download](medias/abcdef123456)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m => 
-                m.Count == 1 && 
-                m.TryGetValue("medias/abcdef123456", out var value) &&
-                value.SequenceEqual(mediaContent)),
+            It.Is<Dictionary<string, byte[]>>(m =>
+                m.Count == 1 &&
+                m.ContainsKey("medias/abcdef123456") &&
+                m["medias/abcdef123456"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -296,7 +293,7 @@ public class WikiPageEditServiceTest
         var tempId = "fedcba987654";
         var originalFileName = "backup.tar.gz";
         var mediaContent = new byte[] { 0x1F, 0x8B };
-        
+
         var content = $"# Backup\n\n[Download](/wiki/tempmedia/{tempId})";
         var commitMessage = "Add backup page";
 
@@ -329,10 +326,10 @@ public class WikiPageEditServiceTest
             It.Is<string>(c => c.Contains("[Download](medias/fedcba987654.gz)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m => 
-                m.Count == 1 && 
-                m.TryGetValue("medias/fedcba987654.gz", out var value) &&
-                value.SequenceEqual(mediaContent)),
+            It.Is<Dictionary<string, byte[]>>(m =>
+                m.Count == 1 &&
+                m.ContainsKey("medias/fedcba987654.gz") &&
+                m["medias/fedcba987654.gz"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -348,11 +345,11 @@ public class WikiPageEditServiceTest
         var tempId1 = "aabbccdd0001";
         var tempId2 = "aabbccdd0002";
         var tempId3 = "aabbccdd0003";
-        
+
         var mediaContent1 = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
         var mediaContent2 = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 };
         var mediaContent3 = new byte[] { 0x25, 0x50, 0x44, 0x46 };
-        
+
         var content = $@"# Multi-Media Page
 
 ![Image 1](/wiki/tempmedia/{tempId1})
@@ -415,7 +412,7 @@ More text.
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "test",
             null,
-            It.Is<string>(c => 
+            It.Is<string>(c =>
                 c.Contains("![Image 1](medias/aabbccdd0001.png)") &&
                 c.Contains("![Image 2](medias/aabbccdd0002.jpg)") &&
                 c.Contains("[Download PDF](medias/aabbccdd0003.pdf)")),
@@ -423,12 +420,12 @@ More text.
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 3 &&
-                m.TryGetValue("medias/aabbccdd0001.png", out var value1) &&
-                m.TryGetValue("medias/aabbccdd0002.jpg", out var value2) &&
-                m.TryGetValue("medias/aabbccdd0003.pdf", out var value3) &&
-                value1.SequenceEqual(mediaContent1) &&
-                value2.SequenceEqual(mediaContent2) &&
-                value3.SequenceEqual(mediaContent3)),
+                m.ContainsKey("medias/aabbccdd0001.png") &&
+                m.ContainsKey("medias/aabbccdd0002.jpg") &&
+                m.ContainsKey("medias/aabbccdd0003.pdf") &&
+                m["medias/aabbccdd0001.png"].SequenceEqual(mediaContent1) &&
+                m["medias/aabbccdd0002.jpg"].SequenceEqual(mediaContent2) &&
+                m["medias/aabbccdd0003.pdf"].SequenceEqual(mediaContent3)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -439,7 +436,7 @@ More text.
         var author = CreateMockUser("user@example.com", "Test User");
         var tempId = "abcdef123789";
         var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
-        
+
         var content = $@"# Duplicate References
 
 ![First reference](/wiki/tempmedia/{tempId})
@@ -478,15 +475,15 @@ The same image appears twice.";
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "test",
             null,
-            It.Is<string>(c => 
+            It.Is<string>(c =>
                 c.Contains("![First reference](medias/abcdef123789.png)") &&
                 c.Contains("![Second reference](medias/abcdef123789.png)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m => 
+            It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.TryGetValue("medias/abcdef123789.png", out var media) &&
-                media.SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/abcdef123789.png") &&
+                m["medias/abcdef123789.png"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
 
         _mockTempMediaStorage.Verify(
@@ -504,7 +501,7 @@ The same image appears twice.";
         // Arrange
         var author = CreateMockUser("user@example.com", "Test User");
         var tempId = "ffffffffffff";
-        
+
         var content = $"# Page\n\n![Image](/wiki/tempmedia/{tempId})";
         var commitMessage = "Add page";
 
@@ -534,7 +531,7 @@ The same image appears twice.";
         // Arrange
         var author = CreateMockUser("user@example.com", "Test User");
         var tempId = "deadbeefcafe";
-        
+
         var content = $"# Page\n\n![Image](/wiki/tempmedia/{tempId})";
         var commitMessage = "Add page";
 
@@ -579,7 +576,7 @@ The same image appears twice.";
         var validId = "abcd1234ef56";
         var invalidId = "999999999999";
         var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
-        
+
         var content = $@"# Page
 
 ![Valid](/wiki/tempmedia/{validId})
@@ -614,15 +611,15 @@ The same image appears twice.";
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "test",
             null,
-            It.Is<string>(c => 
+            It.Is<string>(c =>
                 c.Contains("![Valid](medias/abcd1234ef56.png)") &&
                 c.Contains("![Invalid](/wiki/tempmedia/999999999999)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m => 
+            It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.TryGetValue("medias/abcd1234ef56.png", out var value) &&
-                value.SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/abcd1234ef56.png") &&
+                m["medias/abcd1234ef56.png"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -659,7 +656,7 @@ The same image appears twice.";
         var author = CreateMockUser("user@example.com", "Test User");
         var tempId = "a1b2c3d4e5f6";
         var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
-        
+
         var content = $"# Page\n\n![Image](/wiki/tempmedia/{tempId})";
         var commitMessage = "Add page";
 
@@ -694,8 +691,8 @@ The same image appears twice.";
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.TryGetValue("medias/a1b2c3d4e5f6.png", out var bytes) &&
-                bytes.SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/a1b2c3d4e5f6.png") &&
+                m["medias/a1b2c3d4e5f6.png"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -710,7 +707,7 @@ The same image appears twice.";
         var author = CreateMockUser("user@example.com", "Test User");
         var tempId = "cafe12345678";
         var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
-        
+
         var content = $@"# Page
 
 ![Temp Image](/wiki/tempmedia/{tempId})
@@ -749,7 +746,7 @@ The same image appears twice.";
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "test",
             null,
-            It.Is<string>(c => 
+            It.Is<string>(c =>
                 c.Contains("![Temp Image](medias/cafe12345678.png)") &&
                 c.Contains("![External Image](https://example.com/image.png)") &&
                 c.Contains("![Relative Image](../images/other.png)") &&
@@ -759,8 +756,8 @@ The same image appears twice.";
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.TryGetValue("medias/cafe12345678.png", out var contentBytes) &&
-                contentBytes.SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/cafe12345678.png") &&
+                m["medias/cafe12345678.png"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -771,7 +768,7 @@ The same image appears twice.";
         var author = CreateMockUser("user@example.com", "Test User");
         var tempId = "dada123beeee";
         var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
-        
+
         var content = $@"# Page
 
 <img src=""/wiki/tempmedia/{tempId}"" alt=""Image"" />
@@ -806,15 +803,15 @@ The same image appears twice.";
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "test",
             null,
-            It.Is<string>(c => 
+            It.Is<string>(c =>
                 c.Contains($@"<img src=""medias/dada123beeee.png"" alt=""Image"" />") &&
                 c.Contains($@"<a href=""medias/dada123beeee.png"">Download</a>")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.TryGetValue("medias/dada123beeee.png", out var value) &&
-                value.SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/dada123beeee.png") &&
+                m["medias/dada123beeee.png"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -898,10 +895,10 @@ The same image appears twice.";
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<IWikiUser>(),
-                It.Is<Dictionary<string, byte[]>>(m => 
+                It.Is<Dictionary<string, byte[]>>(m =>
                     m.Count == 1 &&
-                    m.TryGetValue("medias/fade00000000.png", out var bytes) &&
-                    bytes.SequenceEqual(mediaContent)),
+                    m.ContainsKey("medias/fade00000000.png") &&
+                    m["medias/fade00000000.png"].SequenceEqual(mediaContent)),
                 cancellationToken),
             Times.Once);
     }
@@ -917,10 +914,10 @@ The same image appears twice.";
         var author = CreateMockUser("author@example.com", "Author Name");
         var tempId1 = "abcdef000001";
         var tempId2 = "abcdef000002";
-        
+
         var mediaContent1 = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }; // PNG
         var mediaContent2 = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10 }; // JPEG
-        
+
         var content = $@"# Tutorial
 
 ## Introduction
@@ -986,17 +983,17 @@ That's it!";
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "docs/tutorial",
             null,
-            It.Is<string>(c => 
+            It.Is<string>(c =>
                 c.Contains("![Screenshot 1](medias/abcdef000001.png)") &&
                 c.Contains("![Screenshot 2](medias/abcdef000002.jpg)")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 2 &&
-                m.TryGetValue("docs/medias/abcdef000001.png", out var media1) &&
-                m.TryGetValue("docs/medias/abcdef000002.jpg", out var media2) &&
-                media1.SequenceEqual(mediaContent1) &&
-                media2.SequenceEqual(mediaContent2)),
+                m.ContainsKey("docs/medias/abcdef000001.png") &&
+                m.ContainsKey("docs/medias/abcdef000002.jpg") &&
+                m["docs/medias/abcdef000001.png"].SequenceEqual(mediaContent1) &&
+                m["docs/medias/abcdef000002.jpg"].SequenceEqual(mediaContent2)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -1005,14 +1002,14 @@ That's it!";
     {
         // Arrange
         var author = CreateMockUser("user@example.com", "Test User");
-        
+
         var pngId = "aabbccddee01";
         var jpgId = "aabbccddee02";
         var gifId = "aabbccddee03";
         var svgId = "aabbccddee04";
         var pdfId = "aabbccddee05";
         var mp4Id = "aabbccddee06";
-        
+
         var content = $@"# Media Gallery
 
 ![PNG Image](/wiki/tempmedia/{pngId})
@@ -1088,7 +1085,7 @@ That's it!";
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "gallery",
             null,
-            It.Is<string>(c => 
+            It.Is<string>(c =>
                 c.Contains("![PNG Image](medias/aabbccddee01.png)") &&
                 c.Contains("![JPEG Image](medias/aabbccddee02.jpg)") &&
                 c.Contains("![GIF Animation](medias/aabbccddee03.gif)") &&
@@ -1097,7 +1094,7 @@ That's it!";
                 c.Contains($@"<video src=""medias/aabbccddee06.mp4"" controls></video>")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m => 
+            It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 6 &&
                 m.ContainsKey("medias/aabbccddee01.png") &&
                 m.ContainsKey("medias/aabbccddee02.jpg") &&
