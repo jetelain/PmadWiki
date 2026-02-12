@@ -253,7 +253,7 @@ if (configElement) {
             hideUploadIndicator();
         } catch (error) {
             console.error('Upload error:', error);
-            alert(`Failed to upload ${file.name}: ${error.message}`);
+            showUploadError(file.name, error.message);
             hideUploadIndicator();
         }
     }
@@ -302,6 +302,39 @@ if (configElement) {
         if (indicator) {
             indicator.remove();
         }
+    }
+
+    function showUploadError(fileName, errorMessage) {
+        const existingError = document.getElementById('upload-error');
+        if (existingError) {
+            existingError.remove();
+        }
+
+        const errorAlert = document.createElement('div');
+        errorAlert.id = 'upload-error';
+        errorAlert.className = 'alert alert-danger alert-dismissible fade show';
+        errorAlert.setAttribute('role', 'alert');
+
+        const errorText = document.createElement('div');
+        errorText.innerHTML = `<strong>Upload failed:</strong> ${fileName} - ${errorMessage}`;
+
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.className = 'btn-close';
+        closeButton.setAttribute('data-bs-dismiss', 'alert');
+        closeButton.setAttribute('aria-label', 'Close');
+
+        errorAlert.appendChild(errorText);
+        errorAlert.appendChild(closeButton);
+
+        textarea.parentElement.insertBefore(errorAlert, textarea);
+
+        setTimeout(() => {
+            if (errorAlert.parentElement) {
+                errorAlert.classList.remove('show');
+                setTimeout(() => errorAlert.remove(), 150);
+            }
+        }, 5000);
     }
 
     // Markdown formatting toolbar handlers
