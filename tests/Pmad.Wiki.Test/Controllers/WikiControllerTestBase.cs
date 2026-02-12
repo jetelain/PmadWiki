@@ -89,16 +89,5 @@ public abstract class WikiControllerTestBase
 
         var actionContext = new ActionContext(httpContext, new RouteData(), new Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor());
         _controller.ControllerContext = new ControllerContext(actionContext);
-
-        // Mock URL helper to return test URLs
-        var mockUrlHelper = new Mock<IUrlHelper>();
-        mockUrlHelper
-            .Setup(x => x.Action(It.IsAny<UrlActionContext>()))
-            .Returns((UrlActionContext context) =>
-            {
-                var id = (context.Values as RouteValueDictionary)?["id"]?.ToString() ?? "unknown";
-                return $"/Wiki/{context.Action}/{id}";
-            });
-        _controller.Url = mockUrlHelper.Object;
     }
 }
