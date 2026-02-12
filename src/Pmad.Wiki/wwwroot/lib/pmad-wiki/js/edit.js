@@ -1,28 +1,28 @@
 document.addEventListener('DOMContentLoaded', function () {
-const textarea = document.getElementById('content-textarea');
-if (!textarea) return;
+    const textarea = document.getElementById('content-textarea');
+    if (!textarea) return;
 
-// Get configuration from the JSON script tag
-let config = {
-    apiEndpoints: {
-        previewMarkdown: '/Wiki/PreviewMarkdown',
-        uploadMedia: '/Wiki/UploadMedia',
-        getAccessiblePages: '/Wiki/GetAccessiblePages'
-    },
-    currentPage: {
-        pageName: '',
-        culture: ''
-    }
-};
+    // Get configuration from the JSON script tag
+    let config = {
+        apiEndpoints: {
+            previewMarkdown: '/Wiki/PreviewMarkdown',
+            uploadMedia: '/Wiki/UploadMedia',
+            getAccessiblePages: '/Wiki/GetAccessiblePages'
+        },
+        currentPage: {
+            pageName: '',
+            culture: ''
+        }
+    };
 
-const configElement = document.getElementById('wiki-edit-config');
-if (configElement) {
-    try {
-        config = JSON.parse(configElement.textContent);
-    } catch (e) {
-        console.error('Failed to parse wiki edit config:', e);
+    const configElement = document.getElementById('wiki-edit-config');
+    if (configElement) {
+        try {
+            config = JSON.parse(configElement.textContent);
+        } catch (e) {
+            console.error('Failed to parse wiki edit config:', e);
+        }
     }
-}
 
     // Track uploaded media files
     const uploadedMedia = new Set();
@@ -50,13 +50,13 @@ if (configElement) {
 
     // Track when form is being submitted
     if (form) {
-        form.addEventListener('submit', function() {
+        form.addEventListener('submit', function () {
             isFormSubmitting = true;
         });
     }
 
     // Warn before leaving page with unsaved changes
-    window.addEventListener('beforeunload', function(e) {
+    window.addEventListener('beforeunload', function (e) {
         if (hasUnsavedChanges && !isFormSubmitting) {
             e.preventDefault();
             // Modern browsers ignore custom messages, but setting returnValue triggers the warning
@@ -122,13 +122,13 @@ if (configElement) {
 
             try {
                 const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-                
+
                 const request = {
                     markdown: markdown,
                     pageName: config.currentPage.pageName || null,
                     culture: config.currentPage.culture || null
                 };
-                
+
                 const response = await fetch(config.apiEndpoints.previewMarkdown, {
                     method: 'POST',
                     headers: {
@@ -167,19 +167,19 @@ if (configElement) {
     }
 
     // Drag and drop support for media upload
-    textarea.addEventListener('dragover', function(e) {
+    textarea.addEventListener('dragover', function (e) {
         e.preventDefault();
         e.stopPropagation();
         textarea.classList.add('drag-over');
     });
 
-    textarea.addEventListener('dragleave', function(e) {
+    textarea.addEventListener('dragleave', function (e) {
         e.preventDefault();
         e.stopPropagation();
         textarea.classList.remove('drag-over');
     });
 
-    textarea.addEventListener('drop', async function(e) {
+    textarea.addEventListener('drop', async function (e) {
         e.preventDefault();
         e.stopPropagation();
         textarea.classList.remove('drag-over');
@@ -191,7 +191,7 @@ if (configElement) {
     });
 
     // Paste support for media upload
-    textarea.addEventListener('paste', async function(e) {
+    textarea.addEventListener('paste', async function (e) {
         const items = e.clipboardData?.items;
         if (!items) return;
 
@@ -238,16 +238,16 @@ if (configElement) {
             }
 
             const result = await response.json();
-            
+
             // Track the uploaded media
             uploadedMedia.add(result.temporaryId);
             updateTemporaryMediaIds();
 
             // Insert markdown reference at cursor position
-            const markdownRef = isImageFile(file.name) 
+            const markdownRef = isImageFile(file.name)
                 ? `![${file.name}](${result.url})`
                 : `[${file.name}](${result.url})`;
-            
+
             insertTextWithUndo(textarea, textarea.selectionStart, textarea.selectionEnd, markdownRef, markdownRef.length);
 
             hideUploadIndicator();
@@ -319,7 +319,7 @@ if (configElement) {
         const strongLabel = document.createElement('strong');
         strongLabel.textContent = 'Upload failed:';
         errorText.appendChild(strongLabel);
-        errorText.appendChild(document.createTextNode(`${fileName} - ${errorMessage}`));
+        errorText.appendChild(document.createTextNode(` ${fileName} - ${errorMessage}`));
 
         const closeButton = document.createElement('button');
         closeButton.type = 'button';

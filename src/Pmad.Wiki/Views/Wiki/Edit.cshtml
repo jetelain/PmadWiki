@@ -8,11 +8,14 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a asp-controller="Wiki" asp-action="View" asp-route-id="">Wiki</a></li>
-                @foreach (var crumb in Model.Breadcrumb.Take(Model.Breadcrumb.Count - 1))
+                @if (Model.Breadcrumb.Count > 0)
                 {
-                    <li class="breadcrumb-item"><a asp-controller="Wiki" asp-action="View" asp-route-id="@crumb.PageName">@crumb.PageTitle</a></li>
+                    @foreach (var crumb in Model.Breadcrumb.Take(Model.Breadcrumb.Count - 1))
+                    {
+                        <li class="breadcrumb-item"><a asp-controller="Wiki" asp-action="View" asp-route-id="@crumb.PageName">@crumb.PageTitle</a></li>
+                    }
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Breadcrumb.Last().PageTitle</li>
                 }
-                <li class="breadcrumb-item active" aria-current="page">@Model.Breadcrumb.Last().PageTitle</li>
             </ol>
         </nav>
         <div class="btn-toolbar" role="toolbar">

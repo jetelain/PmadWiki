@@ -1,4 +1,4 @@
-using System.Security.Claims;
+ï»¿using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Pmad.Wiki.Controllers;
@@ -602,7 +602,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         {
             PageName = "TestPage",
             Content = "# Contenu de Test",
-            CommitMessage = "Créer la page de test",
+            CommitMessage = "CrÃ©er la page de test",
             Culture = "fr",
             IsNew = true
         };
@@ -617,7 +617,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         Assert.Equal("fr", redirectResult.RouteValues?["culture"]);
 
         _mockWikiPageEditService.Verify(
-            x => x.SavePageAsync("TestPage", "fr", "# Contenu de Test", "Créer la page de test", mockWikiUser, It.IsAny<CancellationToken>()),
+            x => x.SavePageAsync("TestPage", "fr", "# Contenu de Test", "CrÃ©er la page de test", mockWikiUser, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
