@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pmad.Wiki.Helpers;
 using Pmad.Wiki.Models;
@@ -20,6 +21,7 @@ namespace Pmad.Wiki.Controllers
         private readonly ITemporaryMediaStorageService _temporaryMediaStorage;
         private readonly IWikiPageEditService _wikiPageEditService;
         private readonly WikiOptions _options;
+        private readonly ILogger<WikiController> _logger;
 
         public WikiController(
             IWikiPageService pageService,
@@ -28,7 +30,8 @@ namespace Pmad.Wiki.Controllers
             IMarkdownRenderService markdownRenderService,
             ITemporaryMediaStorageService temporaryMediaStorage,
             IWikiPageEditService wikiPageEditService,
-            IOptions<WikiOptions> options)
+            IOptions<WikiOptions> options,
+            ILogger<WikiController> logger)
         {
             _pageService = pageService;
             _userService = userService;
@@ -37,6 +40,7 @@ namespace Pmad.Wiki.Controllers
             _temporaryMediaStorage = temporaryMediaStorage;
             _wikiPageEditService = wikiPageEditService;
             _options = options.Value;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -644,11 +648,9 @@ namespace Pmad.Wiki.Controllers
                 ModelState.AddModelError(nameof(model.Culture), cultureError);
             }
 
-
             if (!ModelState.IsValid)
             {
                 await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
-
                 return View(model);
             }
 
@@ -672,23 +674,48 @@ namespace Pmad.Wiki.Controllers
             if (!model.IsNew && !string.IsNullOrEmpty(model.OriginalContentHash))
             {
                 var currentPage = await _pageService.GetPageAsync(model.PageName, model.Culture, cancellationToken);
-                if (currentPage != null && currentPage.ContentHash != model.OriginalContentHash)
+                if (currentPage != null)
                 {
-                    ModelState.AddModelError(string.Empty, 
-                        $"Warning: This page has been modified by {currentPage.LastModifiedBy ?? "another user"} since you started editing. " +
-                        "Your changes will overwrite those changes. Please review the current version before saving.");
-                    model.OriginalContentHash = currentPage.ContentHash;
-                    return View(model);
+                    if (currentPage.ContentHash != model.OriginalContentHash)
+                    {
+                        ModelState.AddModelError(string.Empty,
+                            $"Warning: This page has been modified by {currentPage.LastModifiedBy ?? "another user"} since you started editing. " +
+                            "Your changes will overwrite those changes. Please review the current version before saving.");
+                        model.OriginalContentHash = currentPage.ContentHash;
+                        await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
+                        return View(model);
+                    }
+                    if (currentPage.Content == model.Content)
+                    {
+                        // No-op if content is unchanged. Commit would fail due to identical content.
+                        return RedirectToAction(nameof(View), new { id = model.PageName, culture = model.Culture });
+                    }
                 }
             }
-            
-            await _wikiPageEditService.SavePageAsync(
-                model.PageName,
-                model.Culture,
-                model.Content,
-                model.CommitMessage,
-                wikiUser.User,
-                cancellationToken);
+
+            try
+            {
+                await _wikiPageEditService.SavePageAsync(
+                    model.PageName,
+                    model.Culture,
+                    model.Content,
+                    model.CommitMessage,
+                    wikiUser.User,
+                    cancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                // If the save operation was cancelled (e.g. due to a timeout), re-throw to let it propagate and be handled by middleware
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving page {PageName} (culture: {Culture}) by user {UserName}", 
+                    model.PageName, model.Culture, wikiUser.User);
+                ModelState.AddModelError(string.Empty, "An error occurred while saving the page. Please try again."); 
+                await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
+                return View(model);
+            }
 
             if (!string.IsNullOrEmpty(model.TemporaryMediaIds))
             {                
