@@ -699,9 +699,15 @@ namespace Pmad.Wiki.Controllers
                     wikiUser.User,
                     cancellationToken);
             }
+            catch (TaskCanceledException)
+            {
+                // If the save operation was cancelled (e.g. due to a timeout), re-throw to let it propagate and be handled by middleware
+                throw;
+            }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, $"Error saving page: {ex.Message}");
+                // TODO: Generic message and log error to avoid leaking sensitive info in exception message
+                ModelState.AddModelError(string.Empty, $"Error saving page: {ex.Message}"); 
                 await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
                 return View(model);
             }

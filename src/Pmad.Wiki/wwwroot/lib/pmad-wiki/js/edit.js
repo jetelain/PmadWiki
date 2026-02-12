@@ -316,7 +316,10 @@ if (configElement) {
         errorAlert.setAttribute('role', 'alert');
 
         const errorText = document.createElement('div');
-        errorText.innerHTML = `<strong>Upload failed:</strong> ${fileName} - ${errorMessage}`;
+        const strongLabel = document.createElement('strong');
+        strongLabel.textContent = 'Upload failed:';
+        errorText.appendChild(strongLabel);
+        errorText.appendChild(document.createTextNode(`${fileName} - ${errorMessage}`));
 
         const closeButton = document.createElement('button');
         closeButton.type = 'button';

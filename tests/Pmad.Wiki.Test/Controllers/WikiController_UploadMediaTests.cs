@@ -28,7 +28,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
 
         var tempId = "abc123def456";
         _mockTemporaryMediaStorage
-            .Setup(x => x.StoreTemporaryMediaAsync(It.IsAny<IWikiUser>(), fileName, fileContent, It.IsAny<CancellationToken>()))
+            .Setup(x => x.StoreTemporaryMediaAsync(It.IsAny<IWikiUser>(), fileName, It.Is<byte[]>(b => b.SequenceEqual(fileContent)), It.IsAny<CancellationToken>()))
             .ReturnsAsync(tempId);
 
         SetupUserContext("testuser");
@@ -202,7 +202,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
 
         var tempId = "tempid123";
         _mockTemporaryMediaStorage
-            .Setup(x => x.StoreTemporaryMediaAsync(It.IsAny<IWikiUser>(), fileName, fileContent, It.IsAny<CancellationToken>()))
+            .Setup(x => x.StoreTemporaryMediaAsync(It.IsAny<IWikiUser>(), fileName, It.Is<byte[]>(b => b.SequenceEqual(fileContent)), It.IsAny<CancellationToken>()))
             .ReturnsAsync(tempId);
 
         SetupUserContext("testuser");
@@ -232,7 +232,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
 
         var tempId = "tempid123";
         _mockTemporaryMediaStorage
-            .Setup(x => x.StoreTemporaryMediaAsync(It.IsAny<IWikiUser>(), "image.PNG", fileContent, It.IsAny<CancellationToken>()))
+            .Setup(x => x.StoreTemporaryMediaAsync(It.IsAny<IWikiUser>(), "image.PNG", It.Is<byte[]>(b => b.SequenceEqual(fileContent)), It.IsAny<CancellationToken>()))
             .ReturnsAsync(tempId);
 
         SetupUserContext("testuser");
@@ -263,7 +263,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
 
         var tempId = "storedid";
         _mockTemporaryMediaStorage
-            .Setup(x => x.StoreTemporaryMediaAsync(mockWikiUser, fileName, fileContent, It.IsAny<CancellationToken>()))
+            .Setup(x => x.StoreTemporaryMediaAsync(mockWikiUser, fileName, It.Is<byte[]>(b => b.SequenceEqual(fileContent)), It.IsAny<CancellationToken>()))
             .ReturnsAsync(tempId);
 
         SetupUserContext("testuser");
@@ -274,7 +274,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
         // Assert
         Assert.IsType<OkObjectResult>(result);
         _mockTemporaryMediaStorage.Verify(
-            x => x.StoreTemporaryMediaAsync(mockWikiUser, fileName, fileContent, It.IsAny<CancellationToken>()),
+            x => x.StoreTemporaryMediaAsync(mockWikiUser, fileName, It.Is<byte[]>(b => b.SequenceEqual(fileContent)), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
