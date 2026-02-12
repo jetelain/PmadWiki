@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pmad.Wiki.Helpers;
 using Pmad.Wiki.Models;
@@ -20,6 +21,7 @@ namespace Pmad.Wiki.Controllers
         private readonly ITemporaryMediaStorageService _temporaryMediaStorage;
         private readonly IWikiPageEditService _wikiPageEditService;
         private readonly WikiOptions _options;
+        private readonly ILogger<WikiController> _logger;
 
         public WikiController(
             IWikiPageService pageService,
@@ -28,7 +30,8 @@ namespace Pmad.Wiki.Controllers
             IMarkdownRenderService markdownRenderService,
             ITemporaryMediaStorageService temporaryMediaStorage,
             IWikiPageEditService wikiPageEditService,
-            IOptions<WikiOptions> options)
+            IOptions<WikiOptions> options,
+            ILogger<WikiController> logger)
         {
             _pageService = pageService;
             _userService = userService;
@@ -37,6 +40,7 @@ namespace Pmad.Wiki.Controllers
             _temporaryMediaStorage = temporaryMediaStorage;
             _wikiPageEditService = wikiPageEditService;
             _options = options.Value;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -706,8 +710,9 @@ namespace Pmad.Wiki.Controllers
             }
             catch (Exception ex)
             {
-                // TODO: Generic message and log error to avoid leaking sensitive info in exception message
-                ModelState.AddModelError(string.Empty, $"Error saving page: {ex.Message}"); 
+                _logger.LogError(ex, "Error saving page {PageName} (culture: {Culture}) by user {UserName}", 
+                    model.PageName, model.Culture, wikiUser.User);
+                ModelState.AddModelError(string.Empty, "An error occurred while saving the page. Please try again."); 
                 await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
                 return View(model);
             }

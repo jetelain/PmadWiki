@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Pmad.Wiki.Controllers;
@@ -19,6 +20,7 @@ public abstract class WikiControllerTestBase
     protected readonly Mock<IMarkdownRenderService> _mockMarkdownRenderService;
     protected readonly Mock<ITemporaryMediaStorageService> _mockTemporaryMediaStorage;
     protected readonly Mock<IWikiPageEditService> _mockWikiPageEditService;
+    protected readonly Mock<ILogger<WikiController>> _mockLogger;
     protected readonly WikiOptions _options;
     protected readonly WikiController _controller;
     protected readonly LinkGenerator _linkGenerator;
@@ -31,6 +33,7 @@ public abstract class WikiControllerTestBase
         _mockMarkdownRenderService = new Mock<IMarkdownRenderService>();
         _mockTemporaryMediaStorage = new Mock<ITemporaryMediaStorageService>();
         _mockWikiPageEditService = new Mock<IWikiPageEditService>();
+        _mockLogger = new Mock<ILogger<WikiController>>();
         _linkGenerator = new TestLinkGenerator();
 
         _options = new WikiOptions
@@ -54,7 +57,8 @@ public abstract class WikiControllerTestBase
             _mockMarkdownRenderService.Object,
             _mockTemporaryMediaStorage.Object,
             _mockWikiPageEditService.Object,
-            optionsWrapper);
+            optionsWrapper,
+            _mockLogger.Object);
 
         // Setup default HTTP context
         var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor());

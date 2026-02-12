@@ -980,7 +980,17 @@ public class WikiController_EditTests : WikiControllerTestBase
         Assert.True(_controller.ModelState.ContainsKey(string.Empty));
         
         var errors = _controller.ModelState[string.Empty]!.Errors;
-        Assert.Contains(errors, e => e.ErrorMessage.Contains("Error saving page") && e.ErrorMessage.Contains("Repository error"));
+        Assert.Contains(errors, e => e.ErrorMessage.Contains("An error occurred while saving the page"));
+        
+        // Verify that the error was logged
+        _mockLogger.Verify(
+            x => x.Log(
+                Microsoft.Extensions.Logging.LogLevel.Error,
+                It.IsAny<Microsoft.Extensions.Logging.EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Error saving page TestPage")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]
