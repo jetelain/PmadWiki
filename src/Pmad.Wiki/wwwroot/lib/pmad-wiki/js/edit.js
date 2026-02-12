@@ -1,10 +1,69 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const textarea = document.getElementById('content-textarea');
-    if (!textarea) return;
+const textarea = document.getElementById('content-textarea');
+if (!textarea) return;
+
+// Get configuration from the JSON script tag
+let config = {
+    apiEndpoints: {
+        previewMarkdown: '/Wiki/PreviewMarkdown',
+        uploadMedia: '/Wiki/UploadMedia',
+        getAccessiblePages: '/Wiki/GetAccessiblePages'
+    },
+    currentPage: {
+        pageName: '',
+        culture: ''
+    }
+};
+
+const configElement = document.getElementById('wiki-edit-config');
+if (configElement) {
+    try {
+        config = JSON.parse(configElement.textContent);
+    } catch (e) {
+        console.error('Failed to parse wiki edit config:', e);
+    }
+}
 
     // Track uploaded media files
     const uploadedMedia = new Set();
     const temporaryMediaIdsInput = document.getElementById('temporary-media-ids');
+
+    // Track changes for unsaved warning
+    const form = textarea.closest('form');
+    const commitMessageInput = document.querySelector('input[name="CommitMessage"]');
+    let initialContent = textarea.value;
+    let initialCommitMessage = commitMessageInput ? commitMessageInput.value : '';
+    let hasUnsavedChanges = false;
+    let isFormSubmitting = false;
+
+    function checkForChanges() {
+        const contentChanged = textarea.value !== initialContent;
+        const commitMessageChanged = commitMessageInput && commitMessageInput.value !== initialCommitMessage;
+        hasUnsavedChanges = contentChanged || commitMessageChanged;
+    }
+
+    // Listen for content changes
+    textarea.addEventListener('input', checkForChanges);
+    if (commitMessageInput) {
+        commitMessageInput.addEventListener('input', checkForChanges);
+    }
+
+    // Track when form is being submitted
+    if (form) {
+        form.addEventListener('submit', function() {
+            isFormSubmitting = true;
+        });
+    }
+
+    // Warn before leaving page with unsaved changes
+    window.addEventListener('beforeunload', function(e) {
+        if (hasUnsavedChanges && !isFormSubmitting) {
+            e.preventDefault();
+            // Modern browsers ignore custom messages, but setting returnValue triggers the warning
+            e.returnValue = '';
+            return '';
+        }
+    });
 
     // Preview toggle functionality
     const togglePreviewBtn = document.getElementById('togglePreview');
@@ -12,8 +71,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const previewContent = document.getElementById('preview-content');
     const previewLoading = document.getElementById('preview-loading');
     const previewButtonText = document.getElementById('previewButtonText');
+    const markdownToolbarButtons = document.querySelectorAll('[data-markdown-action]');
     let isPreviewMode = false;
     let previewDebounceTimer = null;
+
+    function toggleEditingButtons(hide) {
+        markdownToolbarButtons.forEach(button => {
+            if (hide) {
+                button.disabled = true;
+                button.classList.add('disabled');
+            } else {
+                button.disabled = false;
+                button.classList.remove('disabled');
+            }
+        });
+    }
 
     if (togglePreviewBtn && previewContainer && previewContent) {
         togglePreviewBtn.addEventListener('click', function () {
@@ -24,12 +96,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 previewContainer.classList.remove("d-none");
                 previewButtonText.textContent = 'Edit';
                 togglePreviewBtn.querySelector('i').className = 'bi bi-pencil';
+                toggleEditingButtons(true);
                 updatePreview();
             } else {
                 textarea.classList.remove("d-none");
                 previewContainer.classList.add("d-none");
                 previewButtonText.textContent = 'Preview';
                 togglePreviewBtn.querySelector('i').className = 'bi bi-eye';
+                toggleEditingButtons(false);
             }
         });
 
@@ -48,16 +122,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             try {
                 const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-                const pageNameInput = document.querySelector('input[name="PageName"]');
-                const cultureInput = document.querySelector('input[name="Culture"]');
                 
                 const request = {
                     markdown: markdown,
-                    pageName: pageNameInput ? pageNameInput.value : null,
-                    culture: cultureInput ? cultureInput.value : null
+                    pageName: config.currentPage.pageName || null,
+                    culture: config.currentPage.culture || null
                 };
                 
-                const response = await fetch('/Wiki/PreviewMarkdown', {
+                const response = await fetch(config.apiEndpoints.previewMarkdown, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -152,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             showUploadIndicator(file.name);
 
-            const response = await fetch('/Wiki/UploadMedia', {
+            const response = await fetch(config.apiEndpoints.uploadMedia, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -256,8 +328,8 @@ document.addEventListener('DOMContentLoaded', function () {
         pageLinkModal.addEventListener('show.bs.modal', async function () {
             if (!pagesLoaded) {
                 try {
-                    const currentPageName = pageLinkModal.getAttribute('data-current-page');
-                    const response = await fetch(`/Wiki/GetAccessiblePages?currentPageName=${encodeURIComponent(currentPageName)}`);
+                    const currentPageName = config.currentPage.pageName;
+                    const response = await fetch(`${config.apiEndpoints.getAccessiblePages}?currentPageName=${encodeURIComponent(currentPageName)}`);
 
                     if (!response.ok) {
                         throw new Error('Failed to load pages');

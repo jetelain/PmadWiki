@@ -644,11 +644,9 @@ namespace Pmad.Wiki.Controllers
                 ModelState.AddModelError(nameof(model.Culture), cultureError);
             }
 
-
             if (!ModelState.IsValid)
             {
                 await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
-
                 return View(model);
             }
 
@@ -672,23 +670,41 @@ namespace Pmad.Wiki.Controllers
             if (!model.IsNew && !string.IsNullOrEmpty(model.OriginalContentHash))
             {
                 var currentPage = await _pageService.GetPageAsync(model.PageName, model.Culture, cancellationToken);
-                if (currentPage != null && currentPage.ContentHash != model.OriginalContentHash)
+                if (currentPage != null)
                 {
-                    ModelState.AddModelError(string.Empty, 
-                        $"Warning: This page has been modified by {currentPage.LastModifiedBy ?? "another user"} since you started editing. " +
-                        "Your changes will overwrite those changes. Please review the current version before saving.");
-                    model.OriginalContentHash = currentPage.ContentHash;
-                    return View(model);
+                    if (currentPage.ContentHash != model.OriginalContentHash)
+                    {
+                        ModelState.AddModelError(string.Empty,
+                            $"Warning: This page has been modified by {currentPage.LastModifiedBy ?? "another user"} since you started editing. " +
+                            "Your changes will overwrite those changes. Please review the current version before saving.");
+                        model.OriginalContentHash = currentPage.ContentHash;
+                        await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
+                        return View(model);
+                    }
+                    if (currentPage.Content == model.Content)
+                    {
+                        // No-op if content is unchanged. Commit would fail due to identical content.
+                        return RedirectToAction(nameof(View), new { id = model.PageName, culture = model.Culture });
+                    }
                 }
             }
-            
-            await _wikiPageEditService.SavePageAsync(
-                model.PageName,
-                model.Culture,
-                model.Content,
-                model.CommitMessage,
-                wikiUser.User,
-                cancellationToken);
+
+            try
+            {
+                await _wikiPageEditService.SavePageAsync(
+                    model.PageName,
+                    model.Culture,
+                    model.Content,
+                    model.CommitMessage,
+                    wikiUser.User,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Error saving page: {ex.Message}");
+                await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
+                return View(model);
+            }
 
             if (!string.IsNullOrEmpty(model.TemporaryMediaIds))
             {                

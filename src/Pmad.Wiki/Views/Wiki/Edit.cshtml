@@ -5,7 +5,16 @@
 
 <div class="wiki-edit">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>@(Model.IsNew ? "Create" : "Edit"): @Model.PageName</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Wiki" asp-action="View" asp-route-id="">Wiki</a></li>
+                @foreach (var crumb in Model.Breadcrumb.Take(Model.Breadcrumb.Count - 1))
+                {
+                    <li class="breadcrumb-item"><a asp-controller="Wiki" asp-action="View" asp-route-id="@crumb.PageName">@crumb.PageTitle</a></li>
+                }
+                <li class="breadcrumb-item active" aria-current="page">@Model.Breadcrumb.Last().PageTitle</li>
+            </ol>
+        </nav>
         <div class="btn-toolbar" role="toolbar">
             <div class="btn-group" role="group">
                 <a asp-action="SiteMap" class="btn btn-outline-secondary">
@@ -17,6 +26,8 @@
             </div>
         </div>
     </div>
+    
+    <h1>@ViewData["Title"]</h1>
 
     @if (!string.IsNullOrEmpty(Model.Culture))
     {
@@ -38,6 +49,11 @@
             <label asp-for="Content" class="form-label">Content (Markdown)</label>
 
             <div class="btn-toolbar mb-2" role="toolbar" aria-label="Markdown formatting toolbar">
+                <div class="btn-group btn-group-sm me-2" role="group" aria-label="Preview">
+                    <button type="button" id="togglePreview" class="btn btn-outline-primary">
+                        <i class="bi bi-eye"></i> <span id="previewButtonText">Preview</span>
+                    </button>
+                </div>
                 <div class="btn-group btn-group-sm me-2" role="group" aria-label="Text formatting">
                     <button type="button" class="btn btn-outline-secondary" data-markdown-action="bold" title="Bold">
                         <i class="bi bi-type-bold"></i>
@@ -96,11 +112,6 @@
                         <i class="bi bi-table"></i>
                     </button>
                 </div>
-                <div class="btn-group btn-group-sm" role="group" aria-label="Advanced">
-                    <button type="button" id="togglePreview" class="btn btn-outline-primary">
-                        <i class="bi bi-eye"></i> <span id="previewButtonText">Preview</span>
-                    </button>
-                </div>
             </div>
 
             <textarea asp-for="Content" class="form-control font-monospace" rows="20" id="content-textarea"></textarea>
@@ -140,7 +151,7 @@
 </div>
 
 <!-- Page Link Modal -->
-<div class="modal fade" id="pageLinkModal" tabindex="-1" aria-labelledby="pageLinkModalLabel" aria-hidden="true" data-current-page="@Model.PageName">
+<div class="modal fade" id="pageLinkModal" tabindex="-1" aria-labelledby="pageLinkModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -170,5 +181,18 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script type="application/json" id="wiki-edit-config">
+        @Json.Serialize(new {
+            apiEndpoints = new {
+                previewMarkdown = Url.Action("PreviewMarkdown", "Wiki"),
+                uploadMedia = Url.Action("UploadMedia", "Wiki"),
+                getAccessiblePages = Url.Action("GetAccessiblePages", "Wiki")
+            },
+            currentPage = new {
+                pageName = Model.PageName,
+                culture = Model.Culture
+            }
+        })
+    </script>
     <script src="~/lib/pmad-wiki/js/edit.js"></script>
 }

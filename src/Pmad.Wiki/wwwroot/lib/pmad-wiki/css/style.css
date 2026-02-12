@@ -116,3 +116,7 @@
 #upload-indicator {
     margin-bottom: 0.5rem;
 }
+
+#togglePreview {
+    min-width: 120px;
+}
