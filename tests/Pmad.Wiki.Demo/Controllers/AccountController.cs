@@ -8,7 +8,7 @@ namespace Pmad.Wiki.Demo.Controllers
     {
         public IActionResult Login(string? returnUrl = null)
         {
-            return Challenge(new AuthenticationProperties { RedirectUri = returnUrl ?? "/" });
+            return Challenge(new AuthenticationProperties { RedirectUri = returnUrl ?? "/", IsPersistent = true });
         }
 
         public async Task<IActionResult> Logout()

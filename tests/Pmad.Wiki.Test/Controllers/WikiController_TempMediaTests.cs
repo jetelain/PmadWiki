@@ -255,7 +255,7 @@ public class WikiController_TempMediaTests : WikiControllerTestBase
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Temporary media ID cannot be null or empty.", badRequestResult.Value);
+        Assert.Equal("Invalid temporary media ID.", badRequestResult.Value);
     }
 
     [Fact]

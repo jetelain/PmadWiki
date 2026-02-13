@@ -24,44 +24,40 @@ public class WikiInputValidatorTest
     public void IsValidPageName_WithValidName_ReturnsTrue(string pageName)
     {
         // Act
-        var result = WikiInputValidator.IsValidPageName(pageName, out var errorMessage);
+        var result = WikiInputValidator.IsValidPageName(pageName);
 
         // Assert
         Assert.True(result);
-        Assert.Null(errorMessage);
     }
 
     [Fact]
     public void IsValidPageName_WithNull_ReturnsFalse()
     {
         // Act
-        var result = WikiInputValidator.IsValidPageName(null!, out var errorMessage);
+        var result = WikiInputValidator.IsValidPageName(null!);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Page name cannot be null or empty.", errorMessage);
     }
 
     [Fact]
     public void IsValidPageName_WithEmptyString_ReturnsFalse()
     {
         // Act
-        var result = WikiInputValidator.IsValidPageName("", out var errorMessage);
+        var result = WikiInputValidator.IsValidPageName("");
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Page name cannot be null or empty.", errorMessage);
     }
 
     [Fact]
     public void IsValidPageName_WithWhitespace_ReturnsFalse()
     {
         // Act
-        var result = WikiInputValidator.IsValidPageName("   ", out var errorMessage);
+        var result = WikiInputValidator.IsValidPageName("   ");
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Page name cannot be null or empty.", errorMessage);
     }
 
     [Theory]
@@ -97,11 +93,10 @@ public class WikiInputValidatorTest
     public void IsValidPageName_WithInvalidCharacters_ReturnsFalse(string pageName)
     {
         // Act
-        var result = WikiInputValidator.IsValidPageName(pageName, out var errorMessage);
+        var result = WikiInputValidator.IsValidPageName(pageName);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Invalid name.", errorMessage);
     }
 
     [Theory]
@@ -112,11 +107,10 @@ public class WikiInputValidatorTest
     public void IsValidPageName_WithDoubleDot_ReturnsFalse(string pageName)
     {
         // Act
-        var result = WikiInputValidator.IsValidPageName(pageName, out var errorMessage);
+        var result = WikiInputValidator.IsValidPageName(pageName);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Invalid name.", errorMessage);
     }
 
     [Theory]
@@ -126,11 +120,10 @@ public class WikiInputValidatorTest
     public void IsValidPageName_WithDoubleSlash_ReturnsFalse(string pageName)
     {
         // Act
-        var result = WikiInputValidator.IsValidPageName(pageName, out var errorMessage);
+        var result = WikiInputValidator.IsValidPageName(pageName);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Invalid name.", errorMessage);
     }
 
     [Theory]
@@ -140,11 +133,10 @@ public class WikiInputValidatorTest
     public void IsValidPageName_StartingWithSlash_ReturnsFalse(string pageName)
     {
         // Act
-        var result = WikiInputValidator.IsValidPageName(pageName, out var errorMessage);
+        var result = WikiInputValidator.IsValidPageName(pageName);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Invalid name.", errorMessage);
     }
 
     [Theory]
@@ -154,11 +146,10 @@ public class WikiInputValidatorTest
     public void IsValidPageName_EndingWithSlash_ReturnsFalse(string pageName)
     {
         // Act
-        var result = WikiInputValidator.IsValidPageName(pageName, out var errorMessage);
+        var result = WikiInputValidator.IsValidPageName(pageName);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Invalid name.", errorMessage);
     }
 
     #endregion
@@ -179,44 +170,40 @@ public class WikiInputValidatorTest
     public void IsValidCulture_WithValidCulture_ReturnsTrue(string culture)
     {
         // Act
-        var result = WikiInputValidator.IsValidCulture(culture, out var errorMessage);
+        var result = WikiInputValidator.IsValidCulture(culture);
 
         // Assert
         Assert.True(result);
-        Assert.Null(errorMessage);
     }
 
     [Fact]
     public void IsValidCulture_WithNull_ReturnsFalse()
     {
         // Act
-        var result = WikiInputValidator.IsValidCulture(null!, out var errorMessage);
+        var result = WikiInputValidator.IsValidCulture(null!);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Culture cannot be null or empty.", errorMessage);
     }
 
     [Fact]
     public void IsValidCulture_WithEmptyString_ReturnsFalse()
     {
         // Act
-        var result = WikiInputValidator.IsValidCulture("", out var errorMessage);
+        var result = WikiInputValidator.IsValidCulture("");
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Culture cannot be null or empty.", errorMessage);
     }
 
     [Fact]
     public void IsValidCulture_WithWhitespace_ReturnsFalse()
     {
         // Act
-        var result = WikiInputValidator.IsValidCulture("   ", out var errorMessage);
+        var result = WikiInputValidator.IsValidCulture("   ");
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Culture cannot be null or empty.", errorMessage);
     }
 
     [Theory]
@@ -235,11 +222,10 @@ public class WikiInputValidatorTest
     public void IsValidCulture_WithInvalidFormat_ReturnsFalse(string culture)
     {
         // Act
-        var result = WikiInputValidator.IsValidCulture(culture, out var errorMessage);
+        var result = WikiInputValidator.IsValidCulture(culture);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Invalid culture identifier.", errorMessage);
     }
 
     #endregion
@@ -263,7 +249,7 @@ public class WikiInputValidatorTest
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidatePageName(null!));
         Assert.Equal("pageName", exception.ParamName);
-        Assert.Contains("Page name cannot be null or empty.", exception.Message);
+        Assert.Contains("Invalid page name.", exception.Message);
     }
 
     [Fact]
@@ -273,7 +259,7 @@ public class WikiInputValidatorTest
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidatePageName(""));
         Assert.Equal("pageName", exception.ParamName);
-        Assert.Contains("Page name cannot be null or empty.", exception.Message);
+        Assert.Contains("Invalid page name.", exception.Message);
     }
 
     [Theory]
@@ -287,7 +273,7 @@ public class WikiInputValidatorTest
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidatePageName(pageName));
         Assert.Equal("pageName", exception.ParamName);
-        Assert.Contains("Invalid name.", exception.Message);
+        Assert.Contains("Invalid page name.", exception.Message);
     }
 
     #endregion
@@ -311,7 +297,7 @@ public class WikiInputValidatorTest
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidateCulture(null!));
         Assert.Equal("culture", exception.ParamName);
-        Assert.Contains("Culture cannot be null or empty.", exception.Message);
+        Assert.Contains("Invalid culture identifier.", exception.Message);
     }
 
     [Fact]
@@ -321,7 +307,7 @@ public class WikiInputValidatorTest
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidateCulture(""));
         Assert.Equal("culture", exception.ParamName);
-        Assert.Contains("Culture cannot be null or empty.", exception.Message);
+        Assert.Contains("Invalid culture identifier.", exception.Message);
     }
 
     [Theory]
@@ -361,44 +347,40 @@ public class WikiInputValidatorTest
     public void IsValidMediaPath_WithValidPath_ReturnsTrue(string mediaPath)
     {
         // Act
-        var result = WikiInputValidator.IsValidMediaPath(mediaPath, out var errorMessage);
+        var result = WikiInputValidator.IsValidMediaPath(mediaPath);
 
         // Assert
         Assert.True(result);
-        Assert.Null(errorMessage);
     }
 
     [Fact]
     public void IsValidMediaPath_WithNull_ReturnsFalse()
     {
         // Act
-        var result = WikiInputValidator.IsValidMediaPath(null!, out var errorMessage);
+        var result = WikiInputValidator.IsValidMediaPath(null!);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Media path cannot be null or empty.", errorMessage);
     }
 
     [Fact]
     public void IsValidMediaPath_WithEmptyString_ReturnsFalse()
     {
         // Act
-        var result = WikiInputValidator.IsValidMediaPath("", out var errorMessage);
+        var result = WikiInputValidator.IsValidMediaPath("");
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Media path cannot be null or empty.", errorMessage);
     }
 
     [Fact]
     public void IsValidMediaPath_WithWhitespace_ReturnsFalse()
     {
         // Act
-        var result = WikiInputValidator.IsValidMediaPath("   ", out var errorMessage);
+        var result = WikiInputValidator.IsValidMediaPath("   ");
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Media path cannot be null or empty.", errorMessage);
     }
 
     [Theory]
@@ -437,11 +419,10 @@ public class WikiInputValidatorTest
     public void IsValidMediaPath_WithInvalidCharacters_ReturnsFalse(string mediaPath)
     {
         // Act
-        var result = WikiInputValidator.IsValidMediaPath(mediaPath, out var errorMessage);
+        var result = WikiInputValidator.IsValidMediaPath(mediaPath);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Invalid path.", errorMessage);
     }
 
     [Theory]
@@ -453,11 +434,10 @@ public class WikiInputValidatorTest
     public void IsValidMediaPath_WithDoubleDot_ReturnsFalse(string mediaPath)
     {
         // Act
-        var result = WikiInputValidator.IsValidMediaPath(mediaPath, out var errorMessage);
+        var result = WikiInputValidator.IsValidMediaPath(mediaPath);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Invalid path.", errorMessage);
     }
 
     [Theory]
@@ -467,11 +447,10 @@ public class WikiInputValidatorTest
     public void IsValidMediaPath_WithDoubleSlash_ReturnsFalse(string mediaPath)
     {
         // Act
-        var result = WikiInputValidator.IsValidMediaPath(mediaPath, out var errorMessage);
+        var result = WikiInputValidator.IsValidMediaPath(mediaPath);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Invalid path.", errorMessage);
     }
 
     [Theory]
@@ -481,11 +460,10 @@ public class WikiInputValidatorTest
     public void IsValidMediaPath_StartingWithSlash_ReturnsFalse(string mediaPath)
     {
         // Act
-        var result = WikiInputValidator.IsValidMediaPath(mediaPath, out var errorMessage);
+        var result = WikiInputValidator.IsValidMediaPath(mediaPath);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Invalid path.", errorMessage);
     }
 
     [Theory]
@@ -495,11 +473,10 @@ public class WikiInputValidatorTest
     public void IsValidMediaPath_EndingWithSlash_ReturnsFalse(string mediaPath)
     {
         // Act
-        var result = WikiInputValidator.IsValidMediaPath(mediaPath, out var errorMessage);
+        var result = WikiInputValidator.IsValidMediaPath(mediaPath);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Invalid path.", errorMessage);
     }
 
     #endregion
@@ -524,7 +501,7 @@ public class WikiInputValidatorTest
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidateMediaPath(null!));
         Assert.Equal("mediaPath", exception.ParamName);
-        Assert.Contains("Media path cannot be null or empty.", exception.Message);
+        Assert.Contains("Invalid media path.", exception.Message);
     }
 
     [Fact]
@@ -534,7 +511,7 @@ public class WikiInputValidatorTest
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidateMediaPath(""));
         Assert.Equal("mediaPath", exception.ParamName);
-        Assert.Contains("Media path cannot be null or empty.", exception.Message);
+        Assert.Contains("Invalid media path.", exception.Message);
     }
 
     [Theory]
@@ -548,7 +525,7 @@ public class WikiInputValidatorTest
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidateMediaPath(mediaPath));
         Assert.Equal("mediaPath", exception.ParamName);
-        Assert.Contains("Invalid path.", exception.Message);
+        Assert.Contains("Invalid media path.", exception.Message);
     }
 
     #endregion
@@ -569,44 +546,40 @@ public class WikiInputValidatorTest
     public void IsValidTempMediaId_WithValidId_ReturnsTrue(string tempMediaId)
     {
         // Act
-        var result = WikiInputValidator.IsValidTempMediaId(tempMediaId, out var errorMessage);
+        var result = WikiInputValidator.IsValidTempMediaId(tempMediaId);
 
         // Assert
         Assert.True(result);
-        Assert.Null(errorMessage);
     }
 
     [Fact]
     public void IsValidTempMediaId_WithNull_ReturnsFalse()
     {
         // Act
-        var result = WikiInputValidator.IsValidTempMediaId(null!, out var errorMessage);
+        var result = WikiInputValidator.IsValidTempMediaId(null!);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Temporary media ID cannot be null or empty.", errorMessage);
     }
 
     [Fact]
     public void IsValidTempMediaId_WithEmptyString_ReturnsFalse()
     {
         // Act
-        var result = WikiInputValidator.IsValidTempMediaId("", out var errorMessage);
+        var result = WikiInputValidator.IsValidTempMediaId("");
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Temporary media ID cannot be null or empty.", errorMessage);
     }
 
     [Fact]
     public void IsValidTempMediaId_WithWhitespace_ReturnsFalse()
     {
         // Act
-        var result = WikiInputValidator.IsValidTempMediaId("   ", out var errorMessage);
+        var result = WikiInputValidator.IsValidTempMediaId("   ");
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Temporary media ID cannot be null or empty.", errorMessage);
     }
 
     [Theory]
@@ -628,11 +601,10 @@ public class WikiInputValidatorTest
     public void IsValidTempMediaId_WithInvalidFormat_ReturnsFalse(string tempMediaId)
     {
         // Act
-        var result = WikiInputValidator.IsValidTempMediaId(tempMediaId, out var errorMessage);
+        var result = WikiInputValidator.IsValidTempMediaId(tempMediaId);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("Invalid temporary media ID.", errorMessage);
     }
 
     #endregion
@@ -657,7 +629,7 @@ public class WikiInputValidatorTest
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidateTempMediaId(null!));
         Assert.Equal("tempMediaId", exception.ParamName);
-        Assert.Contains("Temporary media ID cannot be null or empty.", exception.Message);
+        Assert.Contains("Invalid temporary media ID.", exception.Message);
     }
 
     [Fact]
@@ -667,7 +639,7 @@ public class WikiInputValidatorTest
         var exception = Assert.Throws<ArgumentException>(() => 
             WikiInputValidator.ValidateTempMediaId(""));
         Assert.Equal("tempMediaId", exception.ParamName);
-        Assert.Contains("Temporary media ID cannot be null or empty.", exception.Message);
+        Assert.Contains("Invalid temporary media ID.", exception.Message);
     }
 
     [Theory]

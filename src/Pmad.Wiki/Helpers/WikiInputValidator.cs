@@ -59,17 +59,15 @@ public static partial class WikiInputValidator
     [GeneratedRegex("^([a-f0-9]+)$", RegexOptions.CultureInvariant)]
     internal static partial Regex TempMediaIdRegex();
 
-    public static bool IsValidPageName(string pageName, [NotNullWhen(false)] out string? errorMessage)
+    public static bool IsValidPageName(string pageName)
     {
         if (string.IsNullOrWhiteSpace(pageName))
         {
-            errorMessage = "Page name cannot be null or empty.";
             return false;
         }
 
         if (!PageNameRegex().IsMatch(pageName))
         {
-            errorMessage = "Invalid name.";
             return false;
         }
 
@@ -79,25 +77,21 @@ public static partial class WikiInputValidator
             || pageName.StartsWith("/", StringComparison.Ordinal)
             || pageName.EndsWith("/", StringComparison.Ordinal))
         {
-            errorMessage = "Invalid name.";
             return false;
         }
 
-        errorMessage = null;
         return true;
     }
 
-    public static bool IsValidMediaPath(string mediaPath, [NotNullWhen(false)] out string? errorMessage)
+    public static bool IsValidMediaPath(string mediaPath)
     {
         if (string.IsNullOrWhiteSpace(mediaPath))
         {
-            errorMessage = "Media path cannot be null or empty.";
             return false;
         }
 
         if (!MediaPathRegex().IsMatch(mediaPath))
         {
-            errorMessage = "Invalid path.";
             return false;
         }
 
@@ -107,77 +101,69 @@ public static partial class WikiInputValidator
             || mediaPath.StartsWith("/", StringComparison.Ordinal)
             || mediaPath.EndsWith("/", StringComparison.Ordinal))
         {
-            errorMessage = "Invalid path.";
             return false;
         }
 
-        errorMessage = null;
         return true;
     }
 
-    public static bool IsValidCulture(string culture, [NotNullWhen(false)] out string? errorMessage)
+    public static bool IsValidCulture(string culture)
     {
         if (string.IsNullOrWhiteSpace(culture))
         {
-            errorMessage = "Culture cannot be null or empty.";
             return false;
         }
 
         if (!CultureRegex().IsMatch(culture))
         {
-            errorMessage = "Invalid culture identifier.";
             return false;
         }
 
-        errorMessage = null;
         return true;
     }
 
-    public static bool IsValidTempMediaId(string tempMediaId, [NotNullWhen(false)] out string? errorMessage)
+    public static bool IsValidTempMediaId(string tempMediaId)
     {
         if (string.IsNullOrWhiteSpace(tempMediaId))
         {
-            errorMessage = "Temporary media ID cannot be null or empty.";
             return false;
         }
         if (!TempMediaIdRegex().IsMatch(tempMediaId))
         {
-            errorMessage = "Invalid temporary media ID.";
             return false;
         }
-        errorMessage = null;
         return true;
     }
 
     public static void ValidatePageName(string pageName)
     {
-        if (!IsValidPageName(pageName, out var errorMessage))
+        if (!IsValidPageName(pageName))
         {
-            throw new ArgumentException(errorMessage, nameof(pageName));
+            throw new ArgumentException("Invalid page name.", nameof(pageName));
         }
     }
 
     public static void ValidateMediaPath(string mediaPath)
     {
-        if (!IsValidMediaPath(mediaPath, out var errorMessage))
+        if (!IsValidMediaPath(mediaPath))
         {
-            throw new ArgumentException(errorMessage, nameof(mediaPath));
+            throw new ArgumentException("Invalid media path.", nameof(mediaPath));
         }
     }
 
     public static void ValidateCulture(string culture)
     {
-        if (!IsValidCulture(culture, out var errorMessage))
+        if (!IsValidCulture(culture))
         {
-            throw new ArgumentException(errorMessage, nameof(culture));
+            throw new ArgumentException("Invalid culture identifier.", nameof(culture));
         }
     }
 
     public static void ValidateTempMediaId(string tempMediaId)
     {
-        if (!IsValidTempMediaId(tempMediaId, out var errorMessage))
+        if (!IsValidTempMediaId(tempMediaId))
         {
-            throw new ArgumentException(errorMessage, nameof(tempMediaId));
+            throw new ArgumentException("Invalid temporary media ID.", nameof(tempMediaId));
         }
     }
 }

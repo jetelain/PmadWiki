@@ -51,14 +51,14 @@ namespace Pmad.Wiki.Controllers
                 id = _options.HomePageName;
             }
 
-            if (!WikiInputValidator.IsValidPageName(id, out var pageNameError))
+            if (!WikiInputValidator.IsValidPageName(id))
             {
-                return BadRequest(pageNameError);
+                return BadRequest("Invalid page name.");
             }
 
-            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture, out var cultureError))
+            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture))
             {
-                return BadRequest(cultureError);
+                return BadRequest("Invalid culture identifier.");
             }
 
             if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
@@ -170,14 +170,14 @@ namespace Pmad.Wiki.Controllers
                 return BadRequest("Page name is required.");
             }
 
-            if (!WikiInputValidator.IsValidPageName(id, out var pageNameError))
+            if (!WikiInputValidator.IsValidPageName(id))
             {
-                return BadRequest(pageNameError);
+                return BadRequest("Invalid page name.");
             }
 
-            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture, out var cultureError))
+            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture))
             {
-                return BadRequest(cultureError);
+                return BadRequest("Invalid culture identifier.");
             }
 
             if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
@@ -241,14 +241,14 @@ namespace Pmad.Wiki.Controllers
                 return BadRequest("Commit ID is required.");
             }
 
-            if (!WikiInputValidator.IsValidPageName(id, out var pageNameError))
+            if (!WikiInputValidator.IsValidPageName(id))
             {
-                return BadRequest(pageNameError);
+                return BadRequest("Invalid page name.");
             }
 
-            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture, out var cultureError))
+            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture))
             {
-                return BadRequest(cultureError);
+                return BadRequest("Invalid culture identifier.");
             }
 
             if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
@@ -327,14 +327,14 @@ namespace Pmad.Wiki.Controllers
                 return BadRequest("To commit ID is required.");
             }
 
-            if (!WikiInputValidator.IsValidPageName(id, out var pageNameError))
+            if (!WikiInputValidator.IsValidPageName(id))
             {
-                return BadRequest(pageNameError);
+                return BadRequest("Invalid page name.");
             }
 
-            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture, out var cultureError))
+            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture))
             {
-                return BadRequest(cultureError);
+                return BadRequest("Invalid culture identifier.");
             }
 
             if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
@@ -529,14 +529,14 @@ namespace Pmad.Wiki.Controllers
                 return BadRequest("Page name is required.");
             }
 
-            if (!WikiInputValidator.IsValidPageName(id, out var pageNameError))
+            if (!WikiInputValidator.IsValidPageName(id))
             {
-                return BadRequest(pageNameError);
+                return BadRequest("Invalid page name.");
             }
 
-            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture, out var cultureError))
+            if (!string.IsNullOrEmpty(culture) && !WikiInputValidator.IsValidCulture(culture))
             {
-                return BadRequest(cultureError);
+                return BadRequest("Invalid culture identifier.");
             }
 
             var wikiUser = await _userService.GetWikiUser(User, true, cancellationToken);
@@ -595,9 +595,9 @@ namespace Pmad.Wiki.Controllers
                 return Forbid();
             }
 
-            if (!WikiInputValidator.IsValidPageName(currentPageName, out var pageNameError))
+            if (!WikiInputValidator.IsValidPageName(currentPageName))
             {
-                return BadRequest(pageNameError);
+                return BadRequest("Invalid page name.");
             }
 
             var pages = (await GetAllAccessiblePages(wikiUser, cancellationToken))
@@ -638,14 +638,14 @@ namespace Pmad.Wiki.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(WikiPageEditViewModel model, CancellationToken cancellationToken)
         {
-            if (!WikiInputValidator.IsValidPageName(model.PageName, out var pageNameError))
+            if (!WikiInputValidator.IsValidPageName(model.PageName))
             {
-                ModelState.AddModelError(nameof(model.PageName), pageNameError);
+                ModelState.AddModelError(nameof(model.PageName), "Invalid page name.");
             }
 
-            if (!string.IsNullOrEmpty(model.Culture) && !WikiInputValidator.IsValidCulture(model.Culture, out var cultureError))
+            if (!string.IsNullOrEmpty(model.Culture) && !WikiInputValidator.IsValidCulture(model.Culture))
             {
-                ModelState.AddModelError(nameof(model.Culture), cultureError);
+                ModelState.AddModelError(nameof(model.Culture), "Invalid culture identifier.");
             }
 
             if (!ModelState.IsValid)
@@ -775,9 +775,9 @@ namespace Pmad.Wiki.Controllers
         [ResponseCache(Duration = CacheDurationSeconds, Location = ResponseCacheLocation.Client)]
         public async Task<IActionResult> TempMedia(string id, CancellationToken cancellationToken)
         {
-            if (!WikiInputValidator.IsValidTempMediaId(id, out var tempMediaIdError))
+            if (!WikiInputValidator.IsValidTempMediaId(id))
             {
-                return BadRequest(tempMediaIdError);
+                return BadRequest("Invalid temporary media ID.");
             }
 
             var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
@@ -892,9 +892,9 @@ namespace Pmad.Wiki.Controllers
         [ResponseCache(Duration = CacheDurationSeconds, Location = ResponseCacheLocation.Client)]
         public async Task<IActionResult> Media(string id, CancellationToken cancellationToken)
         {
-            if (!WikiInputValidator.IsValidMediaPath(id, out var mediaPathError))
+            if (!WikiInputValidator.IsValidMediaPath(id))
             {
-                return BadRequest(mediaPathError);
+                return BadRequest("Invalid media path.");
             }
 
             if (!_options.AllowedMediaExtensions.Any(ext => id.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))

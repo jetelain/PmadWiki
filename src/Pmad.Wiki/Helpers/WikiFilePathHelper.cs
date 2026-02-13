@@ -130,7 +130,7 @@ public static class WikiFilePathHelper
 
     private static bool IsValidCulture(string culture)
     {
-        if (!WikiInputValidator.IsValidCulture(culture, out _))
+        if (!WikiInputValidator.IsValidCulture(culture))
         {
             return false;
         }
