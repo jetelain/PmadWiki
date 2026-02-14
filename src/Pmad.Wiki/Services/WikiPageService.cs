@@ -274,7 +274,7 @@ public sealed class WikiPageService : IWikiPageService
             operations.Add(new AddFileOperation(mediaPath, mediaContent));
         }
 
-        var authorSignature = new GitCommitSignature(author.GitName, author.GitEmail, DateTimeOffset.UtcNow);
+        var authorSignature = WikiUserHelper.CreateGitCommitSignature(author);
         var metadata = new GitCommitMetadata(commitMessage, authorSignature);
 
         await repository.CreateCommitAsync(_options.BranchName, operations, metadata, cancellationToken);

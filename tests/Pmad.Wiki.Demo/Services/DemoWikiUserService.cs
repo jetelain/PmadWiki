@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Pmad.Wiki.Demo.Entities;
+using Pmad.Wiki.Helpers;
 using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki.Demo.Services;
@@ -35,9 +36,9 @@ public class DemoWikiUserService : IWikiUserService
             user = new DemoUser
             {
                 SteamId = steamId,
-                GitEmail = GenerateGitEmail(),
+                GitEmail = WikiUserHelper.GenerateUniqueGitEmail(),
                 DisplayName = principal.FindFirstValue(ClaimTypes.Name) ?? "(no name)",
-                GitName = principal.FindFirstValue(ClaimTypes.Name) ?? "(no name)"
+                GitName = WikiUserHelper.SanitizeGitNameOrEmail(principal.FindFirstValue(ClaimTypes.Name) ?? "(no name)")
             };
             _demoContext.Users.Add(user);
             await _demoContext.SaveChangesAsync(cancellationToken);
@@ -47,11 +48,6 @@ public class DemoWikiUserService : IWikiUserService
 
         return new DemoWikiUserWithPermissions(user, isAdmin);
     }
-
-    private string GenerateGitEmail()
-    {
-        return $"{Guid.NewGuid():N}@demo.pmadwiki.local";
-    }                
 
     public async Task<IWikiUser?> GetWikiUserFromGitEmail(string gitEmail, CancellationToken cancellationToken)
     {
