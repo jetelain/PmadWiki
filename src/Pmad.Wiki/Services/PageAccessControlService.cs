@@ -106,7 +106,7 @@ public class PageAccessControlService : IPageAccessControlService
             ? new UpdateFileOperation(PermissionsFileName, contentBytes)
             : new AddFileOperation(PermissionsFileName, contentBytes);
 
-        var authorSignature = new GitCommitSignature(author.GitName, author.GitEmail, DateTimeOffset.UtcNow);
+        var authorSignature = WikiUserHelper.CreateGitCommitSignature(author);
         var metadata = new GitCommitMetadata(commitMessage, authorSignature);
 
         await repository.CreateCommitAsync(_options.BranchName, new[] { operation }, metadata, cancellationToken);
