@@ -70,6 +70,6 @@ public class WikiPageTitleCache : IWikiPageTitleCache
     private IGitRepository GetRepository()
     {
         var repositoryPath = Path.Combine(_options.RepositoryRoot, _options.WikiRepositoryName);
-        return _gitRepositoryService.GetRepository(repositoryPath);
+        return _gitRepositoryService.GetRepositoryByPath(repositoryPath);
     }
 }

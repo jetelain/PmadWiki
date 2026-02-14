@@ -286,7 +286,7 @@ public sealed class WikiPageService : IWikiPageService
     private IGitRepository GetRepository()
     {
         var repositoryPath = GetRepositoryPath();
-        return _gitRepositoryService.GetRepository(repositoryPath);
+        return _gitRepositoryService.GetRepositoryByPath(repositoryPath);
     }
 
     private string GetRepositoryPath()
