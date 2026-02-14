@@ -298,15 +298,15 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Setup permissions: users can read Home and About, but not admin pages
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("Home", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = false });
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("About", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = false });
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("admin/settings", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = false, CanEdit = false });
 
@@ -377,9 +377,9 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
         Assert.Equal(3, model.RootNodes.Count);
         Assert.Contains(model.RootNodes, n => n.PageName == "Home");
         Assert.Contains(model.RootNodes, n => n.PageName == "About");
-        
+
         // Verify CheckPageAccessAsync was never called when permissions are disabled
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync(It.IsAny<string>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
@@ -615,11 +615,11 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .Setup(x => x.GetAllPagesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(pages);
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("PublicPage", Array.Empty<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = false });
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("PrivatePage", Array.Empty<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = false, CanEdit = false });
 
@@ -632,11 +632,11 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
         
         Assert.Single(model.RootNodes);
         Assert.Equal("PublicPage", model.RootNodes[0].PageName);
-        
-        _mockPageService.Verify(
+
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("PublicPage", Array.Empty<string>(), It.IsAny<CancellationToken>()),
             Times.Once);
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("PrivatePage", Array.Empty<string>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }

@@ -247,7 +247,7 @@ public class WikiController_HistoryTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("AdminPage", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -273,7 +273,7 @@ public class WikiController_HistoryTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("AdminPage", Array.Empty<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -304,7 +304,7 @@ public class WikiController_HistoryTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("TestPage", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -461,7 +461,7 @@ public class WikiController_HistoryTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("PublicPage", Array.Empty<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -488,7 +488,7 @@ public class WikiController_HistoryTests : WikiControllerTestBase
         var model = Assert.IsType<WikiHistoryViewModel>(viewResult.Model);
         Assert.Equal("PublicPage", model.PageName);
 
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("PublicPage", Array.Empty<string>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -658,7 +658,7 @@ public class WikiController_HistoryTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("TestPage", new[] { "translators" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -691,7 +691,7 @@ public class WikiController_HistoryTests : WikiControllerTestBase
         Assert.Single(model.Entries);
 
         // Note: Permission check is on the page name, not the culture-specific version
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("TestPage", new[] { "translators" }, It.IsAny<CancellationToken>()),
             Times.Once);
     }

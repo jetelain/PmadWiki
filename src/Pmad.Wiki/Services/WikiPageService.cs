@@ -10,7 +10,6 @@ public sealed class WikiPageService : IWikiPageService
 {
     private readonly IGitRepositoryService _gitRepositoryService;
     private readonly IWikiUserService _wikiUserService;
-    private readonly IPageAccessControlService _pageAccessControlService;
     private readonly IWikiPageTitleCache _titleCache;
     private readonly WikiOptions _options;
     private readonly IMarkdownRenderService _markdownRenderService;
@@ -18,14 +17,12 @@ public sealed class WikiPageService : IWikiPageService
     public WikiPageService(
         IGitRepositoryService gitRepositoryService, 
         IWikiUserService wikiUserService, 
-        IPageAccessControlService pageAccessControlService,
         IWikiPageTitleCache titleCache,
         IMarkdownRenderService markdownRenderService,
         IOptions<WikiOptions> options)
     {
         _wikiUserService = wikiUserService;
         _gitRepositoryService = gitRepositoryService;
-        _pageAccessControlService = pageAccessControlService;
         _titleCache = titleCache;
         _options = options.Value;
         _markdownRenderService = markdownRenderService;
@@ -295,11 +292,6 @@ public sealed class WikiPageService : IWikiPageService
     private string GetRepositoryPath()
     {
         return Path.Combine(_options.RepositoryRoot, _options.WikiRepositoryName);
-    }
-
-    public Task<PageAccessPermissions> CheckPageAccessAsync(string pageName, string[] userGroups, CancellationToken cancellationToken = default)
-    {
-        return _pageAccessControlService.CheckPageAccessAsync(pageName, userGroups, cancellationToken);
     }
 
     public Task<string?> GetPageTitleAsync(string pageName, string? culture, CancellationToken cancellationToken = default)

@@ -219,7 +219,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("admin/images/logo.png", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -237,7 +237,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
         var fileResult = Assert.IsType<FileContentResult>(result);
         Assert.Equal(mediaContent, fileResult.FileContents);
 
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("admin/images/logo.png", new[] { "users" }, It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -262,7 +262,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("admin/images/logo.png", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -288,7 +288,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("admin/images/logo.png", Array.Empty<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -313,7 +313,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("logo.png", Array.Empty<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -329,7 +329,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
         Assert.Equal(mediaContent, fileResult.FileContents);
 
         // Should call CheckPageAccessAsync with full path even for root files
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("logo.png", Array.Empty<string>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -356,7 +356,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("docs/api/images/diagram.png", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -374,7 +374,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
         var fileResult = Assert.IsType<FileContentResult>(result);
         Assert.Equal(mediaContent, fileResult.FileContents);
 
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("docs/api/images/diagram.png", new[] { "users" }, It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -489,7 +489,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
         };
 
         // The controller should check "admin/config.png", not "admin"
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("admin/config.png", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -503,7 +503,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
         Assert.IsType<ForbidResult>(result);
 
         // Verify it checked the full path, not just "admin"
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("admin/config.png", new[] { "users" }, It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -530,7 +530,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
             MatchedPattern = "admin/**"
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("admin/settings/images/screenshot.png", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -543,7 +543,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
         // Assert
         Assert.IsType<ForbidResult>(result);
 
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("admin/settings/images/screenshot.png", new[] { "users" }, It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -570,7 +570,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
             MatchedPattern = "admin/*.png"
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("admin/logo.png", new[] { "admin" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -590,7 +590,7 @@ public class WikiController_MediaTests : WikiControllerTestBase
         Assert.Equal(mediaContent, fileResult.FileContents);
 
         // Verify the full path was checked
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("admin/logo.png", new[] { "admin" }, It.IsAny<CancellationToken>()),
             Times.Once);
     }

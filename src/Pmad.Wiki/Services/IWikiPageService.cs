@@ -18,8 +18,6 @@ public interface IWikiPageService
     
     Task SavePageWithMediaAsync(string pageName, string? culture, string content, string commitMessage, Services.IWikiUser author, Dictionary<string, byte[]> mediaFiles, CancellationToken cancellationToken = default);
 
-    Task<PageAccessPermissions> CheckPageAccessAsync(string pageName, string[] userGroups, CancellationToken cancellationToken = default);
-
     Task<string?> GetPageTitleAsync(string pageName, string? culture, CancellationToken cancellationToken = default);
 
     Task<byte[]?> GetMediaFileAsync(string filePath, CancellationToken cancellationToken = default);

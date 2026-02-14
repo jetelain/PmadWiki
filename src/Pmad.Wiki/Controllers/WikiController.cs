@@ -80,7 +80,7 @@ namespace Pmad.Wiki.Controllers
             if (_options.UsePageLevelPermissions)
             {
                 var userGroups = wikiUser?.Groups ?? [];
-                var pageAccess = await _pageService.CheckPageAccessAsync(id, userGroups, cancellationToken);
+                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, userGroups, cancellationToken);
                 if (!pageAccess.CanRead)
                 {
                     if (User.Identity?.IsAuthenticated != true)
@@ -100,7 +100,7 @@ namespace Pmad.Wiki.Controllers
                     // Check page-level edit permissions even for new pages
                     if (_options.UsePageLevelPermissions)
                     {
-                        var pageAccess = await _pageService.CheckPageAccessAsync(id, wikiUser.Groups, cancellationToken);
+                        var pageAccess = await _accessControlService.CheckPageAccessAsync(id, wikiUser.Groups, cancellationToken);
                         if (pageAccess.CanEdit)
                         {
                             return RedirectToAction(nameof(Edit), new { id, culture });
@@ -119,7 +119,7 @@ namespace Pmad.Wiki.Controllers
             bool canEdit = wikiUser?.CanEdit == true;
             if (canEdit && _options.UsePageLevelPermissions)
             {
-                var pageAccess = await _pageService.CheckPageAccessAsync(id, wikiUser!.Groups, cancellationToken);
+                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, wikiUser!.Groups, cancellationToken);
                 canEdit = pageAccess.CanEdit;
             }
 
@@ -199,7 +199,7 @@ namespace Pmad.Wiki.Controllers
             if (_options.UsePageLevelPermissions)
             {
                 var userGroups = wikiUser?.Groups ?? [];
-                var pageAccess = await _pageService.CheckPageAccessAsync(id, userGroups, cancellationToken);
+                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, userGroups, cancellationToken);
                 if (!pageAccess.CanRead)
                 {
                     if (User.Identity?.IsAuthenticated != true)
@@ -270,7 +270,7 @@ namespace Pmad.Wiki.Controllers
             if (_options.UsePageLevelPermissions)
             {
                 var userGroups = wikiUser?.Groups ?? [];
-                var pageAccess = await _pageService.CheckPageAccessAsync(id, userGroups, cancellationToken);
+                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, userGroups, cancellationToken);
                 if (!pageAccess.CanRead)
                 {
                     if (User.Identity?.IsAuthenticated != true)
@@ -356,7 +356,7 @@ namespace Pmad.Wiki.Controllers
             if (_options.UsePageLevelPermissions)
             {
                 var userGroups = wikiUser?.Groups ?? [];
-                var pageAccess = await _pageService.CheckPageAccessAsync(id, userGroups, cancellationToken);
+                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, userGroups, cancellationToken);
                 if (!pageAccess.CanRead)
                 {
                     if (User.Identity?.IsAuthenticated != true)
@@ -449,7 +449,7 @@ namespace Pmad.Wiki.Controllers
             var filteredPages = new List<WikiPageInfo>();
             foreach (var page in allPages)
             {
-                var pageAccess = await _pageService.CheckPageAccessAsync(page.PageName, userGroups, cancellationToken);
+                var pageAccess = await _accessControlService.CheckPageAccessAsync(page.PageName, userGroups, cancellationToken);
                 if (pageAccess.CanRead)
                 {
                     filteredPages.Add(page);
@@ -486,7 +486,7 @@ namespace Pmad.Wiki.Controllers
             // Check page-level permissions
             if (_options.UsePageLevelPermissions)
             {
-                var pageAccess = await _pageService.CheckPageAccessAsync(id, wikiUser.Groups, cancellationToken);
+                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, wikiUser.Groups, cancellationToken);
                 if (!pageAccess.CanEdit)
                 {
                     return Forbid();
@@ -601,7 +601,7 @@ namespace Pmad.Wiki.Controllers
             // Check page-level permissions
             if (_options.UsePageLevelPermissions)
             {
-                var pageAccess = await _pageService.CheckPageAccessAsync(model.PageName, wikiUser.Groups, cancellationToken);
+                var pageAccess = await _accessControlService.CheckPageAccessAsync(model.PageName, wikiUser.Groups, cancellationToken);
                 if (!pageAccess.CanEdit)
                 {
                     return Forbid();
@@ -859,7 +859,7 @@ namespace Pmad.Wiki.Controllers
             if (_options.UsePageLevelPermissions)
             {
                 var userGroups = wikiUser?.Groups ?? [];
-                var pageAccess = await _pageService.CheckPageAccessAsync(id, userGroups, cancellationToken);
+                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, userGroups, cancellationToken);
                 if (!pageAccess.CanRead)
                 {
                     if (User.Identity?.IsAuthenticated != true)
