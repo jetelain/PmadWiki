@@ -288,8 +288,8 @@
   <data name="No history found for this page." xml:space="preserve">
     <value>Aucun historique trouvé pour cette page.</value>
   </data>
-  <data name="No pages found. {0}" xml:space="preserve">
-    <value>Aucune page trouvée. {0}</value>
+  <data name="No pages found." xml:space="preserve">
+    <value>Aucune page trouvée.</value>
   </data>
   <data name="Only admin group can read/write admin pages" xml:space="preserve">
     <value>Seul le groupe admin peut lire/écrire les pages admin</value>
@@ -351,9 +351,6 @@
   <data name="Showing history for culture: &lt;strong&gt;{0}&lt;/strong&gt;" xml:space="preserve">
     <value>Affichage de l'historique pour la culture : &lt;strong&gt;{0}&lt;/strong&gt;</value>
   </data>
-  <data name="Start by creating some pages!" xml:space="preserve">
-    <value>Commencez par créer quelques pages !</value>
-  </data>
   <data name="Strikethrough" xml:space="preserve">
     <value>Barré</value>
   </data>
@@ -411,8 +408,8 @@
   <data name="Failed to render preview. Please try again." xml:space="preserve">
     <value>Échec du rendu de l'aperçu. Veuillez réessayer.</value>
   </data>
-  <data name="Uploading" xml:space="preserve">
-    <value>Téléchargement en cours</value>
+  <data name="Uploading..." xml:space="preserve">
+    <value>Téléchargement en cours...</value>
   </data>
   <data name="Upload failed:" xml:space="preserve">
     <value>Échec du téléchargement :</value>
@@ -444,31 +441,31 @@
   <data name="alt text" xml:space="preserve">
     <value>texte alternatif</value>
   </data>
-	<data name="Invalid page name." xml:space="preserve">
+  <data name="Invalid page name." xml:space="preserve">
     <value>Nom de page invalide.</value>
   </data>
-	<data name="Invalid culture identifier." xml:space="preserve">
+  <data name="Invalid culture identifier." xml:space="preserve">
     <value>Identifiant de culture invalide.</value>
   </data>
-	<data name="Warning: This page has been modified by {0} since you started editing. Your changes will overwrite those changes. Please review the current version before saving." xml:space="preserve">
+  <data name="Warning: This page has been modified by {0} since you started editing. Your changes will overwrite those changes. Please review the current version before saving." xml:space="preserve">
     <value>Attention : Cette page a été modifiée par {0} depuis que vous avez commencé à l'éditer. Vos modifications écraseront ces changements. Veuillez consulter la version actuelle avant d'enregistrer.</value>
   </data>
-	<data name="another user" xml:space="preserve">
+  <data name="another user" xml:space="preserve">
     <value>un autre utilisateur</value>
   </data>
-	<data name="An error occurred while saving the page. Please try again." xml:space="preserve">
+  <data name="An error occurred while saving the page. Please try again." xml:space="preserve">
     <value>Une erreur s'est produite lors de l'enregistrement de la page. Veuillez réessayer.</value>
   </data>
-	<data name="No file uploaded." xml:space="preserve">
+  <data name="No file uploaded." xml:space="preserve">
     <value>Aucun fichier téléchargé.</value>
   </data>
-	<data name="File type {0} is not allowed." xml:space="preserve">
+  <data name="File type {0} is not allowed." xml:space="preserve">
     <value>Le type de fichier {0} n'est pas autorisé.</value>
   </data>
-	<data name="File size exceeds 10MB limit." xml:space="preserve">
+  <data name="File size exceeds 10MB limit." xml:space="preserve">
     <value>La taille du fichier dépasse la limite de 10 Mo.</value>
   </data>
-	<data name="Error saving rules: {0}" xml:space="preserve">
+  <data name="Error saving rules: {0}" xml:space="preserve">
     <value>Erreur lors de l'enregistrement des règles : {0}</value>
   </data>
 </root>

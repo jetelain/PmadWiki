@@ -18,8 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
             preview: 'Preview',
             noContentToPreview: 'No content to preview.',
             failedToRenderPreview: 'Failed to render preview. Please try again.',
-            uploading: 'Uploading',
-            uploadingEllipsis: 'Uploading...',
+            uploading: 'Uploading...',
             uploadFailed: 'Upload failed:',
             close: 'Close',
             failedToLoadPages: 'Failed to load pages. Please try again.',
@@ -317,12 +316,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const visuallyHidden = document.createElement('span');
         visuallyHidden.className = 'visually-hidden';
-        visuallyHidden.textContent = config.labels.uploading + '...';
+        visuallyHidden.textContent = config.labels.uploading;
 
         spinner.appendChild(visuallyHidden);
 
         const textDiv = document.createElement('div');
-        textDiv.textContent = config.labels.uploading + ' ' + fileName + '...';
+        textDiv.textContent = config.labels.uploading + ' ' + fileName;
 
         wrapper.appendChild(spinner);
         wrapper.appendChild(textDiv);
