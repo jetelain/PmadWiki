@@ -38,7 +38,7 @@ public class WikiPageServiceTest
         var linkGenerator = CreateMockLinkGenerator();
 
         _mockGitRepositoryService
-            .Setup(x => x.GetRepository(It.IsAny<string>()))
+            .Setup(x => x.GetRepositoryByPath(It.IsAny<string>()))
             .Returns(_mockRepository.Object);
 
         _service = new WikiPageService(

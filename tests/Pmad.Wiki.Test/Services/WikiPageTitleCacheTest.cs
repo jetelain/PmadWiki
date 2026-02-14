@@ -30,7 +30,7 @@ public class WikiPageTitleCacheTest
         var optionsWrapper = Options.Create(_options);
 
         _mockGitRepositoryService
-            .Setup(x => x.GetRepository(It.IsAny<string>()))
+            .Setup(x => x.GetRepositoryByPath(It.IsAny<string>()))
             .Returns(_mockRepository.Object);
 
         _service = new WikiPageTitleCache(

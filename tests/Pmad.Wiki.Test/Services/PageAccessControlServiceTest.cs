@@ -34,7 +34,7 @@ public class PageAccessControlServiceTest
         var optionsWrapper = Options.Create(_options);
 
         _mockGitRepositoryService
-            .Setup(x => x.GetRepository(It.IsAny<string>()))
+            .Setup(x => x.GetRepositoryByPath(It.IsAny<string>()))
             .Returns(_mockRepository.Object);
 
         _service = new PageAccessControlService(
@@ -620,7 +620,7 @@ public class PageAccessControlServiceTest
 
         // Assert
         _mockGitRepositoryService.Verify(
-            x => x.GetRepository(Path.Combine("/test/repos", "wiki")),
+            x => x.GetRepositoryByPath(Path.Combine("/test/repos", "wiki")),
             Times.Once);
     }
 
