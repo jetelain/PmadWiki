@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Pmad.Wiki.Controllers;
 using Pmad.Wiki.Models;
+using Pmad.Wiki.Resources;
 using Pmad.Wiki.Services;
 using Pmad.Wiki.Test.Infrastructure;
 
@@ -68,6 +70,7 @@ public class WikiControllerIntegrationTests : IDisposable
         var wikiPageEditService = _serviceProvider.GetRequiredService<IWikiPageEditService>();
         var tempMediaStorage = _serviceProvider.GetRequiredService<ITemporaryMediaStorageService>();
         var options = _serviceProvider.GetRequiredService<IOptions<WikiOptions>>();
+        var localizer = new Mock<IStringLocalizer<WikiResources>>().Object;
 
         var logger = new Mock<ILogger<WikiController>>().Object;
 
@@ -79,7 +82,8 @@ public class WikiControllerIntegrationTests : IDisposable
             tempMediaStorage,
             wikiPageEditService,
             options,
-            logger);
+            logger,
+            localizer);
 
         SetupControllerContext(_controller);
 

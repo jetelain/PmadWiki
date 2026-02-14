@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Last modified: {0:f} by {1}" xml:space="preserve">
+    <value>Dernière modification : {0:f} par {1}</value>
+  </data>
+  <data name="Last modified: {0:f}" xml:space="preserve">
+    <value>Dernière modification : {0:f}</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>Par défaut</value>
+  </data>
+  <data name="Site Map" xml:space="preserve">
+    <value>Plan du site</value>
+  </data>
+  <data name="History" xml:space="preserve">
+    <value>Historique</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="Access Control" xml:space="preserve">
+    <value>Contrôle d'accès</value>
+  </data>
+  <data name="Author:" xml:space="preserve">
+    <value>Auteur :</value>
+  </data>
+  <data name="Back to Page" xml:space="preserve">
+    <value>Retour à la page</value>
+  </data>
+  <data name="Back to Site Map" xml:space="preserve">
+    <value>Retour au plan du site</value>
+  </data>
+  <data name="Blockquote" xml:space="preserve">
+    <value>Bloc de citation</value>
+  </data>
+  <data name="Bold" xml:space="preserve">
+    <value>Gras</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="Code Block" xml:space="preserve">
+    <value>Bloc de code</value>
+  </data>
+  <data name="Commit Message" xml:space="preserve">
+    <value>Message de commit</value>
+  </data>
+  <data name="Commit message:" xml:space="preserve">
+    <value>Message de commit :</value>
+  </data>
+  <data name="Commit:" xml:space="preserve">
+    <value>Commit :</value>
+  </data>
+  <data name="Compare Selected Versions" xml:space="preserve">
+    <value>Comparer les versions sélectionnées</value>
+  </data>
+  <data name="Compare Versions: {0}" xml:space="preserve">
+    <value>Comparer les versions : {0}</value>
+  </data>
+  <data name="Compare with previous version" xml:space="preserve">
+    <value>Comparer avec la version précédente</value>
+  </data>
+  <data name="Comparing versions for culture: &lt;strong&gt;{0}&lt;/strong&gt;" xml:space="preserve">
+    <value>Comparaison des versions pour la culture : &lt;strong&gt;{0}&lt;/strong&gt;</value>
+  </data>
+  <data name="Content (Markdown)" xml:space="preserve">
+    <value>Contenu (Markdown)</value>
+  </data>
+  <data name="Create: {0}" xml:space="preserve">
+    <value>Créer : {0}</value>
+  </data>
+  <data name="Current Rules" xml:space="preserve">
+    <value>Règles actuelles</value>
+  </data>
+  <data name="Date:" xml:space="preserve">
+    <value>Date :</value>
+  </data>
+  <data name="Default: everyone can read and write" xml:space="preserve">
+    <value>Par défaut : tout le monde peut lire et écrire</value>
+  </data>
+  <data name="Describe the changes you made to this page." xml:space="preserve">
+    <value>Décrivez les modifications apportées à cette page.</value>
+  </data>
+  <data name="Diff" xml:space="preserve">
+    <value>Diff</value>
+  </data>
+  <data name="Edit Access Control Rules" xml:space="preserve">
+    <value>Modifier les règles de contrôle d'accès</value>
+  </data>
+  <data name="Edit Current" xml:space="preserve">
+    <value>Modifier la version actuelle</value>
+  </data>
+  <data name="Edit Rules" xml:space="preserve">
+    <value>Modifier les règles</value>
+  </data>
+  <data name="Edit: {0}" xml:space="preserve">
+    <value>Modifier : {0}</value>
+  </data>
+  <data name="Editing culture: &lt;strong&gt;{0}&lt;/strong&gt;" xml:space="preserve">
+    <value>Modification pour la culture : &lt;strong&gt;{0}&lt;/strong&gt;</value>
+  </data>
+  <data name="Everyone can read, users can write" xml:space="preserve">
+    <value>Tout le monde peut lire, les utilisateurs peuvent écrire</value>
+  </data>
+  <data name="Format: &lt;code&gt;Pattern | ReadGroups | WriteGroups&lt;/code&gt;&lt;br /&gt;Lines starting with # are comments. Empty groups mean all users." xml:space="preserve">
+    <value>Format : &lt;code&gt;Pattern | ReadGroups | WriteGroups&lt;/code&gt;&lt;br /&gt;Les lignes commençant par # sont des commentaires. Les groupes vides signifient tous les utilisateurs.</value>
+  </data>
+  <data name="From (Older)" xml:space="preserve">
+    <value>Depuis (ancienne)</value>
+  </data>
+  <data name="Heading 1" xml:space="preserve">
+    <value>Titre 1</value>
+  </data>
+  <data name="Heading 2" xml:space="preserve">
+    <value>Titre 2</value>
+  </data>
+  <data name="Heading 3" xml:space="preserve">
+    <value>Titre 3</value>
+  </data>
+  <data name="History: {0}" xml:space="preserve">
+    <value>Historique : {0}</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Accueil</value>
+  </data>
+  <data name="Horizontal Rule" xml:space="preserve">
+    <value>Ligne horizontale</value>
+  </data>
+  <data name="Image" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Insert Link to Page" xml:space="preserve">
+    <value>Insérer un lien vers une page</value>
+  </data>
+  <data name="Inline Code" xml:space="preserve">
+    <value>Code en ligne</value>
+  </data>
+  <data name="Link" xml:space="preserve">
+    <value>Lien</value>
+  </data>
+  <data name="Link to Page" xml:space="preserve">
+    <value>Lien vers une page</value>
+  </data>
+  <data name="Loading..." xml:space="preserve">
+    <value>Chargement...</value>
+  </data>
+  <data name="Loading preview..." xml:space="preserve">
+    <value>Chargement de l'aperçu...</value>
+  </data>
+  <data name="Matches all pages under the admin directory" xml:space="preserve">
+    <value>Correspond à toutes les pages du répertoire admin</value>
+  </data>
+  <data name="Matches any characters except / (within a single path segment)" xml:space="preserve">
+    <value>Correspond à n'importe quels caractères sauf / (dans un segment de chemin unique)</value>
+  </data>
+  <data name="Matches any characters including / (across path segments)" xml:space="preserve">
+    <value>Correspond à n'importe quels caractères, y compris / (sur plusieurs segments de chemin)</value>
+  </data>
+  <data name="Matches exactly the Home page" xml:space="preserve">
+    <value>Correspond exactement à la page Home</value>
+  </data>
+  <data name="Message:" xml:space="preserve">
+    <value>Message :</value>
+  </data>
+  <data name="No access control rules defined. All users have full access to all pages." xml:space="preserve">
+    <value>Aucune règle de contrôle d'accès définie. Tous les utilisateurs ont un accès complet à toutes les pages.</value>
+  </data>
+  <data name="No history found for this page." xml:space="preserve">
+    <value>Aucun historique trouvé pour cette page.</value>
+  </data>
+  <data name="No pages found. {0}" xml:space="preserve">
+    <value>Aucune page trouvée. {0}</value>
+  </data>
+  <data name="Only admin group can read/write admin pages" xml:space="preserve">
+    <value>Seul le groupe admin peut lire/écrire les pages admin</value>
+  </data>
+  <data name="Order" xml:space="preserve">
+    <value>Ordre</value>
+  </data>
+  <data name="Ordered List" xml:space="preserve">
+    <value>Liste ordonnée</value>
+  </data>
+  <data name="Page Access Control Rules" xml:space="preserve">
+    <value>Règles d'accès aux pages</value>
+  </data>
+  <data name="Page-level permissions are currently disabled. Set &lt;code&gt;UsePageLevelPermissions = true&lt;/code&gt; in WikiOptions to enable this feature." xml:space="preserve">
+    <value>Les autorisations au niveau des pages sont actuellement désactivées. Définissez &lt;code&gt;UsePageLevelPermissions = true&lt;/code&gt; dans WikiOptions pour activer cette fonctionnalité.</value>
+  </data>
+  <data name="Pattern" xml:space="preserve">
+    <value>Motif</value>
+  </data>
+  <data name="Pattern Examples" xml:space="preserve">
+    <value>Exemples de motifs</value>
+  </data>
+  <data name="Pattern Syntax" xml:space="preserve">
+    <value>Syntaxe des motifs</value>
+  </data>
+  <data name="Preview" xml:space="preserve">
+    <value>Prévisualisation</value>
+  </data>
+  <data name="Read Groups" xml:space="preserve">
+    <value>Groupes de lecture</value>
+  </data>
+  <data name="Restore This Version" xml:space="preserve">
+    <value>Restaurer cette version</value>
+  </data>
+  <data name="Restore this version (opens in edit mode)" xml:space="preserve">
+    <value>Restaurer cette version (ouvre en mode édition)</value>
+  </data>
+  <data name="Revision:" xml:space="preserve">
+    <value>Révision :</value>
+  </data>
+  <data name="Rules" xml:space="preserve">
+    <value>Règles</value>
+  </data>
+  <data name="Rules are evaluated in order from top to bottom. The first matching rule determines access." xml:space="preserve">
+    <value>Les règles sont évaluées de haut en bas. La première règle correspondante détermine l'accès.</value>
+  </data>
+  <data name="Save Changes" xml:space="preserve">
+    <value>Enregistrer les modifications</value>
+  </data>
+  <data name="Save Rules" xml:space="preserve">
+    <value>Enregistrer les règles</value>
+  </data>
+  <data name="Search pages..." xml:space="preserve">
+    <value>Rechercher des pages...</value>
+  </data>
+  <data name="Select two versions to compare" xml:space="preserve">
+    <value>Sélectionnez deux versions à comparer</value>
+  </data>
+  <data name="Showing history for culture: &lt;strong&gt;{0}&lt;/strong&gt;" xml:space="preserve">
+    <value>Affichage de l'historique pour la culture : &lt;strong&gt;{0}&lt;/strong&gt;</value>
+  </data>
+  <data name="Start by creating some pages!" xml:space="preserve">
+    <value>Commencez par créer quelques pages !</value>
+  </data>
+  <data name="Strikethrough" xml:space="preserve">
+    <value>Barré</value>
+  </data>
+  <data name="Table" xml:space="preserve">
+    <value>Tableau</value>
+  </data>
+  <data name="To (Newer)" xml:space="preserve">
+    <value>Vers (récente)</value>
+  </data>
+  <data name="Unordered List" xml:space="preserve">
+    <value>Liste non ordonnée</value>
+  </data>
+  <data name="Use &lt;a href=&quot;https://www.markdownguide.org/basic-syntax/&quot; target=&quot;_blank&quot;&gt;Markdown syntax&lt;/a&gt; to format your content. You can drag and drop or paste images and media files directly into the text area." xml:space="preserve">
+    <value>Utilisez &lt;a href="https://www.markdownguide.org/basic-syntax/" target="_blank"&gt;la syntaxe Markdown&lt;/a&gt; pour mettre en forme votre contenu. Vous pouvez faire glisser-déposer ou coller directement des images et fichiers multimédias dans la zone de texte.</value>
+  </data>
+  <data name="View" xml:space="preserve">
+    <value>Afficher</value>
+  </data>
+  <data name="View Current Version" xml:space="preserve">
+    <value>Afficher la version actuelle</value>
+  </data>
+  <data name="View this version" xml:space="preserve">
+    <value>Afficher cette version</value>
+  </data>
+  <data name="Write Groups" xml:space="preserve">
+    <value>Groupes d'écriture</value>
+  </data>
+  <data name="Users and editors can read, only editors can write" xml:space="preserve">
+    <value>Les utilisateurs et éditeurs peuvent lire, seuls les éditeurs peuvent écrire</value>
+  </data>
+  <data name="{0} - Compare Versions" xml:space="preserve">
+    <value>{0} - Comparer les versions</value>
+  </data>
+  <data name="{0} (Revision)" xml:space="preserve">
+    <value>{0} (révision)</value>
+  </data>
+  <data name="&lt;strong&gt;Viewing historical revision&lt;/strong&gt; from {0:f} by {1}" xml:space="preserve">
+    <value>&lt;strong&gt;Consultation d'une révision historique&lt;/strong&gt; du {0:f} par {1}</value>
+  </data>
+  <data name="Wiki" xml:space="preserve">
+    <value>Wiki</value>
+  </data>
+  <data name="{0:g} by {1}" xml:space="preserve">
+    <value>{0:g} par {1}</value>
+  </data>
+  <data name="All users" xml:space="preserve">
+    <value>Tous les utilisateurs</value>
+  </data>
+  <data name="Italic" xml:space="preserve">
+    <value>Italique</value>
+  </data>
+  <data name="No content to preview." xml:space="preserve">
+    <value>Aucun contenu à prévisualiser.</value>
+  </data>
+  <data name="Failed to render preview. Please try again." xml:space="preserve">
+    <value>Échec du rendu de l'aperçu. Veuillez réessayer.</value>
+  </data>
+  <data name="Uploading" xml:space="preserve">
+    <value>Téléchargement en cours</value>
+  </data>
+  <data name="Upload failed:" xml:space="preserve">
+    <value>Échec du téléchargement :</value>
+  </data>
+  <data name="Failed to load pages. Please try again." xml:space="preserve">
+    <value>Échec du chargement des pages. Veuillez réessayer.</value>
+  </data>
+  <data name="bold text" xml:space="preserve">
+    <value>texte en gras</value>
+  </data>
+  <data name="italic text" xml:space="preserve">
+    <value>texte en italique</value>
+  </data>
+  <data name="strikethrough text" xml:space="preserve">
+    <value>texte barré</value>
+  </data>
+  <data name="code" xml:space="preserve">
+    <value>code</value>
+  </data>
+  <data name="List item" xml:space="preserve">
+    <value>Élément de liste</value>
+  </data>
+  <data name="Quote" xml:space="preserve">
+    <value>Citation</value>
+  </data>
+  <data name="link text" xml:space="preserve">
+    <value>texte du lien</value>
+  </data>
+  <data name="alt text" xml:space="preserve">
+    <value>texte alternatif</value>
+  </data>
+	<data name="Invalid page name." xml:space="preserve">
+    <value>Nom de page invalide.</value>
+  </data>
+	<data name="Invalid culture identifier." xml:space="preserve">
+    <value>Identifiant de culture invalide.</value>
+  </data>
+	<data name="Warning: This page has been modified by {0} since you started editing. Your changes will overwrite those changes. Please review the current version before saving." xml:space="preserve">
+    <value>Attention : Cette page a été modifiée par {0} depuis que vous avez commencé à l'éditer. Vos modifications écraseront ces changements. Veuillez consulter la version actuelle avant d'enregistrer.</value>
+  </data>
+	<data name="another user" xml:space="preserve">
+    <value>un autre utilisateur</value>
+  </data>
+	<data name="An error occurred while saving the page. Please try again." xml:space="preserve">
+    <value>Une erreur s'est produite lors de l'enregistrement de la page. Veuillez réessayer.</value>
+  </data>
+	<data name="No file uploaded." xml:space="preserve">
+    <value>Aucun fichier téléchargé.</value>
+  </data>
+	<data name="File type {0} is not allowed." xml:space="preserve">
+    <value>Le type de fichier {0} n'est pas autorisé.</value>
+  </data>
+	<data name="File size exceeds 10MB limit." xml:space="preserve">
+    <value>La taille du fichier dépasse la limite de 10 Mo.</value>
+  </data>
+	<data name="Error saving rules: {0}" xml:space="preserve">
+    <value>Erreur lors de l'enregistrement des règles : {0}</value>
+  </data>
+</root>

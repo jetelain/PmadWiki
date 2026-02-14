@@ -1,6 +1,6 @@
 @model Pmad.Wiki.Models.WikiPageDiffViewModel
 @{
-    ViewData["Title"] = $"{Model.PageName} - Compare Versions";
+    ViewData["Title"] = Localizer["{0} - Compare Versions", Model.PageName];
 }
 
 @* 
@@ -11,40 +11,40 @@
 *@
 
 <div class="wiki-diff">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Compare Versions: @Model.PageName</h1>
-        <div class="btn-toolbar" role="toolbar">
-            <div class="btn-group" role="group">
-                <a asp-action="History" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-outline-secondary">
-                    <i class="bi bi-clock-history"></i> History
-                </a>
-                <a asp-action="View" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Page
-                </a>
-            </div>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>@Localizer["Compare Versions: {0}", Model.PageName]</h1>
+    <div class="btn-toolbar" role="toolbar">
+        <div class="btn-group" role="group">
+            <a asp-action="History" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-outline-secondary">
+                <i class="bi bi-clock-history"></i> @Localizer["History"]
+            </a>
+            <a asp-action="View" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> @Localizer["Back to Page"]
+            </a>
         </div>
     </div>
+</div>
 
-    @if (!string.IsNullOrEmpty(Model.Culture))
-    {
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Comparing versions for culture: <strong>@Model.Culture</strong>
-        </div>
-    }
+@if (!string.IsNullOrEmpty(Model.Culture))
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> @Localizer["Comparing versions for culture: <strong>{0}</strong>", Model.Culture]
+    </div>
+}
 
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header bg-danger text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-dash-circle"></i> From (Older)
+                        <i class="bi bi-dash-circle"></i> @Localizer["From (Older)"]
                     </h5>
                 </div>
                 <div class="card-body">
-                    <p class="mb-1"><strong>Commit:</strong> <code>@Model.FromCommitId.Substring(0, Math.Min(8, Model.FromCommitId.Length))</code></p>
-                    <p class="mb-1"><strong>Author:</strong> @Model.FromAuthorName</p>
-                    <p class="mb-1"><strong>Date:</strong> @Model.FromTimestamp.ToString("g")</p>
-                    <p class="mb-0"><strong>Message:</strong> @Model.FromMessage</p>
+                    <p class="mb-1"><strong>@Localizer["Commit:"]</strong> <code>@Model.FromCommitId.Substring(0, Math.Min(8, Model.FromCommitId.Length))</code></p>
+                    <p class="mb-1"><strong>@Localizer["Author:"]</strong> @Model.FromAuthorName</p>
+                    <p class="mb-1"><strong>@Localizer["Date:"]</strong> @Model.FromTimestamp.ToString("g")</p>
+                    <p class="mb-0"><strong>@Localizer["Message:"]</strong> @Model.FromMessage</p>
                 </div>
             </div>
         </div>
@@ -52,14 +52,14 @@
             <div class="card">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-plus-circle"></i> To (Newer)
+                        <i class="bi bi-plus-circle"></i> @Localizer["To (Newer)"]
                     </h5>
                 </div>
                 <div class="card-body">
-                    <p class="mb-1"><strong>Commit:</strong> <code>@Model.ToCommitId.Substring(0, Math.Min(8, Model.ToCommitId.Length))</code></p>
-                    <p class="mb-1"><strong>Author:</strong> @Model.ToAuthorName</p>
-                    <p class="mb-1"><strong>Date:</strong> @Model.ToTimestamp.ToString("g")</p>
-                    <p class="mb-0"><strong>Message:</strong> @Model.ToMessage</p>
+                    <p class="mb-1"><strong>@Localizer["Commit:"]</strong> <code>@Model.ToCommitId.Substring(0, Math.Min(8, Model.ToCommitId.Length))</code></p>
+                    <p class="mb-1"><strong>@Localizer["Author:"]</strong> @Model.ToAuthorName</p>
+                    <p class="mb-1"><strong>@Localizer["Date:"]</strong> @Model.ToTimestamp.ToString("g")</p>
+                    <p class="mb-0"><strong>@Localizer["Message:"]</strong> @Model.ToMessage</p>
                 </div>
             </div>
         </div>
@@ -71,8 +71,8 @@
     <script src="~/lib/mergely/js/mergely.min.js"></script>
     <script>
         const doc = new Mergely('#compare', {
-          lhs: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.FromContent)),
-          rhs: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ToContent)),
+          lhs: @Json.Serialize(Model.FromContent),
+          rhs: @Json.Serialize(Model.ToContent),
           license: 'mpl-separate-notice'
         });
     </script>

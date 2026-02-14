@@ -1,4 +1,7 @@
+@using Microsoft.AspNetCore.Mvc.Localization
 @using Pmad.Wiki
 @using Pmad.Wiki.Models
+@using Pmad.Wiki.Resources
 @inject Microsoft.Extensions.Options.IOptions<Pmad.Wiki.WikiOptions> WikiOptions
+@inject IHtmlLocalizer<WikiResources> Localizer
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

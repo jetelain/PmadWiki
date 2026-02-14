@@ -12,6 +12,28 @@ document.addEventListener('DOMContentLoaded', function () {
         currentPage: {
             pageName: '',
             culture: ''
+        },
+        labels: {
+            edit: 'Edit', 
+            preview: 'Preview',
+            noContentToPreview: 'No content to preview.',
+            failedToRenderPreview: 'Failed to render preview. Please try again.',
+            uploading: 'Uploading',
+            uploadingEllipsis: 'Uploading...',
+            uploadFailed: 'Upload failed:',
+            close: 'Close',
+            failedToLoadPages: 'Failed to load pages. Please try again.',
+            boldText: 'bold text',
+            italicText: 'italic text',
+            strikethroughText: 'strikethrough text',
+            code: 'code',
+            heading1: 'Heading 1',
+            heading2: 'Heading 2',
+            heading3: 'Heading 3',
+            listItem: 'List item',
+            quote: 'Quote',
+            linkText: 'link text',
+            altText: 'alt text'
         }
     };
 
@@ -94,14 +116,14 @@ document.addEventListener('DOMContentLoaded', function () {
             if (isPreviewMode) {
                 textarea.classList.add("d-none");
                 previewContainer.classList.remove("d-none");
-                previewButtonText.textContent = 'Edit';
+                previewButtonText.textContent = config.labels.edit;
                 togglePreviewBtn.querySelector('i').className = 'bi bi-pencil';
                 toggleEditingButtons(true);
                 updatePreview();
             } else {
                 textarea.classList.remove("d-none");
                 previewContainer.classList.add("d-none");
-                previewButtonText.textContent = 'Preview';
+                previewButtonText.textContent = config.labels.preview;
                 togglePreviewBtn.querySelector('i').className = 'bi bi-eye';
                 toggleEditingButtons(false);
             }
@@ -113,7 +135,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const markdown = textarea.value;
 
             if (!markdown.trim()) {
-                previewContent.innerHTML = '<p class="text-muted">No content to preview.</p>';
+                const emptyMessage = document.createElement('p');
+                emptyMessage.className = 'text-muted';
+                emptyMessage.textContent = config.labels.noContentToPreview;
+                previewContent.innerHTML = '';
+                previewContent.appendChild(emptyMessage);
                 return;
             }
 
@@ -146,7 +172,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 previewContent.innerHTML = html;
             } catch (error) {
                 console.error('Error rendering preview:', error);
-                previewContent.innerHTML = '<div class="alert alert-danger">Failed to render preview. Please try again.</div>';
+                previewContent.innerHTML = '';
+                previewContent.appendChild(createAlert(config.labels.failedToRenderPreview));
             } finally {
                 previewLoading.classList.add("d-none");
                 previewContent.classList.remove("d-none");
@@ -269,6 +296,13 @@ document.addEventListener('DOMContentLoaded', function () {
         return ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext);
     }
 
+    function createAlert(message, type = 'danger') {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type}`;
+        alert.textContent = message;
+        return alert;
+    }
+
     function showUploadIndicator(fileName) {
         const indicator = document.createElement('div');
         indicator.id = 'upload-indicator';
@@ -283,12 +317,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const visuallyHidden = document.createElement('span');
         visuallyHidden.className = 'visually-hidden';
-        visuallyHidden.textContent = 'Uploading...';
+        visuallyHidden.textContent = config.labels.uploading + '...';
 
         spinner.appendChild(visuallyHidden);
 
         const textDiv = document.createElement('div');
-        textDiv.textContent = 'Uploading ' + fileName + '...';
+        textDiv.textContent = config.labels.uploading + ' ' + fileName + '...';
 
         wrapper.appendChild(spinner);
         wrapper.appendChild(textDiv);
@@ -317,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const errorText = document.createElement('div');
         const strongLabel = document.createElement('strong');
-        strongLabel.textContent = 'Upload failed:';
+        strongLabel.textContent = config.labels.uploadFailed;
         errorText.appendChild(strongLabel);
         errorText.appendChild(document.createTextNode(` ${fileName} - ${errorMessage}`));
 
@@ -325,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function () {
         closeButton.type = 'button';
         closeButton.className = 'btn-close';
         closeButton.setAttribute('data-bs-dismiss', 'alert');
-        closeButton.setAttribute('aria-label', 'Close');
+        closeButton.setAttribute('aria-label', config.labels.close);
 
         errorAlert.appendChild(errorText);
         errorAlert.appendChild(closeButton);
@@ -389,7 +423,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 } catch (error) {
                     console.error('Error loading pages:', error);
                     if (pageListContainer) {
-                        pageListContainer.innerHTML = '<div class="alert alert-danger">Failed to load pages. Please try again.</div>';
+                        pageListContainer.innerHTML = '';
+                        pageListContainer.appendChild(createAlert(config.labels.failedToLoadPages));
                     }
                 }
             }
@@ -441,117 +476,117 @@ document.addEventListener('DOMContentLoaded', function () {
             modal?.hide();
         }
     }
-});
 
-function applyMarkdown(textarea, action) {
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
+    function applyMarkdown(textarea, action) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = textarea.value.substring(start, end);
 
-    let newText = '';
-    let cursorOffset = 0;
+        let newText = '';
+        let cursorOffset = 0;
 
-    switch (action) {
-        case 'bold':
-            newText = `**${selectedText || 'bold text'}**`;
-            cursorOffset = selectedText ? newText.length : 2;
-            break;
-        case 'italic':
-            newText = `*${selectedText || 'italic text'}*`;
-            cursorOffset = selectedText ? newText.length : 1;
-            break;
-        case 'strikethrough':
-            newText = `~~${selectedText || 'strikethrough text'}~~`;
-            cursorOffset = selectedText ? newText.length : 2;
-            break;
-        case 'code':
-            newText = `\`${selectedText || 'code'}\``;
-            cursorOffset = selectedText ? newText.length : 1;
-            break;
-        case 'h1':
-            newText = `# ${selectedText || 'Heading 1'}`;
-            cursorOffset = selectedText ? newText.length : 2;
-            break;
-        case 'h2':
-            newText = `## ${selectedText || 'Heading 2'}`;
-            cursorOffset = selectedText ? newText.length : 3;
-            break;
-        case 'h3':
-            newText = `### ${selectedText || 'Heading 3'}`;
-            cursorOffset = selectedText ? newText.length : 4;
-            break;
-        case 'ul':
-            newText = selectedText ? selectedText.split('\n').map(line => `- ${line}`).join('\n') : '- List item';
-            cursorOffset = newText.length;
-            break;
-        case 'ol':
-            newText = selectedText ? selectedText.split('\n').map((line, i) => `${i + 1}. ${line}`).join('\n') : '1. List item';
-            cursorOffset = newText.length;
-            break;
-        case 'quote':
-            newText = selectedText ? selectedText.split('\n').map(line => `> ${line}`).join('\n') : '> Quote';
-            cursorOffset = newText.length;
-            break;
-        case 'link':
-            newText = `[${selectedText || 'link text'}](url)`;
-            cursorOffset = selectedText ? newText.length - 4 : 1;
-            break;
-        case 'image':
-            newText = `![${selectedText || 'alt text'}](image-url)`;
-            cursorOffset = selectedText ? newText.length - 11 : 2;
-            break;
-        case 'codeblock':
-            newText = `\`\`\`\n${selectedText || 'code'}\n\`\`\``;
-            cursorOffset = selectedText ? 4 + selectedText.length : 4;
-            break;
-        case 'hr':
-            newText = '\n---\n';
-            cursorOffset = newText.length;
-            break;
-        case 'table':
-            newText = '| Header 1 | Header 2 |\n| --- | --- |\n| Cell 1 | Cell 2 |';
-            cursorOffset = 2;
-            break;
-        default:
-            return;
-    }
-
-    insertTextWithUndo(textarea, start, end, newText, cursorOffset);
-}
-
-function insertWikiLink(textarea, relativePath, pageTitle) {
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
-
-    const linkText = selectedText || pageTitle;
-    const wikiLink = `[${linkText}](${relativePath}.md)`;
-
-    insertTextWithUndo(textarea, start, end, wikiLink, wikiLink.length);
-}
-
-function insertTextWithUndo(textarea, start, end, newText, cursorOffset) {
-    textarea.focus();
-    textarea.setSelectionRange(start, end);
-
-    let success = false;
-
-    // Try execCommand first for better undo/redo support
-    try {
-        if (document.execCommand && document.queryCommandSupported('insertText')) {
-            success = document.execCommand('insertText', false, newText);
+        switch (action) {
+            case 'bold':
+                newText = `**${selectedText || config.labels.boldText}**`;
+                cursorOffset = selectedText ? newText.length : 2;
+                break;
+            case 'italic':
+                newText = `*${selectedText || config.labels.italicText}*`;
+                cursorOffset = selectedText ? newText.length : 1;
+                break;
+            case 'strikethrough':
+                newText = `~~${selectedText || config.labels.strikethroughText}~~`;
+                cursorOffset = selectedText ? newText.length : 2;
+                break;
+            case 'code':
+                newText = `\`${selectedText || config.labels.code}\``;
+                cursorOffset = selectedText ? newText.length : 1;
+                break;
+            case 'h1':
+                newText = `# ${selectedText || config.labels.heading1}`;
+                cursorOffset = selectedText ? newText.length : 2;
+                break;
+            case 'h2':
+                newText = `## ${selectedText || config.labels.heading2}`;
+                cursorOffset = selectedText ? newText.length : 3;
+                break;
+            case 'h3':
+                newText = `### ${selectedText || config.labels.heading3}`;
+                cursorOffset = selectedText ? newText.length : 4;
+                break;
+            case 'ul':
+                newText = selectedText ? selectedText.split('\n').map(line => `- ${line}`).join('\n') : `- ${config.labels.listItem}`;
+                cursorOffset = newText.length;
+                break;
+            case 'ol':
+                newText = selectedText ? selectedText.split('\n').map((line, i) => `${i + 1}. ${line}`).join('\n') : `1. ${config.labels.listItem}`;
+                cursorOffset = newText.length;
+                break;
+            case 'quote':
+                newText = selectedText ? selectedText.split('\n').map(line => `> ${line}`).join('\n') : `> ${config.labels.quote}`;
+                cursorOffset = newText.length;
+                break;
+            case 'link':
+                newText = `[${selectedText || config.labels.linkText}](url)`;
+                cursorOffset = selectedText ? newText.length - 4 : 1;
+                break;
+            case 'image':
+                newText = `![${selectedText || config.labels.altText}](image-url)`;
+                cursorOffset = selectedText ? newText.length - 11 : 2;
+                break;
+            case 'codeblock':
+                newText = `\`\`\`\n${selectedText || config.labels.code}\n\`\`\``;
+                cursorOffset = selectedText ? 4 + selectedText.length : 4;
+                break;
+            case 'hr':
+                newText = '\n---\n';
+                cursorOffset = newText.length;
+                break;
+            case 'table':
+                newText = '| Header 1 | Header 2 |\n| --- | --- |\n| Cell 1 | Cell 2 |';
+                cursorOffset = 2;
+                break;
+            default:
+                return;
         }
-    } catch (e) {
-        success = false;
+
+        insertTextWithUndo(textarea, start, end, newText, cursorOffset);
     }
 
-    // Fallback if execCommand fails or is not supported
-    if (!success) {
-        textarea.setRangeText(newText, start, end, 'select');
-        textarea.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true }));
+    function insertWikiLink(textarea, relativePath, pageTitle) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = textarea.value.substring(start, end);
+
+        const linkText = selectedText || pageTitle;
+        const wikiLink = `[${linkText}](${relativePath}.md)`;
+
+        insertTextWithUndo(textarea, start, end, wikiLink, wikiLink.length);
     }
 
-    // Set cursor position
-    const newPosition = start + cursorOffset;
-    textarea.setSelectionRange(newPosition, newPosition);
-}
+    function insertTextWithUndo(textarea, start, end, newText, cursorOffset) {
+        textarea.focus();
+        textarea.setSelectionRange(start, end);
+
+        let success = false;
+
+        // Try execCommand first for better undo/redo support
+        try {
+            if (document.execCommand && document.queryCommandSupported('insertText')) {
+                success = document.execCommand('insertText', false, newText);
+            }
+        } catch (e) {
+            success = false;
+        }
+
+        // Fallback if execCommand fails or is not supported
+        if (!success) {
+            textarea.setRangeText(newText, start, end, 'select');
+            textarea.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true }));
+        }
+
+        // Set cursor position
+        const newPosition = start + cursorOffset;
+        textarea.setSelectionRange(newPosition, newPosition);
+    }
+});

@@ -1,52 +1,51 @@
 @model Pmad.Wiki.Models.WikiAccessControlEditViewModel
 @{
-    ViewData["Title"] = "Edit Access Control Rules";
+    ViewData["Title"] = Localizer["Edit Access Control Rules"];
 }
 
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-12">
             <h1>
-                <i class="bi bi-pencil"></i> Edit Access Control Rules
+                <i class="bi bi-pencil"></i> @Localizer["Edit Access Control Rules"]
             </h1>
 
             <form asp-action="EditAccessControl" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                 <div class="mb-3">
-                    <label asp-for="Content" class="form-label">Rules</label>
+                    <label asp-for="Content" class="form-label">@Localizer["Rules"]</label>
                     <textarea asp-for="Content" class="form-control font-monospace" rows="20" spellcheck="false"></textarea>
                     <span asp-validation-for="Content" class="text-danger"></span>
                     <div class="form-text">
-                        Format: <code>Pattern | ReadGroups | WriteGroups</code><br />
-                        Lines starting with # are comments. Empty groups mean all users.
+                        @Localizer["Format: <code>Pattern | ReadGroups | WriteGroups</code><br />Lines starting with # are comments. Empty groups mean all users."]
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="CommitMessage" class="form-label">Commit Message</label>
+                    <label asp-for="CommitMessage" class="form-label">@Localizer["Commit Message"]</label>
                     <input asp-for="CommitMessage" class="form-control" />
                     <span asp-validation-for="CommitMessage" class="text-danger"></span>
                 </div>
 
                 <div class="card mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">Pattern Examples</h5>
+                        <h5 class="card-title">@Localizer["Pattern Examples"]</h5>
                         <ul class="mb-0">
-                            <li><code>admin/** | admin | admin</code> - Only admin group can read/write admin pages</li>
-                            <li><code>private/* | users, editors | editors</code> - Users and editors can read, only editors can write</li>
-                            <li><code>public/** | | users</code> - Everyone can read, users can write</li>
-                            <li><code>* | | </code> - Default: everyone can read and write</li>
+                            <li><code>admin/** | admin | admin</code> - @Localizer["Only admin group can read/write admin pages"]</li>
+                            <li><code>private/* | users, editors | editors</code> - @Localizer["Users and editors can read, only editors can write"]</li>
+                            <li><code>public/** | | users</code> - @Localizer["Everyone can read, users can write"]</li>
+                            <li><code>* | | </code> - @Localizer["Default: everyone can read and write"]</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save"></i> Save Rules
+                        <i class="bi bi-save"></i> @Localizer["Save Rules"]
                     </button>
                     <a asp-action="AccessControl" class="btn btn-secondary">
-                        <i class="bi bi-x-circle"></i> Cancel
+                        <i class="bi bi-x-circle"></i> @Localizer["Cancel"]
                     </a>
                 </div>
             </form>

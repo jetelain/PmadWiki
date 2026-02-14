@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Pmad.Wiki.Controllers;
+using Pmad.Wiki.Resources;
 using Pmad.Wiki.Services;
 using Pmad.Wiki.Test.Infrastructure;
 
@@ -21,6 +23,7 @@ public abstract class WikiControllerTestBase
     protected readonly Mock<ITemporaryMediaStorageService> _mockTemporaryMediaStorage;
     protected readonly Mock<IWikiPageEditService> _mockWikiPageEditService;
     protected readonly Mock<ILogger<WikiController>> _mockLogger;
+    protected readonly Mock<IStringLocalizer<WikiResources>> _mockLocalizer;
     protected readonly WikiOptions _options;
     protected readonly WikiController _controller;
     protected readonly LinkGenerator _linkGenerator;
@@ -34,7 +37,16 @@ public abstract class WikiControllerTestBase
         _mockTemporaryMediaStorage = new Mock<ITemporaryMediaStorageService>();
         _mockWikiPageEditService = new Mock<IWikiPageEditService>();
         _mockLogger = new Mock<ILogger<WikiController>>();
+        _mockLocalizer = new Mock<IStringLocalizer<WikiResources>>();
         _linkGenerator = new TestLinkGenerator();
+
+        // Setup default localizer behavior to return the key as the value
+        _mockLocalizer
+            .Setup(x => x[It.IsAny<string>()])
+            .Returns((string key) => new LocalizedString(key, key));
+        _mockLocalizer
+            .Setup(x => x[It.IsAny<string>(), It.IsAny<object[]>()])
+            .Returns((string key, object[] args) => new LocalizedString(key, string.Format(key, args)));
 
         _options = new WikiOptions
         {
@@ -58,7 +70,8 @@ public abstract class WikiControllerTestBase
             _mockTemporaryMediaStorage.Object,
             _mockWikiPageEditService.Object,
             optionsWrapper,
-            _mockLogger.Object);
+            _mockLogger.Object,
+            _mockLocalizer.Object);
 
         // Setup default HTTP context
         var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor());
