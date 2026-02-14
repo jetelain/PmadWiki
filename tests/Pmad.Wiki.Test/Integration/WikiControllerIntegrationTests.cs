@@ -27,6 +27,7 @@ public class WikiControllerIntegrationTests : IDisposable
     private readonly string _testRepoRoot;
     private readonly string _testRepoPath;
     private readonly ServiceProvider _serviceProvider;
+    private readonly Mock<IStringLocalizer<WikiResources>> _mockLocalizer;
     private readonly Mock<IWikiUserService> _mockUserService;
     private readonly string _branchName = "main";
 
@@ -58,6 +59,13 @@ public class WikiControllerIntegrationTests : IDisposable
         
         _serviceProvider = services.BuildServiceProvider();
 
+        _mockLocalizer = new Mock<IStringLocalizer<WikiResources>>();
+        _mockLocalizer
+            .Setup(x => x[It.IsAny<string>()])
+            .Returns((string key) => new LocalizedString(key, key));
+        _mockLocalizer
+            .Setup(x => x[It.IsAny<string>(), It.IsAny<object[]>()])
+            .Returns((string key, object[] args) => new LocalizedString(key, string.Format(key, args)));
     }
 
     private WikiController CreateController()
@@ -70,7 +78,6 @@ public class WikiControllerIntegrationTests : IDisposable
         var wikiPageEditService = _serviceProvider.GetRequiredService<IWikiPageEditService>();
         var tempMediaStorage = _serviceProvider.GetRequiredService<ITemporaryMediaStorageService>();
         var options = _serviceProvider.GetRequiredService<IOptions<WikiOptions>>();
-        var localizer = new Mock<IStringLocalizer<WikiResources>>().Object;
 
         var logger = new Mock<ILogger<WikiController>>().Object;
 
@@ -83,7 +90,7 @@ public class WikiControllerIntegrationTests : IDisposable
             wikiPageEditService,
             options,
             logger,
-            localizer);
+            _mockLocalizer.Object);
 
         SetupControllerContext(_controller);
 

@@ -468,4 +468,13 @@
   <data name="Error saving rules: {0}" xml:space="preserve">
     <value>Erreur lors de l'enregistrement des règles : {0}</value>
   </data>
+  <data name="Create page {0}" xml:space="preserve">
+    <value>Création de la page {0}</value>
+  </data>
+  <data name="Update page {0}" xml:space="preserve">
+    <value>Mise à jour de la page {0}</value>
+  </data>
+  <data name="Restore page {0} to revision {1}" xml:space="preserve">
+    <value>Restauration de la page {0} vers la révision {1}</value>
+  </data>
 </root>

@@ -499,25 +499,31 @@ namespace Pmad.Wiki.Controllers
             }
 
             WikiPage? page;
-            bool isRestore = false;
+            string commitMessage;
 
             if (!string.IsNullOrEmpty(restoreFromCommit))
             {
                 page = await _pageService.GetPageAtRevisionAsync(id, culture, restoreFromCommit, cancellationToken);
-                isRestore = true;
+                commitMessage = _localizer["Restore page {0} to revision {1}", id, restoreFromCommit?.Substring(0, Math.Min(8, restoreFromCommit.Length)) ?? string.Empty];
             }
             else
             {
                 page = await _pageService.GetPageAsync(id, culture, cancellationToken);
+                if (page == null)
+                {
+                    commitMessage = _localizer["Create page {0}", id];
+                }
+                else
+                {
+                    commitMessage = _localizer["Update page {0}", id];
+                }
             }
             
             var viewModel = new WikiPageEditViewModel
             {
                 PageName = id,
                 Content = page?.Content ?? string.Empty,
-                CommitMessage = isRestore 
-                    ? $"Restore page {id} to revision {restoreFromCommit?.Substring(0, Math.Min(8, restoreFromCommit.Length))}"
-                    : page == null ? $"Create page {id}" : $"Update page {id}",
+                CommitMessage = commitMessage,
                 Culture = culture,
                 IsNew = page == null,
                 OriginalContentHash = page?.ContentHash
