@@ -1,5 +1,4 @@
 using System.Text;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -15,7 +14,6 @@ public class WikiPageServiceTest
     private readonly Mock<IGitRepositoryService> _mockGitRepositoryService;
     private readonly Mock<IGitRepository> _mockRepository;
     private readonly Mock<IWikiUserService> _mockWikiUserService;
-    private readonly Mock<IPageAccessControlService> _mockPageAccessControlService;
     private readonly Mock<IWikiPageTitleCache> _mockTitleCache;
     private readonly WikiOptions _options;
     private readonly WikiPageService _service;
@@ -25,7 +23,6 @@ public class WikiPageServiceTest
         _mockGitRepositoryService = new Mock<IGitRepositoryService>();
         _mockRepository = new Mock<IGitRepository>();
         _mockWikiUserService = new Mock<IWikiUserService>();
-        _mockPageAccessControlService = new Mock<IPageAccessControlService>();
         _mockTitleCache = new Mock<IWikiPageTitleCache>();
 
         _options = new WikiOptions
@@ -47,7 +44,6 @@ public class WikiPageServiceTest
         _service = new WikiPageService(
             _mockGitRepositoryService.Object,
             _mockWikiUserService.Object,
-            _mockPageAccessControlService.Object,
             _mockTitleCache.Object,
             new MarkdownRenderService(optionsWrapper, linkGenerator),
             optionsWrapper);
@@ -1412,39 +1408,6 @@ public class WikiPageServiceTest
             It.IsAny<IEnumerable<GitCommitOperation>>(),
             It.IsAny<GitCommitMetadata>(),
             It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    #endregion
-
-    #region CheckPageAccessAsync Tests
-
-    [Fact]
-    public async Task CheckPageAccessAsync_DelegatesToAccessControlService()
-    {
-        // Arrange
-        var userGroups = new[] { "admin", "users" };
-        var expectedPermissions = new PageAccessPermissions
-        {
-            CanRead = true,
-            CanEdit = true,
-            MatchedPattern = "admin/**"
-        };
-
-        _mockPageAccessControlService
-            .Setup(x => x.CheckPageAccessAsync("admin/page", userGroups, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expectedPermissions);
-
-        // Act
-        var result = await _service.CheckPageAccessAsync("admin/page", userGroups, CancellationToken.None);
-
-        // Assert
-        Assert.Equal(expectedPermissions.CanRead, result.CanRead);
-        Assert.Equal(expectedPermissions.CanEdit, result.CanEdit);
-        Assert.Equal(expectedPermissions.MatchedPattern, result.MatchedPattern);
-
-        _mockPageAccessControlService.Verify(
-            x => x.CheckPageAccessAsync("admin/page", userGroups, It.IsAny<CancellationToken>()),
-            Times.Once);
     }
 
     #endregion

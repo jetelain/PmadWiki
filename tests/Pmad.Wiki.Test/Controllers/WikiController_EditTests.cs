@@ -328,7 +328,7 @@ public class WikiController_EditTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("AdminPage", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -361,7 +361,7 @@ public class WikiController_EditTests : WikiControllerTestBase
             CanEdit = true
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("AdminPage", new[] { "admins" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -767,7 +767,7 @@ public class WikiController_EditTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("AdminPage", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -813,7 +813,7 @@ public class WikiController_EditTests : WikiControllerTestBase
             CanEdit = true
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("AdminPage", new[] { "admins" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 

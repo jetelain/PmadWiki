@@ -235,7 +235,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("AdminPage", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -261,7 +261,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("AdminPage", Array.Empty<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -293,7 +293,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("TestPage", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -396,7 +396,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
             CanEdit = true
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("NewPage", new[] { "editors" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -412,7 +412,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         Assert.Equal("NewPage", redirectResult.RouteValues?["id"]);
 
         // Verify CheckPageAccessAsync was called twice (once for read, once for edit)
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("NewPage", new[] { "editors" }, It.IsAny<CancellationToken>()),
             Times.Exactly(2));
     }
@@ -442,7 +442,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("RestrictedPage", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -554,7 +554,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
             CanEdit = true
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("TestPage", new[] { "editors" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -608,7 +608,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("RestrictedPage", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -1031,7 +1031,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
             CanEdit = false
         };
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("PublicPage", Array.Empty<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
@@ -1060,7 +1060,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var model = Assert.IsType<WikiPageViewModel>(viewResult.Model);
         Assert.Equal("PublicPage", model.PageName);
 
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("PublicPage", Array.Empty<string>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }

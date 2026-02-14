@@ -263,15 +263,15 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
             .ReturnsAsync(allPages);
 
         // Setup permissions: users can read Home and About, but not admin pages
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("Home", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = true });
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("About", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = true });
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("admin/settings", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = false, CanEdit = false });
 
@@ -328,9 +328,9 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         Assert.Contains(model, p => p.PageName == "Home");
         Assert.Contains(model, p => p.PageName == "About");
         Assert.Contains(model, p => p.PageName == "admin/settings");
-        
+
         // Verify CheckPageAccessAsync was never called when permissions are disabled
-        _mockPageService.Verify(
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync(It.IsAny<string>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
@@ -359,11 +359,11 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
             .Setup(x => x.GetAllPagesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("public", Array.Empty<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = true });
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("private", Array.Empty<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = false, CanEdit = false });
 
@@ -431,7 +431,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
             .Setup(x => x.GetAllPagesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("admin/page", new[] { "users", "editors", "admins" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = true });
 
@@ -446,8 +446,8 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         
         Assert.Single(model);
         Assert.Equal("admin/page", model[0].PageName);
-        
-        _mockPageService.Verify(
+
+        _mockAccessControlService.Verify(
             x => x.CheckPageAccessAsync("admin/page", new[] { "users", "editors", "admins" }, It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -636,17 +636,17 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
             .ReturnsAsync(allPages);
 
         // page1: can read and edit
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("page1", new[] { "editors" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = true });
 
         // page2: can read but not edit (should still be included)
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("page2", new[] { "editors" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = false });
 
         // page3: cannot read
-        _mockPageService
+        _mockAccessControlService
             .Setup(x => x.CheckPageAccessAsync("page3", new[] { "editors" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PageAccessPermissions { CanRead = false, CanEdit = false });
 
