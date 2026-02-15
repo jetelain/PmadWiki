@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Pmad.Wiki.Controllers;
 using Pmad.Wiki.Models;
+using Pmad.Wiki.Resources;
 using Pmad.Wiki.Services;
 using Pmad.Wiki.Test.Infrastructure;
 
@@ -25,6 +27,7 @@ public class WikiControllerIntegrationTests : IDisposable
     private readonly string _testRepoRoot;
     private readonly string _testRepoPath;
     private readonly ServiceProvider _serviceProvider;
+    private readonly Mock<IStringLocalizer<WikiResources>> _mockLocalizer;
     private readonly Mock<IWikiUserService> _mockUserService;
     private readonly string _branchName = "main";
 
@@ -56,6 +59,13 @@ public class WikiControllerIntegrationTests : IDisposable
         
         _serviceProvider = services.BuildServiceProvider();
 
+        _mockLocalizer = new Mock<IStringLocalizer<WikiResources>>();
+        _mockLocalizer
+            .Setup(x => x[It.IsAny<string>()])
+            .Returns((string key) => new LocalizedString(key, key));
+        _mockLocalizer
+            .Setup(x => x[It.IsAny<string>(), It.IsAny<object[]>()])
+            .Returns((string key, object[] args) => new LocalizedString(key, string.Format(key, args)));
     }
 
     private WikiController CreateController()
@@ -79,7 +89,8 @@ public class WikiControllerIntegrationTests : IDisposable
             tempMediaStorage,
             wikiPageEditService,
             options,
-            logger);
+            logger,
+            _mockLocalizer.Object);
 
         SetupControllerContext(_controller);
 

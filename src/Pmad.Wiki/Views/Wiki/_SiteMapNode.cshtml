@@ -27,10 +27,13 @@
             @if (Model.LastModified.HasValue)
             {
                 <span class="sitemap-node-meta">
-                    @Model.LastModified.Value.ToString("g")
                     @if (!string.IsNullOrEmpty(Model.LastModifiedBy))
                     {
-                        <text>by @Model.LastModifiedBy</text>
+                        @Localizer["{0:g} by {1}", Model.LastModified.Value, Model.LastModifiedBy]
+                    }
+                    else
+                    {
+                        @Model.LastModified.Value.ToString("g")
                     }
                 </span>
             }

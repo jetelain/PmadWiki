@@ -2,10 +2,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pmad.Wiki.Helpers;
 using Pmad.Wiki.Models;
+using Pmad.Wiki.Resources;
 using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki.Controllers
@@ -22,6 +24,7 @@ namespace Pmad.Wiki.Controllers
         private readonly IWikiPageEditService _wikiPageEditService;
         private readonly WikiOptions _options;
         private readonly ILogger<WikiController> _logger;
+        private readonly IStringLocalizer<WikiResources> _localizer;
 
         public WikiController(
             IWikiPageService pageService,
@@ -31,7 +34,8 @@ namespace Pmad.Wiki.Controllers
             ITemporaryMediaStorageService temporaryMediaStorage,
             IWikiPageEditService wikiPageEditService,
             IOptions<WikiOptions> options,
-            ILogger<WikiController> logger)
+            ILogger<WikiController> logger,
+            IStringLocalizer<WikiResources> localizer)
         {
             _pageService = pageService;
             _userService = userService;
@@ -41,6 +45,7 @@ namespace Pmad.Wiki.Controllers
             _wikiPageEditService = wikiPageEditService;
             _options = options.Value;
             _logger = logger;
+            _localizer = localizer;
         }
 
         [HttpGet]
@@ -494,25 +499,31 @@ namespace Pmad.Wiki.Controllers
             }
 
             WikiPage? page;
-            bool isRestore = false;
+            string commitMessage;
 
             if (!string.IsNullOrEmpty(restoreFromCommit))
             {
                 page = await _pageService.GetPageAtRevisionAsync(id, culture, restoreFromCommit, cancellationToken);
-                isRestore = true;
+                commitMessage = _localizer["Restore page {0} to revision {1}", id, restoreFromCommit?.Substring(0, Math.Min(8, restoreFromCommit.Length)) ?? string.Empty];
             }
             else
             {
                 page = await _pageService.GetPageAsync(id, culture, cancellationToken);
+                if (page == null)
+                {
+                    commitMessage = _localizer["Create page {0}", id];
+                }
+                else
+                {
+                    commitMessage = _localizer["Update page {0}", id];
+                }
             }
             
             var viewModel = new WikiPageEditViewModel
             {
                 PageName = id,
                 Content = page?.Content ?? string.Empty,
-                CommitMessage = isRestore 
-                    ? $"Restore page {id} to revision {restoreFromCommit?.Substring(0, Math.Min(8, restoreFromCommit.Length))}"
-                    : page == null ? $"Create page {id}" : $"Update page {id}",
+                CommitMessage = commitMessage,
                 Culture = culture,
                 IsNew = page == null,
                 OriginalContentHash = page?.ContentHash
@@ -578,12 +589,12 @@ namespace Pmad.Wiki.Controllers
         {
             if (!WikiInputValidator.IsValidPageName(model.PageName))
             {
-                ModelState.AddModelError(nameof(model.PageName), "Invalid page name.");
+                ModelState.AddModelError(nameof(model.PageName), _localizer["Invalid page name."]);
             }
 
             if (!string.IsNullOrEmpty(model.Culture) && !WikiInputValidator.IsValidCulture(model.Culture))
             {
-                ModelState.AddModelError(nameof(model.Culture), "Invalid culture identifier.");
+                ModelState.AddModelError(nameof(model.Culture), _localizer["Invalid culture identifier."]);
             }
 
             if (!ModelState.IsValid)
@@ -617,8 +628,7 @@ namespace Pmad.Wiki.Controllers
                     if (currentPage.ContentHash != model.OriginalContentHash)
                     {
                         ModelState.AddModelError(string.Empty,
-                            $"Warning: This page has been modified by {currentPage.LastModifiedBy ?? "another user"} since you started editing. " +
-                            "Your changes will overwrite those changes. Please review the current version before saving.");
+                            _localizer["Warning: This page has been modified by {0} since you started editing. Your changes will overwrite those changes. Please review the current version before saving.", currentPage.LastModifiedBy ?? _localizer["another user"]]);
                         model.OriginalContentHash = currentPage.ContentHash;
                         await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
                         return View(model);
@@ -650,7 +660,7 @@ namespace Pmad.Wiki.Controllers
             {
                 _logger.LogError(ex, "Error saving page {PageName} (culture: {Culture}) by user {UserName}", 
                     model.PageName, model.Culture, wikiUser.User);
-                ModelState.AddModelError(string.Empty, "An error occurred while saving the page. Please try again."); 
+                ModelState.AddModelError(string.Empty, _localizer["An error occurred while saving the page. Please try again."]); 
                 await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
                 return View(model);
             }
@@ -678,19 +688,19 @@ namespace Pmad.Wiki.Controllers
 
             if (file == null || file.Length == 0)
             {
-                return BadRequest(new UploadMediaErrorResponse { Error = "No file uploaded." });
+                return BadRequest(new UploadMediaErrorResponse { Error = _localizer["No file uploaded."] });
             }
 
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!_options.AllowedMediaExtensions.Contains(extension))
             {
-                return BadRequest(new UploadMediaErrorResponse { Error = $"File type {extension} is not allowed." });
+                return BadRequest(new UploadMediaErrorResponse { Error = _localizer["File type {0} is not allowed.", extension] });
             }
 
             // Check file size (limit to 10MB)
             if (file.Length > 10 * 1024 * 1024)
             {
-                return BadRequest(new UploadMediaErrorResponse { Error = "File size exceeds 10MB limit." });
+                return BadRequest(new UploadMediaErrorResponse { Error = _localizer["File size exceeds 10MB limit."] });
             }
 
             using var memoryStream = new MemoryStream();
@@ -821,7 +831,7 @@ namespace Pmad.Wiki.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, $"Error saving rules: {ex.Message}");
+                ModelState.AddModelError(string.Empty, _localizer["Error saving rules: {0}", ex.Message]);
                 return View(model);
             }
         }

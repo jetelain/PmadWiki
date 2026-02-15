@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a asp-controller="Wiki" asp-action="View" asp-route-id="">Wiki</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Wiki" asp-action="View" asp-route-id="">@Localizer["Wiki"]</a></li>
                 @foreach (var crumb in Model.Breadcrumb.Take(Model.Breadcrumb.Count - 1))
                 {
                     <li class="breadcrumb-item"><a asp-controller="Wiki" asp-action="View" asp-route-id="@crumb.PageName">@crumb.PageTitle</a></li>
@@ -20,7 +20,7 @@
             {
                 <div class="btn-group me-2" role="group">
                     <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                        @(Model.Culture ?? "Default")
+                        @(Model.Culture ?? Localizer.GetString("Default"))
                     </button>
                     <ul class="dropdown-menu">
                         @foreach (var culture in Model.AvailableCultures)
@@ -39,15 +39,15 @@
             }
             <div class="btn-group" role="group">
                 <a asp-action="SiteMap" class="btn btn-outline-secondary">
-                    <i class="bi bi-map"></i> Site Map
+                    <i class="bi bi-map"></i> @Localizer["Site Map"]
                 </a>
                 <a asp-action="History" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-outline-secondary">
-                    <i class="bi bi-clock-history"></i> History
+                    <i class="bi bi-clock-history"></i> @Localizer["History"]
                 </a>
                 @if (Model.CanEdit)
                 {
                     <a asp-action="Edit" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-primary">
-                        <i class="bi bi-pencil"></i> Edit
+                        <i class="bi bi-pencil"></i> @Localizer["Edit"]
                     </a>
                 }
             </div>
@@ -61,10 +61,13 @@
     @if (Model.LastModified.HasValue)
     {
         <div class="text-muted small">
-            Last modified: @Model.LastModified.Value.ToString("f")
             @if (!string.IsNullOrEmpty(Model.LastModifiedBy))
             {
-                <text>by @Model.LastModifiedBy</text>
+                @Localizer["Last modified: {0:f} by {1}", Model.LastModified.Value, Model.LastModifiedBy]
+            }
+            else
+            {
+                @Localizer["Last modified: {0:f}", Model.LastModified.Value]
             }
         </div>
     }

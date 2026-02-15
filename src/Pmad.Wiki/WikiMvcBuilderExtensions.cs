@@ -13,6 +13,8 @@ public static class WikiMvcBuilderExtensions
     {
         builder.Services.AddWiki(options);
 
+        builder.AddViewLocalization();
+
         builder.ConfigureApplicationPartManager(apm =>
         {
             apm.ApplicationParts.Add(new CompiledRazorAssemblyPart(WikiAssembly));

@@ -1,20 +1,20 @@
 @model Pmad.Wiki.Models.WikiSiteMapViewModel
 @{
-    ViewData["Title"] = "Site Map";
+    ViewData["Title"] = Localizer["Site Map"];
 }
 
 <div class="wiki-sitemap">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Site Map</h1>
+        <h1>@Localizer["Site Map"]</h1>
         <div class="btn-toolbar" role="toolbar">
             <div class="btn-group" role="group">
                 <a asp-action="View" asp-route-id="@Model.HomePageName" class="btn btn-outline-secondary">
-                    <i class="bi bi-house"></i> Home
+                    <i class="bi bi-house"></i> @Localizer["Home"]
                 </a>
                 @if (Model.CanAdmin)
                 {
                     <a asp-action="AccessControl" class="btn btn-outline-secondary">
-                        <i class="bi bi-shield-lock"></i> Access Control
+                        <i class="bi bi-shield-lock"></i> @Localizer["Access Control"]
                     </a>
                 }
             </div>
@@ -24,7 +24,7 @@
     @if (!Model.RootNodes.Any())
     {
         <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> No pages found. @(Model.CanEdit ? "Start by creating some pages!" : "")
+            <i class="bi bi-info-circle"></i> @Localizer["No pages found."]
         </div>
     }
     else

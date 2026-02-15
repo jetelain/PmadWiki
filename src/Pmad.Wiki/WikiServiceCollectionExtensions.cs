@@ -11,6 +11,8 @@ public static class WikiServiceCollectionExtensions
     {
         services.Configure<WikiOptions>(options);
 
+        services.AddLocalization();
+
         services.AddSingleton<IMarkdownRenderService, MarkdownRenderService>();
         services.AddScoped<IWikiPageService, WikiPageService>();
         services.AddScoped<IPageAccessControlService, PageAccessControlService>();

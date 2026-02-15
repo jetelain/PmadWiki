@@ -1,37 +1,37 @@
 @model Pmad.Wiki.Models.WikiHistoryViewModel
 @{
-    ViewData["Title"] = $"History: {Model.PageName}";
+    ViewData["Title"] = Localizer["History: {0}", Model.PageName];
 }
 
 <div class="wiki-history">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>History: @Model.PageName</h1>
-        <div class="btn-toolbar" role="toolbar">
-            <div class="btn-group" role="group">
-                <a asp-action="SiteMap" class="btn btn-outline-secondary">
-                    <i class="bi bi-map"></i> Site Map
-                </a>
-                <a asp-action="View" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Page
-                </a>
-            </div>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>@Localizer["History: {0}", Model.PageName]</h1>
+    <div class="btn-toolbar" role="toolbar">
+        <div class="btn-group" role="group">
+            <a asp-action="SiteMap" class="btn btn-outline-secondary">
+                <i class="bi bi-map"></i> @Localizer["Site Map"]
+            </a>
+            <a asp-action="View" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> @Localizer["Back to Page"]
+            </a>
         </div>
     </div>
+</div>
 
-    @if (!string.IsNullOrEmpty(Model.Culture))
-    {
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Showing history for culture: <strong>@Model.Culture</strong>
-        </div>
-    }
+@if (!string.IsNullOrEmpty(Model.Culture))
+{
+    <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> @Localizer["Showing history for culture: <strong>{0}</strong>", Model.Culture]
+    </div>
+}
 
     @if (Model.Entries.Any())
     {
         <div class="mb-3">
             <button id="compareButton" class="btn btn-primary" disabled>
-                <i class="bi bi-file-diff"></i> Compare Selected Versions
+                <i class="bi bi-file-diff"></i> @Localizer["Compare Selected Versions"]
             </button>
-            <small class="text-muted ms-2">Select two versions to compare</small>
+            <small class="text-muted ms-2">@Localizer["Select two versions to compare"]</small>
         </div>
 
         <div class="list-group">
@@ -62,8 +62,8 @@
                                    asp-route-commitId="@entry.CommitId"
                                    asp-route-culture="@Model.Culture"
                                    class="btn btn-outline-secondary"
-                                   title="View this version">
-                                    <i class="bi bi-eye"></i> View
+                                   title="@Localizer["View this version"]">
+                                    <i class="bi bi-eye"></i> @Localizer["View"]
                                 </a>
                                 @if (i < Model.Entries.Count - 1)
                                 {
@@ -74,8 +74,8 @@
                                        asp-route-toCommit="@entry.CommitId"
                                        asp-route-culture="@Model.Culture"
                                        class="btn btn-outline-secondary"
-                                       title="Compare with previous version">
-                                        <i class="bi bi-file-diff"></i> Diff
+                                       title="@Localizer["Compare with previous version"]">
+                                        <i class="bi bi-file-diff"></i> @Localizer["Diff"]
                                     </a>
                                 }
                             </div>
@@ -88,7 +88,7 @@
     else
     {
         <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle"></i> No history found for this page.
+            <i class="bi bi-exclamation-triangle"></i> @Localizer["No history found for this page."]
         </div>
     }
 </div>

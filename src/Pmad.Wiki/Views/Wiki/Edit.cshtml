@@ -1,13 +1,13 @@
 @model Pmad.Wiki.Models.WikiPageEditViewModel
 @{
-    ViewData["Title"] = Model.IsNew ? $"Create: {Model.PageName}" : $"Edit: {Model.PageName}";
+    ViewData["Title"] = Model.IsNew ? Localizer["Create: {0}", Model.PageName] : Localizer["Edit: {0}", Model.PageName];
 }
 
 <div class="wiki-edit">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a asp-controller="Wiki" asp-action="View" asp-route-id="">Wiki</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Wiki" asp-action="View" asp-route-id="">@Localizer["Wiki"]</a></li>
                 @if (Model.Breadcrumb.Count > 0)
                 {
                     @foreach (var crumb in Model.Breadcrumb.Take(Model.Breadcrumb.Count - 1))
@@ -21,10 +21,10 @@
         <div class="btn-toolbar" role="toolbar">
             <div class="btn-group" role="group">
                 <a asp-action="SiteMap" class="btn btn-outline-secondary">
-                    <i class="bi bi-map"></i> Site Map
+                    <i class="bi bi-map"></i> @Localizer["Site Map"]
                 </a>
                 <a asp-action="View" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-secondary">
-                    <i class="bi bi-x"></i> Cancel
+                    <i class="bi bi-x"></i> @Localizer["Cancel"]
                 </a>
             </div>
         </div>
@@ -35,7 +35,7 @@
     @if (!string.IsNullOrEmpty(Model.Culture))
     {
         <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Editing culture: <strong>@Model.Culture</strong>
+            <i class="bi bi-info-circle"></i> @Localizer["Editing culture: <strong>{0}</strong>", Model.Culture]
         </div>
     }
 
@@ -49,69 +49,69 @@
         <div asp-validation-summary="ModelOnly" class="alert alert-warning" role="alert"></div>
 
         <div class="mb-3">
-            <label asp-for="Content" class="form-label">Content (Markdown)</label>
+            <label asp-for="Content" class="form-label">@Localizer["Content (Markdown)"]</label>
 
             <div class="btn-toolbar mb-2" role="toolbar" aria-label="Markdown formatting toolbar">
                 <div class="btn-group btn-group-sm me-2" role="group" aria-label="Preview">
                     <button type="button" id="togglePreview" class="btn btn-outline-primary">
-                        <i class="bi bi-eye"></i> <span id="previewButtonText">Preview</span>
+                        <i class="bi bi-eye"></i> <span id="previewButtonText">@Localizer["Preview"]</span>
                     </button>
                 </div>
                 <div class="btn-group btn-group-sm me-2" role="group" aria-label="Text formatting">
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="bold" title="Bold">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="bold" title="@Localizer["Bold"]">
                         <i class="bi bi-type-bold"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="italic" title="Italic">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="italic" title="@Localizer["Italic"]">
                         <i class="bi bi-type-italic"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="strikethrough" title="Strikethrough">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="strikethrough" title="@Localizer["Strikethrough"]">
                         <i class="bi bi-type-strikethrough"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="code" title="Inline Code">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="code" title="@Localizer["Inline Code"]">
                         <i class="bi bi-code"></i>
                     </button>
                 </div>
                 <div class="btn-group btn-group-sm me-2" role="group" aria-label="Headings">
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="h1" title="Heading 1">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="h1" title="@Localizer["Heading 1"]">
                         <strong>H1</strong>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="h2" title="Heading 2">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="h2" title="@Localizer["Heading 2"]">
                         <strong>H2</strong>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="h3" title="Heading 3">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="h3" title="@Localizer["Heading 3"]">
                         <strong>H3</strong>
                     </button>
                 </div>
                 <div class="btn-group btn-group-sm me-2" role="group" aria-label="Lists">
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="ul" title="Unordered List">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="ul" title="@Localizer["Unordered List"]">
                         <i class="bi bi-list-ul"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="ol" title="Ordered List">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="ol" title="@Localizer["Ordered List"]">
                         <i class="bi bi-list-ol"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="quote" title="Blockquote">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="quote" title="@Localizer["Blockquote"]">
                         <i class="bi bi-quote"></i>
                     </button>
                 </div>
                 <div class="btn-group btn-group-sm me-2" role="group" aria-label="Links and media">
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="link" title="Link">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="link" title="@Localizer["Link"]">
                         <i class="bi bi-link-45deg"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="page-link" title="Link to Page" data-bs-toggle="modal" data-bs-target="#pageLinkModal">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="page-link" title="@Localizer["Link to Page"]" data-bs-toggle="modal" data-bs-target="#pageLinkModal">
                         <i class="bi bi-file-text"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="image" title="Image">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="image" title="@Localizer["Image"]">
                         <i class="bi bi-image"></i>
                     </button>
                 </div>
                 <div class="btn-group btn-group-sm me-2" role="group" aria-label="Advanced">
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="codeblock" title="Code Block">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="codeblock" title="@Localizer["Code Block"]">
                         <i class="bi bi-code-square"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="hr" title="Horizontal Rule">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="hr" title="@Localizer["Horizontal Rule"]">
                         <i class="bi bi-dash-lg"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="table" title="Table">
+                    <button type="button" class="btn btn-outline-secondary" data-markdown-action="table" title="@Localizer["Table"]">
                         <i class="bi bi-table"></i>
                     </button>
                 </div>
@@ -122,32 +122,31 @@
                 <div id="preview-content" class="wiki-content"></div>
                 <div id="preview-loading" class="text-center py-3 d-none">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading preview...</span>
+                        <span class="visually-hidden">@Localizer["Loading preview..."]</span>
                     </div>
                 </div>
             </div>
             <span asp-validation-for="Content" class="text-danger"></span>
             <div class="form-text">
-                Use <a href="https://www.markdownguide.org/basic-syntax/" target="_blank">Markdown syntax</a> to format your content.
-                You can drag and drop or paste images and media files directly into the text area.
+                @Localizer[@"Use <a href=""https://www.markdownguide.org/basic-syntax/"" target=""_blank"">Markdown syntax</a> to format your content. You can drag and drop or paste images and media files directly into the text area."]
             </div>
         </div>
 
         <div class="mb-3">
-            <label asp-for="CommitMessage" class="form-label">Commit Message</label>
+            <label asp-for="CommitMessage" class="form-label">@Localizer["Commit Message"]</label>
             <input asp-for="CommitMessage" class="form-control" />
             <span asp-validation-for="CommitMessage" class="text-danger"></span>
             <div class="form-text">
-                Describe the changes you made to this page.
+                @Localizer["Describe the changes you made to this page."]
             </div>
         </div>
 
         <div class="d-flex justify-content-between">
             <button type="submit" class="btn btn-primary">
-                <i class="bi bi-save"></i> Save Changes
+                <i class="bi bi-save"></i> @Localizer["Save Changes"]
             </button>
             <a asp-action="View" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-outline-secondary">
-                Cancel
+                @Localizer["Cancel"]
             </a>
         </div>
     </form>
@@ -158,17 +157,17 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="pageLinkModalLabel">Insert Link to Page</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="pageLinkModalLabel">@Localizer["Insert Link to Page"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <input type="text" class="form-control" id="pageSearchInput" placeholder="Search pages...">
+                    <input type="text" class="form-control" id="pageSearchInput" placeholder="@Localizer["Search pages..."]">
                 </div>
                 <div id="pageListContainer">
                     <div class="text-center py-3">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden">@Localizer["Loading..."]</span>
                         </div>
                     </div>
                 </div>
@@ -194,6 +193,27 @@
             currentPage = new {
                 pageName = Model.PageName,
                 culture = Model.Culture
+            },
+            labels = new {
+                edit = Localizer.GetString("Edit").ToString(),
+                preview = Localizer.GetString("Preview").ToString(),
+                noContentToPreview = Localizer.GetString("No content to preview.").ToString(),
+                failedToRenderPreview = Localizer.GetString("Failed to render preview. Please try again.").ToString(),
+                uploading = Localizer.GetString("Uploading...").ToString(),
+                uploadFailed = Localizer.GetString("Upload failed:").ToString(),
+                close = Localizer.GetString("Close").ToString(),
+                failedToLoadPages = Localizer.GetString("Failed to load pages. Please try again.").ToString(),
+                boldText = Localizer.GetString("bold text").ToString(),
+                italicText = Localizer.GetString("italic text").ToString(),
+                strikethroughText = Localizer.GetString("strikethrough text").ToString(),
+                code = Localizer.GetString("code").ToString(),
+                heading1 = Localizer.GetString("Heading 1").ToString(),
+                heading2 = Localizer.GetString("Heading 2").ToString(),
+                heading3 = Localizer.GetString("Heading 3").ToString(),
+                listItem = Localizer.GetString("List item").ToString(),
+                quote = Localizer.GetString("Quote").ToString(),
+                linkText = Localizer.GetString("link text").ToString(),
+                altText = Localizer.GetString("alt text").ToString()
             }
         })
     </script>
