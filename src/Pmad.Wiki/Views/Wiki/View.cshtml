@@ -46,8 +46,8 @@
                 </a>
                 @if (Model.CanEdit)
                 {
-                    <a asp-action="Create" asp-route-culture="@Model.Culture" asp-route-fromPage="@Model.PageName" class="btn btn-outline-primary">
-                        <i class="bi bi-plus-circle"></i> @Localizer["New"]
+                    <a asp-action="Create" asp-route-culture="@Model.Culture" asp-route-fromPage="@Model.PageName" class="btn btn-outline-primary" title="@Localizer["Create New Page"]">
+                        <i class="bi bi-plus-circle"></i> @Localizer["Create"]
                     </a>
                     <a asp-action="Edit" asp-route-id="@Model.PageName" asp-route-culture="@Model.Culture" class="btn btn-primary">
                         <i class="bi bi-pencil"></i> @Localizer["Edit"]

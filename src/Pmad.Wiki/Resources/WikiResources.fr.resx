@@ -477,4 +477,67 @@
   <data name="Restore page {0} to revision {1}" xml:space="preserve">
     <value>Restauration de la page {0} vers la révision {1}</value>
   </data>
+  <data name="Create New Page" xml:space="preserve">
+    <value>Créer une nouvelle page</value>
+  </data>
+  <data name="Creating page for culture: &lt;strong&gt;{0}&lt;/strong&gt;" xml:space="preserve">
+    <value>Création d'une page pour la culture : &lt;strong&gt;{0}&lt;/strong&gt;</value>
+  </data>
+  <data name="Choose a Template" xml:space="preserve">
+    <value>Choisir un modèle</value>
+  </data>
+  <data name="Select a template to start with, or choose 'Blank Page' to create an empty page." xml:space="preserve">
+    <value>Sélectionnez un modèle pour commencer, ou choisissez 'Page vierge' pour créer une page vide.</value>
+  </data>
+  <data name="Blank Page" xml:space="preserve">
+    <value>Page vierge</value>
+  </data>
+  <data name="Start with an empty page." xml:space="preserve">
+    <value>Commencer avec une page vide.</value>
+  </data>
+  <data name="Use This Template" xml:space="preserve">
+    <value>Utiliser ce modèle</value>
+  </data>
+  <data name="Default location:" xml:space="preserve">
+    <value>Emplacement par défaut :</value>
+  </data>
+  <data name="Name pattern:" xml:space="preserve">
+    <value>Modèle de nom :</value>
+  </data>
+  <data name="Specify Page Location" xml:space="preserve">
+    <value>Spécifier l'emplacement de la page</value>
+  </data>
+  <data name="Back to Templates" xml:space="preserve">
+    <value>Retour aux modèles</value>
+  </data>
+  <data name="Using template: &lt;strong&gt;{0}&lt;/strong&gt;" xml:space="preserve">
+    <value>Utilisation du modèle : &lt;strong&gt;{0}&lt;/strong&gt;</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>Emplacement</value>
+  </data>
+  <data name="e.g., Guides or leave empty for root" xml:space="preserve">
+    <value>par ex., Guides ou laisser vide pour la racine</value>
+  </data>
+  <data name="The folder path where the page will be created. Use '/' to separate folders." xml:space="preserve">
+    <value>Le chemin du dossier où la page sera créée. Utilisez '/' pour séparer les dossiers.</value>
+  </data>
+  <data name="Page Name" xml:space="preserve">
+    <value>Nom de la page</value>
+  </data>
+  <data name="e.g., MyPage" xml:space="preserve">
+    <value>par ex., MaPage</value>
+  </data>
+  <data name="The name of the page. Only letters, numbers, hyphens, and underscores are allowed." xml:space="preserve">
+    <value>Le nom de la page. Seuls les lettres, chiffres, tirets et traits de soulignement sont autorisés.</value>
+  </data>
+  <data name="Full Page Path" xml:space="preserve">
+    <value>Chemin complet de la page</value>
+  </data>
+  <data name="Create Page" xml:space="preserve">
+    <value>Créer la page</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Créer</value>
+  </data>
 </root>

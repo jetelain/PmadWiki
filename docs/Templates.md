@@ -38,8 +38,8 @@ A template is a markdown file with optional front matter:
 ---
 title: Meeting Notes Template
 description: Template for weekly team meetings
-location: Meetings/{year}
-pattern: {date}-Meeting
+location: "Meetings/{year}"
+pattern: "{date}-Meeting"
 ---
 
 # Meeting Notes - {date}
@@ -72,8 +72,10 @@ pattern: {date}-Meeting
 |----------|-------------|---------|
 | `title` | Display name shown in template selector | `Meeting Notes Template` |
 | `description` | Help text describing the template's purpose | `Template for weekly team meetings` |
-| `location` | Default folder for new pages (supports placeholders) | `Meetings/{year}` |
-| `pattern` | Naming pattern for new pages (supports placeholders) | `{date}-Meeting` |
+| `location` | Default folder for new pages (supports placeholders) | `"Meetings/{year}"` |
+| `pattern` | Naming pattern for new pages (supports placeholders) | `"{date}-Meeting"` |
+
+Warning: When using special characters like curly braces `{}` or square brackets `[]` in YAML Front Matter, you must wrap the entire value in quotes. Failing to do so will cause a parsing error.
 
 ### Supported Placeholders
 
@@ -184,8 +186,8 @@ description: Standard article structure
 ---
 title: Meeting Notes
 description: Weekly team meeting template
-location: Meetings/{year}
-pattern: {date}-Meeting
+location: "Meetings/{year}"
+pattern: "{date}-Meeting"
 ---
 
 # Meeting - {date}
