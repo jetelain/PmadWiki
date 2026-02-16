@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -72,34 +73,15 @@ namespace Pmad.Wiki.Controllers
                 return BadRequest("Invalid culture identifier.");
             }
 
-            if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
-            {
-                return Challenge();
-            }
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
 
-            IWikiUserWithPermissions? wikiUser = null;
-            if (User.Identity?.IsAuthenticated == true)
+            if (!await _pagePermissionHelper.CanView(wikiUser, id, cancellationToken))
             {
-                wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
-                if (wikiUser != null && !wikiUser.CanView && !_options.AllowAnonymousViewing)
+                if (User.Identity?.IsAuthenticated != true)
                 {
-                    return Forbid();
+                    return Challenge();
                 }
-            }
-
-            // Check page-level permissions
-            if (_options.UsePageLevelPermissions)
-            {
-                var userGroups = wikiUser?.Groups ?? [];
-                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, userGroups, cancellationToken);
-                if (!pageAccess.CanRead)
-                {
-                    if (User.Identity?.IsAuthenticated != true)
-                    {
-                        return Challenge();
-                    }
-                    return Forbid();
-                }
+                return Forbid();
             }
 
             var page = await _pageService.GetPageAsync(id, culture, cancellationToken);
@@ -179,29 +161,15 @@ namespace Pmad.Wiki.Controllers
                 return Challenge();
             }
 
-            IWikiUserWithPermissions? wikiUser = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
-                if (wikiUser != null && !wikiUser.CanView && !_options.AllowAnonymousViewing)
-                {
-                    return Forbid();
-                }
-            }
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
 
-            // Check page-level permissions
-            if (_options.UsePageLevelPermissions)
+            if (!await _pagePermissionHelper.CanView(wikiUser, id, cancellationToken))
             {
-                var userGroups = wikiUser?.Groups ?? [];
-                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, userGroups, cancellationToken);
-                if (!pageAccess.CanRead)
+                if (User.Identity?.IsAuthenticated != true)
                 {
-                    if (User.Identity?.IsAuthenticated != true)
-                    {
-                        return Challenge();
-                    }
-                    return Forbid();
+                    return Challenge();
                 }
+                return Forbid();
             }
 
             var history = await _pageService.GetPageHistoryAsync(id, culture, cancellationToken);
@@ -250,29 +218,15 @@ namespace Pmad.Wiki.Controllers
                 return Challenge();
             }
 
-            IWikiUserWithPermissions? wikiUser = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
-                if (wikiUser != null && !wikiUser.CanView && !_options.AllowAnonymousViewing)
-                {
-                    return Forbid();
-                }
-            }
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
 
-            // Check page-level permissions
-            if (_options.UsePageLevelPermissions)
+            if (!await _pagePermissionHelper.CanView(wikiUser, id, cancellationToken))
             {
-                var userGroups = wikiUser?.Groups ?? [];
-                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, userGroups, cancellationToken);
-                if (!pageAccess.CanRead)
+                if (User.Identity?.IsAuthenticated != true)
                 {
-                    if (User.Identity?.IsAuthenticated != true)
-                    {
-                        return Challenge();
-                    }
-                    return Forbid();
+                    return Challenge();
                 }
+                return Forbid();
             }
 
             var page = await _pageService.GetPageAtRevisionAsync(id, culture, commitId, cancellationToken);
@@ -336,29 +290,15 @@ namespace Pmad.Wiki.Controllers
                 return Challenge();
             }
 
-            IWikiUserWithPermissions? wikiUser = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
-                if (wikiUser != null && !wikiUser.CanView && !_options.AllowAnonymousViewing)
-                {
-                    return Forbid();
-                }
-            }
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
 
-            // Check page-level permissions
-            if (_options.UsePageLevelPermissions)
+            if (!await _pagePermissionHelper.CanView(wikiUser, id, cancellationToken))
             {
-                var userGroups = wikiUser?.Groups ?? [];
-                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, userGroups, cancellationToken);
-                if (!pageAccess.CanRead)
+                if (User.Identity?.IsAuthenticated != true)
                 {
-                    if (User.Identity?.IsAuthenticated != true)
-                    {
-                        return Challenge();
-                    }
-                    return Forbid();
+                    return Challenge();
                 }
+                return Forbid();
             }
 
             var fromPage = await _pageService.GetPageAtRevisionAsync(id, culture, fromCommit, cancellationToken);
@@ -934,29 +874,15 @@ namespace Pmad.Wiki.Controllers
                 return Challenge();
             }
 
-            IWikiUserWithPermissions? wikiUser = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
-                if (wikiUser != null && !wikiUser.CanView && !_options.AllowAnonymousViewing)
-                {
-                    return Forbid();
-                }
-            }
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
 
-            // For media files, check access based on the full media file path
-            if (_options.UsePageLevelPermissions)
+            if (!await _pagePermissionHelper.CanView(wikiUser, id, cancellationToken))
             {
-                var userGroups = wikiUser?.Groups ?? [];
-                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, userGroups, cancellationToken);
-                if (!pageAccess.CanRead)
+                if (User.Identity?.IsAuthenticated != true)
                 {
-                    if (User.Identity?.IsAuthenticated != true)
-                    {
-                        return Challenge();
-                    }
-                    return Forbid();
+                    return Challenge();
                 }
+                return Forbid();
             }
 
             var fileContent = await _pageService.GetMediaFileAsync(id, cancellationToken);
