@@ -185,10 +185,10 @@ description: Standard article structure
 title: Meeting Notes
 description: Weekly team meeting template
 location: Meetings/{year}
-pattern: {date}-{name}
+pattern: {date}-Meeting
 ---
 
-# {name} - {date}
+# Meeting - {date}
 
 **Date:** {date}  
 **Time:**  
@@ -223,115 +223,8 @@ pattern: {date}-{name}
 
 When using this template:
 - Location will be pre-filled with: `Meetings/2024` (current year)
-- Page name will be suggested as: `2024-01-15-{name}` (current date + user input)
-- User provides the meeting name (e.g., "Sprint-Planning")
-- Final page path: `Meetings/2024/2024-01-15-Sprint-Planning`
-
-### Example 3: Project Template
-
-**File**: `Projects/_template.md`
-
-```markdown
----
-title: Project Template
-description: Template for new project documentation
-pattern: {name}
----
-
-# Project: {name}
-
-## Overview
-
-
-
-## Goals and Objectives
-
-1. 
-2. 
-3. 
-
-## Timeline
-
-| Phase | Start Date | End Date | Status |
-|-------|------------|----------|--------|
-| Planning | | | |
-| Development | | | |
-| Testing | | | |
-| Deployment | | | |
-
-## Team
-
-| Role | Name | Contact |
-|------|------|---------|
-| Project Manager | | |
-| Lead Developer | | |
-| QA Lead | | |
-
-## Resources
-
-- [Link to requirements]()
-- [Link to design docs]()
-- [Link to repository]()
-
-## Status Updates
-
-### {date}
-
-
-```
-
-This template is located at `Projects/_template.md`, making it a context-specific template for the Projects section.
-
-### Example 4: Blog Post Template
-
-**File**: `_templates/Blog-Post.md`
-
-```markdown
----
-title: Blog Post
-description: Template for blog articles
-location: Blog/{year}/{month}
-pattern: {date}-{name}
----
-
-# {name}
-
-**Published:** {date}  
-**Author:**  
-**Tags:** 
-
----
-
-## Introduction
-
-
-
-## Main Content
-
-### Section 1
-
-
-
-### Section 2
-
-
-
-### Section 3
-
-
-
-## Conclusion
-
-
-
-## About the Author
-
-
-
----
-
-*Comments and feedback are welcome!*
-```
+- Page name will be suggested as: `2024-01-15-Meeting` (current date)
+- Final page path: `Meetings/2024/2024-01-15-Meeting`
 
 ## Template Management
 
@@ -388,37 +281,6 @@ Set default locations that match your wiki's structure:
 location: API/Documentation
 ---
 ```
-
-### 4. Choose Appropriate Patterns
-
-Use naming patterns that help with organization and searchability:
-- Date-based: `{date}-{name}` for chronological content
-- Category-based: `{name}` for static content
-- Mixed: `{year}/{month}/{date}-{name}` for nested date structures
-
-### 5. Include Helpful Placeholders
-
-Use placeholders in the content to guide users:
-```markdown
-**Project Name:** {name}
-**Start Date:** {date}
-**Description:** [Brief description of the project]
-```
-
-### 6. Keep Templates Simple
-
-Start with minimal structure and let users customize:
-- Include essential sections only
-- Use comments to provide guidance
-- Avoid overly complex nested structures
-
-### 7. Test Your Templates
-
-Create a test page from your template to verify:
-- Placeholders are replaced correctly
-- Location and naming patterns work as expected
-- Content structure makes sense
-- Formatting renders properly
 
 ## Troubleshooting
 
@@ -494,15 +356,7 @@ Front matter must:
 Pattern placeholders are replaced server-side:
 - Date/time values use UTC timezone
 - Patterns are evaluated when displaying the page name form
-- User input replaces `{name}` or `{input}` placeholders
 - Invalid characters are not automatically stripped (validation will fail)
-
-## Related Documentation
-
-- [Page Permissions](Page-Permissions.md) - How templates interact with access control
-- [Wiki Structure](Wiki-Structure.md) - Organizing your wiki with folders
-- [Markdown Guide](Markdown-Guide.md) - Formatting template content
-- [Front Matter Reference](Front-Matter.md) - Complete front matter specification
 
 ## FAQ
 
