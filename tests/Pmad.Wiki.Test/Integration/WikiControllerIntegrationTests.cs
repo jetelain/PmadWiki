@@ -77,9 +77,11 @@ public class WikiControllerIntegrationTests : IDisposable
         var markdownRenderService = _serviceProvider.GetRequiredService<IMarkdownRenderService>();
         var wikiPageEditService = _serviceProvider.GetRequiredService<IWikiPageEditService>();
         var tempMediaStorage = _serviceProvider.GetRequiredService<ITemporaryMediaStorageService>();
+        var pagePermissionHelper = _serviceProvider.GetRequiredService<IWikiPagePermissionHelper>();
         var options = _serviceProvider.GetRequiredService<IOptions<WikiOptions>>();
 
         var logger = new Mock<ILogger<WikiController>>().Object;
+        var templateService = _serviceProvider.GetRequiredService<IWikiTemplateService>();
 
         var _controller = new WikiController(
             pageService,
@@ -88,9 +90,11 @@ public class WikiControllerIntegrationTests : IDisposable
             markdownRenderService,
             tempMediaStorage,
             wikiPageEditService,
+            templateService,
             options,
             logger,
-            _mockLocalizer.Object);
+            _mockLocalizer.Object,
+            pagePermissionHelper);
 
         SetupControllerContext(_controller);
 
@@ -538,7 +542,7 @@ public class WikiControllerIntegrationTests : IDisposable
         SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
 
         // Act
-        var result = await controller.Edit("test", null, null, CancellationToken.None);
+        var result = await controller.Edit("test", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -558,7 +562,7 @@ public class WikiControllerIntegrationTests : IDisposable
         SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
 
         // Act
-        var result = await controller.Edit("newpage", null, null, CancellationToken.None);
+        var result = await controller.Edit("newpage", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -580,7 +584,7 @@ public class WikiControllerIntegrationTests : IDisposable
         SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
 
         // Act
-        var result = await controller.Edit("page", null, oldCommit, CancellationToken.None);
+        var result = await controller.Edit("page", null, oldCommit, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -599,7 +603,7 @@ public class WikiControllerIntegrationTests : IDisposable
         SetupAuthenticatedUser(controller, "Viewer", "viewer@example.com", canEdit: false);
 
         // Act
-        var result = await controller.Edit("test", null, null, CancellationToken.None);
+        var result = await controller.Edit("test", null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<ForbidResult>(result);

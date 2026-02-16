@@ -22,9 +22,11 @@ namespace Pmad.Wiki.Controllers
         private readonly IMarkdownRenderService _markdownRenderService;
         private readonly ITemporaryMediaStorageService _temporaryMediaStorage;
         private readonly IWikiPageEditService _wikiPageEditService;
+        private readonly IWikiTemplateService _templateService;
         private readonly WikiOptions _options;
         private readonly ILogger<WikiController> _logger;
         private readonly IStringLocalizer<WikiResources> _localizer;
+        private readonly IWikiPagePermissionHelper _pagePermissionHelper;
 
         public WikiController(
             IWikiPageService pageService,
@@ -33,9 +35,11 @@ namespace Pmad.Wiki.Controllers
             IMarkdownRenderService markdownRenderService,
             ITemporaryMediaStorageService temporaryMediaStorage,
             IWikiPageEditService wikiPageEditService,
+            IWikiTemplateService templateService,
             IOptions<WikiOptions> options,
             ILogger<WikiController> logger,
-            IStringLocalizer<WikiResources> localizer)
+            IStringLocalizer<WikiResources> localizer,
+            IWikiPagePermissionHelper pagePermissionHelper)
         {
             _pageService = pageService;
             _userService = userService;
@@ -43,9 +47,11 @@ namespace Pmad.Wiki.Controllers
             _markdownRenderService = markdownRenderService;
             _temporaryMediaStorage = temporaryMediaStorage;
             _wikiPageEditService = wikiPageEditService;
+            _templateService = templateService;
             _options = options.Value;
             _logger = logger;
             _localizer = localizer;
+            _pagePermissionHelper = pagePermissionHelper;
         }
 
         [HttpGet]
@@ -98,35 +104,18 @@ namespace Pmad.Wiki.Controllers
 
             var page = await _pageService.GetPageAsync(id, culture, cancellationToken);
 
+            var canEdit = await _pagePermissionHelper.CanEdit(wikiUser, id, cancellationToken);
+
             if (page == null)
             {
-                if (wikiUser?.CanEdit == true)
+                if (canEdit)
                 {
-                    // Check page-level edit permissions even for new pages
-                    if (_options.UsePageLevelPermissions)
-                    {
-                        var pageAccess = await _accessControlService.CheckPageAccessAsync(id, wikiUser.Groups, cancellationToken);
-                        if (pageAccess.CanEdit)
-                        {
-                            return RedirectToAction(nameof(Edit), new { id, culture });
-                        }
-                    }
-                    else
-                    {
-                        return RedirectToAction(nameof(Edit), new { id, culture });
-                    }
+                    return RedirectToAction(nameof(Edit), new { id, culture });
                 }
                 return NotFound();
             }
 
             var availableCultures = await _pageService.GetAvailableCulturesForPageAsync(id, cancellationToken);
-
-            bool canEdit = wikiUser?.CanEdit == true;
-            if (canEdit && _options.UsePageLevelPermissions)
-            {
-                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, wikiUser!.Groups, cancellationToken);
-                canEdit = pageAccess.CanEdit;
-            }
 
             var viewModel = new WikiPageViewModel
             {
@@ -424,7 +413,7 @@ namespace Pmad.Wiki.Controllers
                 }
             }
 
-            var allPages = await GetAllAccessiblePages(wikiUser, cancellationToken);
+            var allPages = await _pagePermissionHelper.GetAllAccessiblePages(wikiUser, cancellationToken);
 
             var rootNodes = WikiSiteMapNodeHelper.Build(allPages, _options.NeutralMarkdownPageCulture);
 
@@ -439,33 +428,9 @@ namespace Pmad.Wiki.Controllers
             return View(viewModel);
         }
 
-        private async Task<List<WikiPageInfo>> GetAllAccessiblePages(IWikiUserWithPermissions? wikiUser, CancellationToken cancellationToken)
-        {
-            var allPages = await _pageService.GetAllPagesAsync(cancellationToken);
-
-            if (!_options.UsePageLevelPermissions)
-            {
-                return allPages;
-            }
-
-            // Filter pages based on page-level permissions
-            var userGroups = wikiUser?.Groups ?? [];
-
-            var filteredPages = new List<WikiPageInfo>();
-            foreach (var page in allPages)
-            {
-                var pageAccess = await _accessControlService.CheckPageAccessAsync(page.PageName, userGroups, cancellationToken);
-                if (pageAccess.CanRead)
-                {
-                    filteredPages.Add(page);
-                }
-            }
-            return filteredPages;
-        }
-
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Edit(string id, string? culture, string? restoreFromCommit, CancellationToken cancellationToken)
+        public async Task<IActionResult> Edit(string id, string? culture, string? restoreFromCommit, string? templateId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -483,46 +448,51 @@ namespace Pmad.Wiki.Controllers
             }
 
             var wikiUser = await _userService.GetWikiUser(User, true, cancellationToken);
-            if (wikiUser == null || !wikiUser.CanEdit)
+            if (!await _pagePermissionHelper.CanEdit(wikiUser, id, cancellationToken))
             {
                 return Forbid();
             }
 
-            // Check page-level permissions
-            if (_options.UsePageLevelPermissions)
-            {
-                var pageAccess = await _accessControlService.CheckPageAccessAsync(id, wikiUser.Groups, cancellationToken);
-                if (!pageAccess.CanEdit)
-                {
-                    return Forbid();
-                }
-            }
-
             WikiPage? page;
             string commitMessage;
+            string content;
 
             if (!string.IsNullOrEmpty(restoreFromCommit))
             {
                 page = await _pageService.GetPageAtRevisionAsync(id, culture, restoreFromCommit, cancellationToken);
                 commitMessage = _localizer["Restore page {0} to revision {1}", id, restoreFromCommit?.Substring(0, Math.Min(8, restoreFromCommit.Length)) ?? string.Empty];
+                content = page?.Content ?? string.Empty;
             }
             else
             {
                 page = await _pageService.GetPageAsync(id, culture, cancellationToken);
+                
                 if (page == null)
                 {
                     commitMessage = _localizer["Create page {0}", id];
+                    
+                    // Try to load content from template if specified
+                    if (!string.IsNullOrEmpty(templateId))
+                    {
+                        var template = await _templateService.GetTemplateAsync(wikiUser, templateId, cancellationToken);
+                        content = _templateService.ResolvePlaceHolders(template?.Content ?? string.Empty);
+                    }
+                    else
+                    {
+                        content = string.Empty;
+                    }
                 }
                 else
                 {
                     commitMessage = _localizer["Update page {0}", id];
+                    content = page.Content;
                 }
             }
             
             var viewModel = new WikiPageEditViewModel
             {
                 PageName = id,
-                Content = page?.Content ?? string.Empty,
+                Content = content,
                 CommitMessage = commitMessage,
                 Culture = culture,
                 IsNew = page == null,
@@ -549,7 +519,7 @@ namespace Pmad.Wiki.Controllers
                 return BadRequest("Invalid page name.");
             }
 
-            var pages = (await GetAllAccessiblePages(wikiUser, cancellationToken))
+            var pages = (await _pagePermissionHelper.GetAllAccessiblePages(wikiUser, cancellationToken))
                 .Select(p => new WikiPageLinkInfo
                 {
                     PageName = p.PageName,
@@ -604,19 +574,9 @@ namespace Pmad.Wiki.Controllers
             }
 
             var wikiUser = await _userService.GetWikiUser(User, true, cancellationToken);
-            if (wikiUser == null || !wikiUser.CanEdit)
+            if (!await _pagePermissionHelper.CanEdit(wikiUser, model.PageName, cancellationToken))
             {
                 return Forbid();
-            }
-
-            // Check page-level permissions
-            if (_options.UsePageLevelPermissions)
-            {
-                var pageAccess = await _accessControlService.CheckPageAccessAsync(model.PageName, wikiUser.Groups, cancellationToken);
-                if (!pageAccess.CanEdit)
-                {
-                    return Forbid();
-                }
             }
 
             // Check if the page has been modified since the user started editing
@@ -834,6 +794,125 @@ namespace Pmad.Wiki.Controllers
                 ModelState.AddModelError(string.Empty, _localizer["Error saving rules: {0}", ex.Message]);
                 return View(model);
             }
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Create(string? fromPage, string? culture, CancellationToken cancellationToken)
+        {
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            if (wikiUser == null || !wikiUser.CanEdit)
+            {
+                return Forbid();
+            }
+
+            var templates = await _templateService.GetAllTemplatesAsync(wikiUser, cancellationToken);
+
+            var viewModel = new WikiCreateFromTemplateViewModel
+            {
+                Templates = templates,
+                Culture = culture,
+                FromPage = fromPage
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> CreatePage(string? templateId, string? fromPage, string? culture, CancellationToken cancellationToken)
+        {
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            if (wikiUser == null || !wikiUser.CanEdit)
+            {
+                return Forbid();
+            }
+
+            WikiTemplate? template = null;
+            string? suggestedName = null;
+            string? defaultLocation = null;
+
+            if (!string.IsNullOrEmpty(templateId))
+            {
+                template = await _templateService.GetTemplateAsync(wikiUser, templateId, cancellationToken);
+                if (template == null)
+                {
+                    return NotFound();
+                }
+
+                // Generate suggested name from pattern if available
+                if (!string.IsNullOrEmpty(template.NamePattern))
+                {
+                    suggestedName = _templateService.ResolvePlaceHolders(template.NamePattern);
+                }
+
+                // Generate default location from template if available
+                if (!string.IsNullOrEmpty(template.DefaultLocation))
+                {
+                    defaultLocation = _templateService.ResolvePlaceHolders(template.DefaultLocation);
+                }
+            }
+
+            var viewModel = new WikiCreatePageViewModel
+            {
+                TemplateId = templateId,
+                TemplateName = template?.DisplayName ?? template?.TemplateName,
+                Culture = culture,
+                FromPage = fromPage,
+                Location = defaultLocation ?? WikiFilePathHelper.GetDirectoryName(fromPage),
+                PageName = suggestedName ?? "NewPage"
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreatePageConfirm(WikiCreatePageViewModel model, CancellationToken cancellationToken)
+        {
+            // Build full page name
+            var pageName = string.IsNullOrWhiteSpace(model.Location) 
+                ? model.PageName 
+                : $"{model.Location.Trim()}/{model.PageName.Trim()}";
+
+            if (!WikiInputValidator.IsValidPageName(pageName))
+            {
+                ModelState.AddModelError(nameof(model.PageName), _localizer["Invalid page name."]);
+            }
+
+            if (!string.IsNullOrEmpty(model.Culture) && !WikiInputValidator.IsValidCulture(model.Culture))
+            {
+                ModelState.AddModelError(nameof(model.Culture), _localizer["Invalid culture identifier."]);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View("CreatePage", model);
+            }
+
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+
+            if (!await _pagePermissionHelper.CanEdit(wikiUser, pageName, cancellationToken))
+            {
+                return Forbid();
+            }
+
+            // Check if page already exists
+            var pageExists = await _pageService.PageExistsAsync(pageName, model.Culture, cancellationToken);
+            if (pageExists)
+            {
+                ModelState.AddModelError(string.Empty, _localizer["A page with this name already exists."]);
+                return View("CreatePage", model);
+            }
+
+            // Redirect to Edit with template if specified
+            return RedirectToAction(nameof(Edit), new 
+            { 
+                id = pageName, 
+                culture = model.Culture,
+                templateId = model.TemplateId 
+            });
         }
 
         [HttpGet]

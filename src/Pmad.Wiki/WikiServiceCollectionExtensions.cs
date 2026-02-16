@@ -19,6 +19,8 @@ public static class WikiServiceCollectionExtensions
         services.AddSingleton<IWikiPageTitleCache, WikiPageTitleCache>();
         services.AddSingleton<ITemporaryMediaStorageService, TemporaryMediaStorageService>();
         services.AddScoped<IWikiPageEditService, WikiPageEditService>();
+        services.AddScoped<IWikiTemplateService, WikiTemplateService>();
+        services.AddScoped<IWikiPagePermissionHelper, WikiPagePermissionHelper>();
 
         services.AddMemoryCache();
         services.AddGitRepositoryService();
