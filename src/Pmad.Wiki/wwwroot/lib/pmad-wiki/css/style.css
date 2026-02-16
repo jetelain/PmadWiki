@@ -120,3 +120,23 @@
 #togglePreview {
     min-width: 120px;
 }
+
+.template-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    height: 100%;
+}
+
+    .template-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .template-card .card-footer {
+        background-color: transparent;
+        border-top: 1px solid rgba(0, 0, 0, 0.125);
+    }
+
+a:hover .template-card .card-title {
+    color: #0056b3;
+}

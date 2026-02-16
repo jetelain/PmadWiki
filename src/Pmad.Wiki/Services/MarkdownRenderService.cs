@@ -155,6 +155,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
         {
             var builder = new MarkdownPipelineBuilder()
                 .UseAdvancedExtensions()
+                .UseYamlFrontMatter()
                 .DisableHtml();
 
             if (_options.ConfigureMarkdown != null)
