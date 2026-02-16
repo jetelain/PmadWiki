@@ -540,4 +540,10 @@
   <data name="Create" xml:space="preserve">
     <value>Créer</value>
   </data>
+  <data name="NewPage" xml:space="preserve">
+    <value>NouvellePage</value>
+  </data>
+  <data name="A page with this name already exists." xml:space="preserve">
+    <value>Une page avec ce nom existe déjà.</value>
+  </data>
 </root>

@@ -1043,4 +1043,392 @@ public class WikiControllerIntegrationTests : IDisposable
     }
 
     #endregion
+
+    #region Create/CreatePage/CreatePageConfirm Integration Tests
+
+    [Fact]
+    public async Task Create_WithAuthenticatedUser_ReturnsViewWithTemplates()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        
+        // Create template pages
+        CommitFile("_templates/MeetingNotes.md", "---\ntitle: Meeting Notes\npattern: Meeting-{date}\nlocation: meetings\n---\n# Meeting Notes\n\nDate: {date}", "Add meeting template");
+        CommitFile("_templates/BlogPost.md", "---\ntitle: Blog Post\npattern: Post-{date}\nlocation: blog/posts\n---\n# Blog Post", "Add blog template");
+        
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        // Act
+        var result = await controller.Create(null, null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiCreateFromTemplateViewModel>(viewResult.Model);
+        Assert.Equal(2, model.Templates.Count);
+        Assert.Contains(model.Templates, t => t.DisplayName == "Meeting Notes");
+        Assert.Contains(model.Templates, t => t.DisplayName == "Blog Post");
+    }
+
+    [Fact]
+    public async Task Create_WithFromPageAndCulture_PassesParametersToView()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        // Act
+        var result = await controller.Create("docs/guide", "fr", CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiCreateFromTemplateViewModel>(viewResult.Model);
+        Assert.Equal("docs/guide", model.FromPage);
+        Assert.Equal("fr", model.Culture);
+    }
+
+    [Fact]
+    public async Task Create_WithoutEditPermission_ReturnsForbid()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        SetupAuthenticatedUser(controller, "Viewer", "viewer@example.com", canEdit: false);
+
+        // Act
+        var result = await controller.Create(null, null, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<ForbidResult>(result);
+    }
+
+    [Fact]
+    public async Task CreatePage_WithValidTemplate_LoadsTemplateProperties()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        
+        // Create a template with front matter
+        var templateContent = "---\ntitle: Daily Report\npattern: Report-{date}\nlocation: reports/{year}\ndescription: Template for daily reports\n---\n# Daily Report\n\nDate: {date}\n\n## Summary\n\n...";
+        CommitFile("_templates/DailyReport.md", templateContent, "Add daily report template");
+        
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        // Act
+        var result = await controller.CreatePage("_templates/DailyReport", null, null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiCreatePageViewModel>(viewResult.Model);
+        Assert.Equal("_templates/DailyReport", model.TemplateId);
+        Assert.Equal("Daily Report", model.TemplateName);
+        
+        // Verify pattern is resolved
+        Assert.Contains("Report-", model.PageName);
+        Assert.Matches(@"Report-\d{4}-\d{2}-\d{2}", model.PageName);
+        
+        // Verify location is resolved
+        Assert.Contains("reports/", model.Location);
+        Assert.Matches(@"reports/\d{4}", model.Location);
+    }
+
+    [Fact]
+    public async Task CreatePage_WithoutTemplate_UsesDefaultValues()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        // Act
+        var result = await controller.CreatePage(null, "docs/guide", "es", CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiCreatePageViewModel>(viewResult.Model);
+        Assert.Null(model.TemplateId);
+        Assert.Equal("NewPage", model.PageName);
+        Assert.Equal("docs", model.Location); // Directory from fromPage
+        Assert.Equal("docs/guide", model.FromPage);
+        Assert.Equal("es", model.Culture);
+    }
+
+    [Fact]
+    public async Task CreatePage_WithInvalidTemplateId_ReturnsNotFound()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        // Act
+        var result = await controller.CreatePage("_templates/NonExistent", null, null, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task CreatePageConfirm_WithValidInput_RedirectsToEditWithParameters()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        var model = new WikiCreatePageViewModel
+        {
+            PageName = "MyNewPage",
+            Location = "docs/guides",
+            Culture = "fr",
+            TemplateId = "_templates/Standard"
+        };
+
+        // Act
+        var result = await controller.CreatePageConfirm(model, CancellationToken.None);
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(WikiController.Edit), redirectResult.ActionName);
+        Assert.Equal("docs/guides/MyNewPage", redirectResult.RouteValues?["id"]);
+        Assert.Equal("fr", redirectResult.RouteValues?["culture"]);
+        Assert.Equal("_templates/Standard", redirectResult.RouteValues?["templateId"]);
+    }
+
+    [Fact]
+    public async Task CreatePageConfirm_WhenPageAlreadyExists_ReturnsViewWithError()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        CommitFile("docs/ExistingPage.md", "# Existing Page", "Add existing page");
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        var model = new WikiCreatePageViewModel
+        {
+            PageName = "ExistingPage",
+            Location = "docs"
+        };
+
+        // Act
+        var result = await controller.CreatePageConfirm(model, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("CreatePage", viewResult.ViewName);
+        Assert.False(controller.ModelState.IsValid);
+        Assert.True(controller.ModelState.ContainsKey(string.Empty));
+    }
+
+    [Fact]
+    public async Task FullCreateWorkflow_FromTemplateToEditedPage_CompletesSuccessfully()
+    {
+        // Arrange - Create template
+        InitializeGitRepository();
+        var templateContent = "---\ntitle: Project Documentation\npattern: Project-{date}\nlocation: projects\ndescription: Standard project documentation template\n---\n# Project Documentation\n\nCreated: {date}\n\n## Overview\n\n## Requirements\n\n## Implementation\n";
+        CommitFile("_templates/ProjectDoc.md", templateContent, "Add project doc template");
+
+        // Step 1: List templates with Create action
+        var createController = CreateController();
+        SetupAuthenticatedUser(createController, "Editor", "editor@example.com", canEdit: true);
+        var createResult = await createController.Create(null, null, CancellationToken.None);
+        var createView = Assert.IsType<ViewResult>(createResult);
+        var createModel = Assert.IsType<WikiCreateFromTemplateViewModel>(createView.Model);
+        Assert.Single(createModel.Templates);
+        var template = createModel.Templates[0];
+
+        // Step 2: Load template with CreatePage action
+        var createPageController = CreateController();
+        SetupAuthenticatedUser(createPageController, "Editor", "editor@example.com", canEdit: true);
+        var createPageResult = await createPageController.CreatePage(template.TemplateName, null, null, CancellationToken.None);
+        var createPageView = Assert.IsType<ViewResult>(createPageResult);
+        var createPageModel = Assert.IsType<WikiCreatePageViewModel>(createPageView.Model);
+        Assert.Equal(template.TemplateName, createPageModel.TemplateId);
+        Assert.Equal("Project Documentation", createPageModel.TemplateName);
+        Assert.Contains("Project-", createPageModel.PageName);
+        Assert.Equal("projects", createPageModel.Location);
+
+        // Step 3: Confirm page creation with CreatePageConfirm action
+        var confirmController = CreateController();
+        SetupAuthenticatedUser(confirmController, "Editor", "editor@example.com", canEdit: true);
+        var confirmModel = new WikiCreatePageViewModel
+        {
+            PageName = "MyProject",
+            Location = createPageModel.Location,
+            TemplateId = createPageModel.TemplateId
+        };
+        var confirmResult = await confirmController.CreatePageConfirm(confirmModel, CancellationToken.None);
+        var redirectToEdit = Assert.IsType<RedirectToActionResult>(confirmResult);
+        Assert.Equal(nameof(WikiController.Edit), redirectToEdit.ActionName);
+        Assert.Equal("projects/MyProject", redirectToEdit.RouteValues?["id"]);
+
+        // Step 4: Edit the page (simulating what happens after redirect)
+        var editController = CreateController();
+        SetupAuthenticatedUser(editController, "Editor", "editor@example.com", canEdit: true);
+        var editGetResult = await editController.Edit("projects/MyProject", null, null, template.TemplateName, CancellationToken.None);
+        var editView = Assert.IsType<ViewResult>(editGetResult);
+        var editModel = Assert.IsType<WikiPageEditViewModel>(editView.Model);
+        Assert.Equal("projects/MyProject", editModel.PageName);
+        Assert.True(editModel.IsNew);
+        // Content should have placeholders resolved
+        Assert.Contains("Created:", editModel.Content);
+        Assert.Matches(@"Created: \d{4}-\d{2}-\d{2}", editModel.Content);
+
+        // Step 5: Save the edited page
+        editModel.Content += "\n\n## Status\n\nIn progress";
+        editModel.CommitMessage = "Create MyProject documentation";
+        var editPostResult = await editController.Edit(editModel, CancellationToken.None);
+        var redirectToView = Assert.IsType<RedirectToActionResult>(editPostResult);
+        Assert.Equal(nameof(WikiController.View), redirectToView.ActionName);
+
+        // Step 6: Verify the page was created correctly in Git
+        var gitContent = GetGitFileContent("projects/MyProject.md");
+        Assert.Contains("# Project Documentation", gitContent);
+        Assert.Contains("## Status", gitContent);
+        Assert.Contains("In progress", gitContent);
+        Assert.Matches(@"Created: \d{4}-\d{2}-\d{2}", gitContent);
+
+        var commitMessage = GetCommitMessage(GetLatestCommitHash());
+        Assert.Equal("Create MyProject documentation", commitMessage);
+    }
+
+    [Fact]
+    public async Task CreatePageConfirm_WithNestedLocation_CreatesCorrectPath()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        var model = new WikiCreatePageViewModel
+        {
+            PageName = "Specification",
+            Location = "projects/2024/Q1/ProjectAlpha"
+        };
+
+        // Act
+        var result = await controller.CreatePageConfirm(model, CancellationToken.None);
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("projects/2024/Q1/ProjectAlpha/Specification", redirectResult.RouteValues?["id"]);
+    }
+
+    [Fact]
+    public async Task CreatePage_WithTemplateHavingPlaceholders_ResolvesAllPlaceholders()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        
+        var now = DateTimeOffset.UtcNow;
+        var templateContent = $"---\ntitle: Timestamped Report\npattern: Report-{{year}}-{{month}}-{{day}}\nlocation: reports/{{year}}/{{month}}\n---\n# Report {{date}}\n\nGenerated at: {{datetime}}";
+        CommitFile("_templates/TimestampedReport.md", templateContent, "Add timestamped template");
+        
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        // Act
+        var result = await controller.CreatePage("_templates/TimestampedReport", null, null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiCreatePageViewModel>(viewResult.Model);
+        
+        // Verify page name pattern resolved
+        Assert.Equal($"Report-{now.Year}-{now.Month:D2}-{now.Day:D2}", model.PageName);
+        
+        // Verify location pattern resolved
+        Assert.Equal($"reports/{now.Year}/{now.Month:D2}", model.Location);
+    }
+
+    [Fact]
+    public async Task CreatePageConfirm_WithMultipleCultures_CreatesIndependentPages()
+    {
+        // Arrange
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+
+        // Create English version
+        var controllerEn = CreateController();
+        SetupAuthenticatedUser(controllerEn, "Editor", "editor@example.com", canEdit: true);
+        var modelEn = new WikiCreatePageViewModel
+        {
+            PageName = "Documentation",
+            Location = "docs",
+            Culture = null // English (default)
+        };
+        await controllerEn.CreatePageConfirm(modelEn, CancellationToken.None);
+
+        // Now create it with Edit
+        var editControllerEn = CreateController();
+        SetupAuthenticatedUser(editControllerEn, "Editor", "editor@example.com", canEdit: true);
+        var editModelEn = new WikiPageEditViewModel
+        {
+            PageName = "docs/Documentation",
+            Content = "# English Documentation\n\nEnglish content.",
+            CommitMessage = "Create English documentation",
+            IsNew = true
+        };
+        await editControllerEn.Edit(editModelEn, CancellationToken.None);
+
+        // Create French version
+        var controllerFr = CreateController();
+        SetupAuthenticatedUser(controllerFr, "Editor", "editor@example.com", canEdit: true);
+        var modelFr = new WikiCreatePageViewModel
+        {
+            PageName = "Documentation",
+            Location = "docs",
+            Culture = "fr"
+        };
+        var resultFr = await controllerFr.CreatePageConfirm(modelFr, CancellationToken.None);
+
+        // Assert - Both should succeed
+        var redirectFr = Assert.IsType<RedirectToActionResult>(resultFr);
+        Assert.Equal("docs/Documentation", redirectFr.RouteValues?["id"]);
+        Assert.Equal("fr", redirectFr.RouteValues?["culture"]);
+
+        // Verify both files exist in Git
+        var englishContent = GetGitFileContent("docs/Documentation.md");
+        Assert.Contains("English Documentation", englishContent);
+
+        // French file should not exist yet (CreatePageConfirm only validates and redirects to Edit)
+        // But the validation should pass because it's a different culture
+    }
+
+    [Fact]
+    public async Task Create_WithNestedTemplates_ReturnsAllTemplates()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        
+        // Create templates in different locations
+        CommitFile("_templates/Basic.md", "# Basic Template", "Add basic template");
+        CommitFile("_templates/reports/Weekly.md", "---\ntitle: Weekly Report\n---\n# Weekly Report", "Add weekly report");
+        CommitFile("_templates/reports/Monthly.md", "---\ntitle: Monthly Report\n---\n# Monthly Report", "Add monthly report");
+        
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        // Act
+        var result = await controller.Create(null, null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiCreateFromTemplateViewModel>(viewResult.Model);
+        Assert.Equal(3, model.Templates.Count);
+        
+        // Templates should be sorted by display name
+        var templateNames = model.Templates.Select(t => t.DisplayName ?? t.TemplateName).ToList();
+        Assert.Equal(templateNames.OrderBy(n => n).ToList(), templateNames);
+    }
+
+    #endregion
 }

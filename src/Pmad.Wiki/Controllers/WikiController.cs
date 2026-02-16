@@ -799,7 +799,7 @@ namespace Pmad.Wiki.Controllers
                 Culture = culture,
                 FromPage = fromPage,
                 Location = defaultLocation ?? WikiFilePathHelper.GetDirectoryName(fromPage),
-                PageName = suggestedName ?? "NewPage"
+                PageName = suggestedName ?? _localizer["NewPage"]
             };
 
             return View(viewModel);
