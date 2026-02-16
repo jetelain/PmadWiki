@@ -1,4 +1,7 @@
 using System.Text.RegularExpressions;
+using Pmad.Wiki.Models;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace Pmad.Wiki.Helpers;
 
@@ -7,12 +10,19 @@ public static partial class WikiTemplateFrontMatterParser
     [GeneratedRegex(@"^---\s*\r?\n(.*?)\r?\n---\s*\r?\n", RegexOptions.Singleline | RegexOptions.CultureInvariant)]
     private static partial Regex FrontMatterRegex();
 
-    [GeneratedRegex(@"^\s*([a-zA-Z0-9_-]+)\s*:\s*(.+?)\s*$", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
-    private static partial Regex FrontMatterLineRegex();
+    private static readonly IDeserializer YamlDeserializer = new DeserializerBuilder()
+        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+        .IgnoreUnmatchedProperties()
+        .Build();
 
-    public static (Dictionary<string, string> FrontMatter, string Content) Parse(string rawContent)
+    /// <summary>
+    /// Parses the front matter from raw content and returns a strongly-typed object.
+    /// </summary>
+    /// <param name="rawContent">The raw content containing potential front matter.</param>
+    /// <returns>A tuple containing the parsed front matter and the remaining content.</returns>
+    public static (WikiTemplateFrontMatter FrontMatter, string Content) Parse(string rawContent)
     {
-        var frontMatter = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var frontMatter = new WikiTemplateFrontMatter();
         var content = rawContent;
 
         var match = FrontMatterRegex().Match(rawContent);
@@ -21,20 +31,28 @@ public static partial class WikiTemplateFrontMatterParser
             var frontMatterText = match.Groups[1].Value;
             content = rawContent[match.Length..];
 
-            var lineMatches = FrontMatterLineRegex().Matches(frontMatterText);
-            foreach (Match lineMatch in lineMatches)
+            try
             {
-                var key = lineMatch.Groups[1].Value.Trim();
-                var value = lineMatch.Groups[2].Value.Trim();
-                frontMatter[key] = value;
+                // Deserialize YAML directly into the strongly-typed model
+                var parsedFrontMatter = YamlDeserializer.Deserialize<WikiTemplateFrontMatter>(frontMatterText);
+                if (parsedFrontMatter != null)
+                {
+                    frontMatter = parsedFrontMatter;
+                    
+                    // Convert empty strings to null for consistency
+                    if (string.IsNullOrEmpty(frontMatter.Title)) frontMatter.Title = null;
+                    if (string.IsNullOrEmpty(frontMatter.Description)) frontMatter.Description = null;
+                    if (string.IsNullOrEmpty(frontMatter.Location)) frontMatter.Location = null;
+                    if (string.IsNullOrEmpty(frontMatter.Pattern)) frontMatter.Pattern = null;
+                }
+            }
+            catch
+            {
+                // If YAML parsing fails, return empty front matter but preserve content
+                // This ensures backward compatibility if the front matter is malformed
             }
         }
 
         return (frontMatter, content);
-    }
-
-    public static string GetValue(Dictionary<string, string> frontMatter, string key, string defaultValue = "")
-    {
-        return frontMatter.TryGetValue(key, out var value) ? value : defaultValue;
     }
 }

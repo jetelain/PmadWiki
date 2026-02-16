@@ -99,7 +99,7 @@ public sealed class WikiTemplateService : IWikiTemplateService
         var (frontMatter, content) = WikiTemplateFrontMatterParser.Parse(page.Content);
 
         // Get display name from front matter, or fallback to the page title
-        var displayName = WikiTemplateFrontMatterParser.GetValue(frontMatter, "title");
+        var displayName = frontMatter.Title;
         if (string.IsNullOrEmpty(displayName))
         {
             displayName = await _pageService.GetPageTitleAsync(pageName, null, cancellationToken);
@@ -109,9 +109,9 @@ public sealed class WikiTemplateService : IWikiTemplateService
         {
             TemplateName = pageName, // Store the full page name for retrieval
             Content = content,
-            DefaultLocation = WikiTemplateFrontMatterParser.GetValue(frontMatter, "location"),
-            NamePattern = WikiTemplateFrontMatterParser.GetValue(frontMatter, "pattern"),
-            Description = WikiTemplateFrontMatterParser.GetValue(frontMatter, "description"),
+            DefaultLocation = frontMatter.Location,
+            NamePattern = frontMatter.Pattern,
+            Description = frontMatter.Description,
             DisplayName = displayName ?? pageName // Use page name as final fallback
         };
     }

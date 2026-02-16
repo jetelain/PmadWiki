@@ -353,9 +353,9 @@ This is a simple template without front matter.";
         Assert.Single(result);
         var template = result[0];
         Assert.Equal("Simple Template", template.DisplayName);
-        Assert.Equal("", template.Description);
-        Assert.Equal("", template.DefaultLocation);
-        Assert.Equal("", template.NamePattern);
+        Assert.Null(template.Description);
+        Assert.Null(template.DefaultLocation);
+        Assert.Null(template.NamePattern);
         Assert.Equal(pageContent, template.Content);
     }
 
@@ -401,8 +401,8 @@ description: Has only some fields
         var template = result[0];
         Assert.Equal("Partial Template", template.DisplayName);
         Assert.Equal("Has only some fields", template.Description);
-        Assert.Equal("", template.DefaultLocation);
-        Assert.Equal("", template.NamePattern);
+        Assert.Null(template.DefaultLocation);
+        Assert.Null(template.NamePattern);
     }
 
     [Fact]
