@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Options;
 using Pmad.Wiki.Helpers;
 using Pmad.Wiki.Models;
 
@@ -8,16 +7,13 @@ public sealed class WikiTemplateService : IWikiTemplateService
 {
     private readonly IWikiPagePermissionHelper _pagePermissionHelper;
     private readonly IWikiPageService _pageService;
-    private readonly WikiOptions _options;
 
     public WikiTemplateService(
         IWikiPageService pageService,
-        IOptions<WikiOptions> options,
         IWikiPagePermissionHelper pagePermissionHelper)
     {
         _pagePermissionHelper = pagePermissionHelper;
         _pageService = pageService;
-        _options = options.Value;
     }
 
     public async Task<List<WikiTemplate>> GetAllTemplatesAsync(IWikiUserWithPermissions wikiUser, CancellationToken cancellationToken = default)
@@ -29,33 +25,19 @@ public sealed class WikiTemplateService : IWikiTemplateService
 
         // Filter pages that are templates
         // Templates are stored in _templates/ directory or named _template
-        var templatePages = allPages.Where(p => IsTemplatePageName(p.PageName));
+        var templatePages = allPages.Where(p => WikiFilePathHelper.IsTemplatePageName(p.PageName));
 
         foreach (var templatePage in templatePages)
         {
-            try
+            var template = await LoadTemplateFromPageAsync(templatePage.PageName, cancellationToken);
+            if (template != null)
             {
-                var template = await LoadTemplateFromPageAsync(templatePage.PageName, cancellationToken);
-                if (template != null)
-                {
-                    templates.Add(template);
-                }
-            }
-            catch (Exception)
-            {
-                // Skip templates that fail to load
+                templates.Add(template);
             }
         }
 
         // Sort templates by display name or template name
         return templates.OrderBy(t => t.DisplayName ?? t.TemplateName).ToList();
-    }
-
-    private static bool IsTemplatePageName(string pageName)
-    {
-        return pageName.StartsWith("_templates/", StringComparison.OrdinalIgnoreCase) ||
-                    pageName.EndsWith("/_template", StringComparison.OrdinalIgnoreCase) ||
-                    pageName.Equals("_template", StringComparison.OrdinalIgnoreCase);
     }
 
     public async Task<WikiTemplate?> GetTemplateAsync(IWikiUserWithPermissions wikiUser, string templateId, CancellationToken cancellationToken = default)
@@ -67,7 +49,7 @@ public sealed class WikiTemplateService : IWikiTemplateService
 
         WikiInputValidator.ValidatePageName(templateId);
 
-        if (!IsTemplatePageName(templateId))
+        if (!WikiFilePathHelper.IsTemplatePageName(templateId))
         {
             throw new ArgumentException("Invalid template ID.", nameof(templateId));
         }

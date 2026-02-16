@@ -37,12 +37,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!--<EmbeddedResource Include="Views\**\*.cshtml" />-->
 		<EmbeddedResource Include="wwwroot\**\*" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- References to Pmad.Git projects Temporary  r, will be changed to NuGet rereference once we have a stable API -->
+		<!-- References to Pmad.Git projects Temporary, will be changed to NuGet reference once we have a stable API -->
 		<ProjectReference Include="..\..\PmadGit\src\Pmad.Git.HttpServer\Pmad.Git.HttpServer.csproj" />
 		<ProjectReference Include="..\..\PmadGit\src\Pmad.Git.LocalRepositories\Pmad.Git.LocalRepositories.csproj" />
 	</ItemGroup>

@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -414,7 +413,7 @@ namespace Pmad.Wiki.Controllers
                     // Try to load content from template if specified
                     if (!string.IsNullOrEmpty(templateId))
                     {
-                        var template = await _templateService.GetTemplateAsync(wikiUser, templateId, cancellationToken);
+                        var template = await _templateService.GetTemplateAsync(wikiUser!, templateId, cancellationToken);
                         content = _templateService.ResolvePlaceHolders(template?.Content ?? string.Empty);
                     }
                     else
@@ -548,7 +547,7 @@ namespace Pmad.Wiki.Controllers
                     model.Culture,
                     model.Content,
                     model.CommitMessage,
-                    wikiUser.User,
+                    wikiUser!.User,
                     cancellationToken);
             }
             catch (TaskCanceledException)
@@ -559,7 +558,7 @@ namespace Pmad.Wiki.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saving page {PageName} (culture: {Culture}) by user {UserName}", 
-                    model.PageName, model.Culture, wikiUser.User);
+                    model.PageName, model.Culture, wikiUser!.User);
                 ModelState.AddModelError(string.Empty, _localizer["An error occurred while saving the page. Please try again."]); 
                 await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
                 return View(model);

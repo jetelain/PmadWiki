@@ -338,5 +338,56 @@ public class WikiFilePathHelperTest
         // Assert
         Assert.Equal(string.Empty, result);
     }
+
+    [Fact]
+    public void GetDirectoryName_WithNull_ReturnsEmptyString()
+    {
+        // Act
+        var result = WikiFilePathHelper.GetDirectoryName(null);
+
+        // Assert
+        Assert.Equal(string.Empty, result);
+    }
+
+    [Theory]
+    [InlineData("_templates/simple")]
+    [InlineData("_templates/blog/post")]
+    [InlineData("_templates/docs/api/reference")]
+    [InlineData("_TEMPLATES/article")]
+    [InlineData("_TeMpLaTeS/mixed")]
+    [InlineData("docs/_template")]
+    [InlineData("admin/settings/_template")]
+    [InlineData("a/b/c/_template")]
+    [InlineData("docs/_TEMPLATE")]
+    [InlineData("admin/_TeMpLaTe")]
+    public void IsTemplatePageName_WithValidNames_ReturnsTrue(string pageName)
+    {
+        // Act
+        var result = WikiFilePathHelper.IsTemplatePageName(pageName);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Theory]
+    [InlineData("Home")]
+    [InlineData("About")]
+    [InlineData("docs/readme")]
+    [InlineData("admin/settings")]
+    [InlineData("_template-page")]
+    [InlineData("page-_template")]
+    [InlineData("_templates")]
+    [InlineData("docs/_templates")]
+    [InlineData("_templ")]
+    [InlineData("template")]
+    [InlineData("templates/page")]
+    public void IsTemplatePageName_WithNonTemplatePages_ReturnsFalse(string pageName)
+    {
+        // Act
+        var result = WikiFilePathHelper.IsTemplatePageName(pageName);
+
+        // Assert
+        Assert.False(result);
+    }
 }
 
