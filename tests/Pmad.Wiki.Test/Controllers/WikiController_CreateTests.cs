@@ -301,7 +301,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         var template = new WikiTemplate
         {
             TemplateName = "meeting-notes",
-            Content = "# Meeting Notes\n\nDate: {{date}}\n",
+            Content = "# Meeting Notes\n\nDate: {date}\n",
             DisplayName = "Meeting Notes",
             Description = "Template for meeting notes"
         };
@@ -341,7 +341,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
             TemplateName = "daily-report",
             Content = "# Daily Report\n",
             DisplayName = "Daily Report",
-            NamePattern = "Report-{{date}}"
+            NamePattern = "Report-{date}"
         };
 
         _mockTemplateService
@@ -349,7 +349,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync(template);
 
         _mockTemplateService
-            .Setup(x => x.ResolvePlaceHolders("Report-{{date}}"))
+            .Setup(x => x.ResolvePlaceHolders("Report-{date}"))
             .Returns("Report-2024-01-15");
 
         SetupUserContext("testuser");
@@ -364,7 +364,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         Assert.Equal("Report-2024-01-15", model.PageName);
         
         _mockTemplateService.Verify(
-            x => x.ResolvePlaceHolders("Report-{{date}}"),
+            x => x.ResolvePlaceHolders("Report-{date}"),
             Times.Once);
     }
 
@@ -384,7 +384,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
             TemplateName = "project-doc",
             Content = "# Project Documentation\n",
             DisplayName = "Project Documentation",
-            DefaultLocation = "projects/{{year}}"
+            DefaultLocation = "projects/{year}"
         };
 
         _mockTemplateService
@@ -392,7 +392,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync(template);
 
         _mockTemplateService
-            .Setup(x => x.ResolvePlaceHolders("projects/{{year}}"))
+            .Setup(x => x.ResolvePlaceHolders("projects/{year}"))
             .Returns("projects/2024");
 
         SetupUserContext("testuser");
@@ -407,7 +407,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         Assert.Equal("projects/2024", model.Location);
         
         _mockTemplateService.Verify(
-            x => x.ResolvePlaceHolders("projects/{{year}}"),
+            x => x.ResolvePlaceHolders("projects/{year}"),
             Times.Once);
     }
 
