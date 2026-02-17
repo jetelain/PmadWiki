@@ -4,8 +4,20 @@ namespace Pmad.Wiki.Helpers;
 
 public static class WikiFilePathHelper
 {
-    public static string GetDirectoryName(string pageName)
+    public static bool IsTemplatePageName(string pageName)
     {
+        return pageName.StartsWith("_templates/", StringComparison.OrdinalIgnoreCase) ||
+                    pageName.EndsWith("/_template", StringComparison.OrdinalIgnoreCase) ||
+                    pageName.Equals("_template", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static string GetDirectoryName(string? pageName)
+    {
+        if (string.IsNullOrEmpty(pageName))
+        {
+            return string.Empty;
+        }
+
         var lastSlashIndex = pageName.LastIndexOf('/');
 
         return lastSlashIndex >= 0 ? pageName[..lastSlashIndex] : string.Empty;

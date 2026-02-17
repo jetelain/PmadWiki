@@ -47,6 +47,16 @@ namespace Pmad.Wiki
                 pattern: $"{pattern}/media/{{**id}}",
                 defaults: new { controller = "Wiki", action = "Media" });
 
+            endpoints.MapControllerRoute(
+                name: "wiki-create",
+                pattern: $"{pattern}/create/{{**id}}",
+                defaults: new { controller = "Wiki", action = "Create" });
+
+            endpoints.MapControllerRoute(
+                name: "wiki-create-page",
+                pattern: $"{pattern}/createpage/{{**id}}",
+                defaults: new { controller = "Wiki", action = "CreatePage" });
+
             return endpoints;
         }
 

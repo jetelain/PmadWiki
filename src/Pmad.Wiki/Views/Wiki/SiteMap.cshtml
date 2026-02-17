@@ -17,6 +17,12 @@
                         <i class="bi bi-shield-lock"></i> @Localizer["Access Control"]
                     </a>
                 }
+                @if (Model.CanEdit)
+                {
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> @Localizer["Create New Page"]
+                    </a>
+                }
             </div>
         </div>
     </div>

@@ -1,0 +1,85 @@
+@model Pmad.Wiki.Models.WikiCreatePageViewModel
+@{
+    ViewData["Title"] = Localizer["Specify Page Location"];
+}
+
+<div class="wiki-create-page">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>@ViewData["Title"]</h1>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group" role="group">
+                <a asp-action="Create" asp-route-fromPage="@Model.FromPage" asp-route-culture="@Model.Culture" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> @Localizer["Back to Templates"]
+                </a>
+                <a asp-action="SiteMap" class="btn btn-outline-secondary">
+                    <i class="bi bi-map"></i> @Localizer["Site Map"]
+                </a>
+                <a asp-action="View" asp-route-id="@Model.FromPage" class="btn btn-secondary">
+                    <i class="bi bi-x"></i> @Localizer["Cancel"]
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Culture))
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> @Localizer["Creating page for culture: <strong>{0}</strong>", Model.Culture]
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.TemplateName))
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-file-earmark-text"></i> @Localizer["Using template: <strong>{0}</strong>", Model.TemplateName]
+        </div>
+    }
+
+    <form asp-action="CreatePageConfirm" method="post">
+        <input type="hidden" asp-for="TemplateId" />
+        <input type="hidden" asp-for="Culture" />
+        <input type="hidden" asp-for="FromPage" />
+        
+        <div asp-validation-summary="ModelOnly" class="alert alert-warning" role="alert"></div>
+
+        <div class="mb-3">
+            <label asp-for="Location" class="form-label">@Localizer["Location"]</label>
+            <input asp-for="Location" class="form-control" placeholder="@Localizer["e.g., Guides or leave empty for root"]">
+            <span asp-validation-for="Location" class="text-danger"></span>
+            <div class="form-text">@Localizer["The folder path where the page will be created. Use '/' to separate folders."]</div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="PageName" class="form-label">@Localizer["Page Name"]</label>
+            <input asp-for="PageName" class="form-control" placeholder="@Localizer["e.g., MyPage"]">
+            <span asp-validation-for="PageName" class="text-danger"></span>
+            <div class="form-text">@Localizer["The name of the page. Only letters, numbers, hyphens, and underscores are allowed."]</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">@Localizer["Full Page Path"]</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-file-earmark"></i></span>
+                <input type="text" class="form-control" id="full-page-path" readonly value="">
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> @Localizer["Create Page"]
+            </button>
+            <a asp-action="Create" asp-route-fromPage="@Model.FromPage" asp-route-culture="@Model.Culture" class="btn btn-outline-secondary">
+                @Localizer["Cancel"]
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/pmad-wiki/css/style.css" />
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/lib/pmad-wiki/js/createPage.js"></script>
+}

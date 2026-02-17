@@ -1,0 +1,98 @@
+@model Pmad.Wiki.Models.WikiCreateFromTemplateViewModel
+@{
+    ViewData["Title"] = Localizer["Create New Page"];
+}
+
+<div class="wiki-create">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>@ViewData["Title"]</h1>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group" role="group">
+                <a asp-action="SiteMap" class="btn btn-outline-secondary">
+                    <i class="bi bi-map"></i> @Localizer["Site Map"]
+                </a>
+                <a asp-action="View" asp-route-id="@Model.FromPage" class="btn btn-secondary">
+                    <i class="bi bi-x"></i> @Localizer["Cancel"]
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Culture))
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> @Localizer["Creating page for culture: <strong>{0}</strong>", Model.Culture]
+        </div>
+    }
+
+    <div class="mb-4">
+        <h3>@Localizer["Choose a Template"]</h3>
+        <p class="text-muted">@Localizer["Select a template to start with, or choose 'Blank Page' to create an empty page."]</p>
+    </div>
+
+    <div class="row g-4 mb-4" id="template-cards">
+        <!-- Blank page template -->
+        <div class="col-md-6 col-lg-4">
+            <a asp-action="CreatePage" asp-route-templateId="" asp-route-fromPage="@Model.FromPage" asp-route-culture="@Model.Culture" class="text-decoration-none">
+                <div class="card h-100 template-card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-file-earmark"></i> @Localizer["Blank Page"]
+                        </h5>
+                        <p class="card-text text-muted">@Localizer["Start with an empty page."]</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="btn btn-primary btn-sm w-100">
+                            <i class="bi bi-plus-circle"></i> @Localizer["Use This Template"]
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Template cards -->
+        @foreach (var template in Model.Templates)
+        {
+            <div class="col-md-6 col-lg-4">
+                <a asp-action="CreatePage" 
+                   asp-route-templateId="@template.TemplateName" 
+                   asp-route-fromPage="@Model.FromPage" 
+                   asp-route-culture="@Model.Culture" 
+                   class="text-decoration-none">
+                    <div class="card h-100 template-card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-file-earmark-text"></i> @(template.DisplayName ?? template.TemplateName)
+                            </h5>
+                            @if (!string.IsNullOrEmpty(template.Description))
+                            {
+                                <p class="card-text">@template.Description</p>
+                            }
+                            @if (!string.IsNullOrEmpty(template.DefaultLocation))
+                            {
+                                <p class="card-text small text-muted">
+                                    <i class="bi bi-folder"></i> @Localizer["Default location:"] @template.DefaultLocation
+                                </p>
+                            }
+                            @if (!string.IsNullOrEmpty(template.NamePattern))
+                            {
+                                <p class="card-text small text-muted">
+                                    <i class="bi bi-input-cursor-text"></i> @Localizer["Name pattern:"] @template.NamePattern
+                                </p>
+                            }
+                        </div>
+                        <div class="card-footer">
+                            <span class="btn btn-primary btn-sm w-100">
+                                <i class="bi bi-plus-circle"></i> @Localizer["Use This Template"]
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/pmad-wiki/css/style.css" />
+}
