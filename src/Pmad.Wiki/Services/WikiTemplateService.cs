@@ -25,7 +25,11 @@ public sealed class WikiTemplateService : IWikiTemplateService
 
         // Filter pages that are templates
         // Templates are stored in _templates/ directory or named _template
-        var templatePages = allPages.Where(p => WikiFilePathHelper.IsTemplatePageName(p.PageName));
+        // Get distinct template pages by PageName to avoid duplicate loads for culture variants
+        var templatePages = allPages
+            .Where(p => WikiFilePathHelper.IsTemplatePageName(p.PageName))
+            .GroupBy(p => p.PageName, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First());
 
         foreach (var templatePage in templatePages)
         {
@@ -70,18 +74,19 @@ public sealed class WikiTemplateService : IWikiTemplateService
             return string.Empty;
         }
 
+        var now = DateTimeOffset.UtcNow;
         var result = pattern;
 
         // Replace {date} with current date in ISO format
-        result = result.Replace("{date}", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd"), StringComparison.OrdinalIgnoreCase);
+        result = result.Replace("{date}", now.ToString("yyyy-MM-dd"), StringComparison.OrdinalIgnoreCase);
         
         // Replace {datetime} with current date and time
-        result = result.Replace("{datetime}", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd-HHmmss"), StringComparison.OrdinalIgnoreCase);
+        result = result.Replace("{datetime}", now.ToString("yyyy-MM-dd-HHmmss"), StringComparison.OrdinalIgnoreCase);
         
         // Replace {year}, {month}, {day}
-        result = result.Replace("{year}", DateTimeOffset.UtcNow.Year.ToString(), StringComparison.OrdinalIgnoreCase);
-        result = result.Replace("{month}", DateTimeOffset.UtcNow.Month.ToString("D2"), StringComparison.OrdinalIgnoreCase);
-        result = result.Replace("{day}", DateTimeOffset.UtcNow.Day.ToString("D2"), StringComparison.OrdinalIgnoreCase);
+        result = result.Replace("{year}", now.Year.ToString(), StringComparison.OrdinalIgnoreCase);
+        result = result.Replace("{month}", now.Month.ToString("D2"), StringComparison.OrdinalIgnoreCase);
+        result = result.Replace("{day}", now.Day.ToString("D2"), StringComparison.OrdinalIgnoreCase);
 
         return result;
     }

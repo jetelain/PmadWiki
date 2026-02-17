@@ -304,8 +304,8 @@ location: API/Documentation
 
 **Solutions**:
 1. Use placeholders in the **location** or **pattern** front matter for automatic replacement
-2. Placeholders in content are **not** automatically replaced - they serve as visual guides for users
-3. For automatic date in content, users must manually replace them when editing
+2. Placeholders in template content are also automatically resolved when you create a new page from the template (for example via `Edit(..., templateId, ...)`)
+3. If you copy template content manually (without using the template feature), placeholders will remain in the content and must be replaced by the user during editing
 
 ### Invalid Page Name Error
 

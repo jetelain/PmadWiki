@@ -7,7 +7,7 @@ namespace Pmad.Wiki.Helpers;
 
 public static partial class WikiTemplateFrontMatterParser
 {
-    [GeneratedRegex(@"^---\s*\r?\n(.*?)\r?\n---\s*\r?\n", RegexOptions.Singleline | RegexOptions.CultureInvariant)]
+    [GeneratedRegex("^\uFEFF?\\s*---\\s*\\r?\\n(.*?)\\r?\\n---\\s*\\r?\\n", RegexOptions.Singleline | RegexOptions.CultureInvariant)]
     private static partial Regex FrontMatterRegex();
 
     private static readonly IDeserializer YamlDeserializer = new DeserializerBuilder()
