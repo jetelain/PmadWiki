@@ -1,9 +1,48 @@
 using System.Globalization;
+using System.Text;
 
 namespace Pmad.Wiki.Helpers;
 
 public static class WikiFilePathHelper
 {
+    /// <summary>
+    /// Sanitizes a filename by removing or replacing invalid characters.
+    /// Only keeps alphanumeric characters, underscores, and hyphens.
+    /// Whitespace and dots are converted to hyphens.
+    /// </summary>
+    /// <param name="fileName">The filename to sanitize.</param>
+    /// <returns>A sanitized filename safe for use in file paths.</returns>
+    public static string SanitizeFileName(string fileName)
+    {
+        var sb = new StringBuilder();
+        foreach (var c in fileName)
+        {
+            if (char.IsLetterOrDigit(c) || c == '_' || c == '-')
+            {
+                sb.Append(c);
+            }
+            else if (char.IsWhiteSpace(c) || c == '.')
+            {
+                sb.Append('-');
+            }
+        }
+        var sanitized = sb.ToString();
+        
+        // Ensure the result is not empty and not too long
+        if (string.IsNullOrEmpty(sanitized))
+        {
+            return "file";
+        }
+        
+        // Limit length to avoid excessively long filenames
+        if (sanitized.Length > 100)
+        {
+            sanitized = sanitized.Substring(0, 100);
+        }
+        
+        return sanitized;
+    }
+
     public static bool IsTemplatePageName(string pageName)
     {
         return pageName.StartsWith("_templates/", StringComparison.OrdinalIgnoreCase) ||

@@ -49,7 +49,10 @@ internal class WikiPageEditService : IWikiPageEditService
                     if (mediaContent != null)
                     {
                         var extension = Path.GetExtension(mediaInfo.OriginalFileName);
-                        var markdownRelativePath = $"medias/{tempId}{extension}";
+                        var originalFileNameWithoutExtension = Path.GetFileNameWithoutExtension(mediaInfo.OriginalFileName);
+                        var sanitizedFileName = WikiFilePathHelper.SanitizeFileName(originalFileNameWithoutExtension);
+                        var finalFileName = $"{sanitizedFileName}_{tempId}{extension}";
+                        var markdownRelativePath = $"medias/{finalFileName}";
                         var mediaPath =  string.IsNullOrEmpty(pageDirectory) ? markdownRelativePath : $"{pageDirectory}/{markdownRelativePath}";
 
                         mediaFiles[mediaPath] = mediaContent;
