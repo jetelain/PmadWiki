@@ -546,4 +546,19 @@
   <data name="A page with this name already exists." xml:space="preserve">
     <value>Une page avec ce nom existe déjà.</value>
   </data>
+  <data name="Media Gallery" xml:space="preserve">
+    <value>Galerie de médias</value>
+  </data>
+  <data name="Search media files..." xml:space="preserve">
+    <value>Rechercher des fichiers médias...</value>
+  </data>
+  <data name="No media files found." xml:space="preserve">
+    <value>Aucun fichier média trouvé.</value>
+  </data>
+  <data name="Insert" xml:space="preserve">
+    <value>Insérer</value>
+  </data>
+  <data name="Failed to load media gallery. Please try again." xml:space="preserve">
+    <value>Échec du chargement de la galerie de médias. Veuillez réessayer.</value>
+  </data>
 </root>

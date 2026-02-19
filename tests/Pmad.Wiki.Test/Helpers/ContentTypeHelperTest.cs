@@ -133,4 +133,74 @@ public class ContentTypeHelperTest
         // Assert
         Assert.Equal("video/mp4", contentType);
     }
+
+    [Theory]
+    [InlineData(".png", Pmad.Wiki.Models.MediaType.Image)]
+    [InlineData(".jpg", Pmad.Wiki.Models.MediaType.Image)]
+    [InlineData(".jpeg", Pmad.Wiki.Models.MediaType.Image)]
+    [InlineData(".gif", Pmad.Wiki.Models.MediaType.Image)]
+    [InlineData(".svg", Pmad.Wiki.Models.MediaType.Image)]
+    [InlineData(".webp", Pmad.Wiki.Models.MediaType.Image)]
+    public void GetMediaType_WithImageExtensions_ReturnsImageType(string extension, Pmad.Wiki.Models.MediaType expectedType)
+    {
+        // Act
+        var mediaType = ContentTypeHelper.GetMediaType(extension);
+
+        // Assert
+        Assert.Equal(expectedType, mediaType);
+    }
+
+    [Theory]
+    [InlineData(".mp4", Pmad.Wiki.Models.MediaType.Video)]
+    [InlineData(".webm", Pmad.Wiki.Models.MediaType.Video)]
+    [InlineData(".ogg", Pmad.Wiki.Models.MediaType.Video)]
+    public void GetMediaType_WithVideoExtensions_ReturnsVideoType(string extension, Pmad.Wiki.Models.MediaType expectedType)
+    {
+        // Act
+        var mediaType = ContentTypeHelper.GetMediaType(extension);
+
+        // Assert
+        Assert.Equal(expectedType, mediaType);
+    }
+
+    [Theory]
+    [InlineData(".pdf", Pmad.Wiki.Models.MediaType.Document)]
+    public void GetMediaType_WithDocumentExtensions_ReturnsDocumentType(string extension, Pmad.Wiki.Models.MediaType expectedType)
+    {
+        // Act
+        var mediaType = ContentTypeHelper.GetMediaType(extension);
+
+        // Assert
+        Assert.Equal(expectedType, mediaType);
+    }
+
+    [Theory]
+    [InlineData(".txt", Pmad.Wiki.Models.MediaType.File)]
+    [InlineData(".zip", Pmad.Wiki.Models.MediaType.File)]
+    [InlineData(".doc", Pmad.Wiki.Models.MediaType.File)]
+    [InlineData(".xlsx", Pmad.Wiki.Models.MediaType.File)]
+    [InlineData(".unknown", Pmad.Wiki.Models.MediaType.File)]
+    [InlineData("", Pmad.Wiki.Models.MediaType.File)]
+    public void GetMediaType_WithOtherExtensions_ReturnsFileType(string extension, Pmad.Wiki.Models.MediaType expectedType)
+    {
+        // Act
+        var mediaType = ContentTypeHelper.GetMediaType(extension);
+
+        // Assert
+        Assert.Equal(expectedType, mediaType);
+    }
+
+    [Fact]
+    public void GetMediaType_IsCaseInsensitive()
+    {
+        // Act
+        var mediaType1 = ContentTypeHelper.GetMediaType(".PNG");
+        var mediaType2 = ContentTypeHelper.GetMediaType(".Mp4");
+        var mediaType3 = ContentTypeHelper.GetMediaType(".PDF");
+
+        // Assert
+        Assert.Equal(Pmad.Wiki.Models.MediaType.Image, mediaType1);
+        Assert.Equal(Pmad.Wiki.Models.MediaType.Video, mediaType2);
+        Assert.Equal(Pmad.Wiki.Models.MediaType.Document, mediaType3);
+    }
 }
