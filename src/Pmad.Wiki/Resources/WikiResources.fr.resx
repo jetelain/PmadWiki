@@ -561,4 +561,7 @@
   <data name="Failed to load media gallery. Please try again." xml:space="preserve">
     <value>Échec du chargement de la galerie de médias. Veuillez réessayer.</value>
   </data>
+  <data name="Search media files" xml:space="preserve">
+    <value>Rechercher des fichiers médias</value>
+  </data>
 </root>
