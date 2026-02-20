@@ -37,11 +37,7 @@ else
                         </div>
                         <h6 class="card-title text-truncate" title="@media.FileName">@media.FileName</h6>
                         <p class="card-text small text-muted mb-2">
-                            <span class="text-truncate d-block" title="@media.Path">@media.Path</span>
-                            @if (media.LastModified.HasValue)
-                            {
-                                <span>@media.LastModified.Value.ToString("d")</span>
-                            }
+                            <span class="text-truncate d-block" title="@media.AbsolutePath">@media.AbsolutePath</span>
                         </p>
                         <button type="button" class="btn btn-sm btn-primary w-100 insert-media-btn">
                             <i class="bi bi-plus-circle"></i> @Localizer["Insert"]

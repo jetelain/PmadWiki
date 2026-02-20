@@ -21,23 +21,19 @@ public class WikiController_GetMediaGalleryTests : WikiControllerTestBase
             .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
-        var allMedia = new List<MediaGalleryItem>
+        var allMedia = new List<MediaFileInfo>
         {
-            new MediaGalleryItem
+            new MediaFileInfo
             {
-                Path = "images/logo.png",
+                AbsolutePath = "images/logo.png",
                 FileName = "logo.png",
-                Url = string.Empty,
-                MediaType = MediaType.Image,
-                LastModified = DateTimeOffset.UtcNow
+                MediaType = MediaType.Image
             },
-            new MediaGalleryItem
+            new MediaFileInfo
             {
-                Path = "documents/manual.pdf",
+                AbsolutePath = "documents/manual.pdf",
                 FileName = "manual.pdf",
-                Url = string.Empty,
-                MediaType = MediaType.Document,
-                LastModified = DateTimeOffset.UtcNow.AddDays(-1)
+                MediaType = MediaType.Document
             }
         };
 
@@ -52,7 +48,7 @@ public class WikiController_GetMediaGalleryTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.GetMediaGallery(CancellationToken.None);
+        var result = await _controller.GetMediaGallery(string.Empty, CancellationToken.None);
 
         // Assert
         var partialViewResult = Assert.IsType<PartialViewResult>(result);
@@ -60,9 +56,10 @@ public class WikiController_GetMediaGalleryTests : WikiControllerTestBase
 
         var model = Assert.IsType<List<MediaGalleryItem>>(partialViewResult.Model);
         Assert.Equal(2, model.Count);
-        Assert.Contains(model, m => m.Path == "images/logo.png");
-        Assert.Contains(model, m => m.Path == "documents/manual.pdf");
-        Assert.All(model, m => Assert.NotEmpty(m.Url));
+        Assert.Contains(model, m => m.AbsolutePath == "images/logo.png");
+        Assert.Contains(model, m => m.AbsolutePath == "documents/manual.pdf");
+        Assert.All(model, m => Assert.NotNull(m.Url));
+        Assert.All(model, m => Assert.NotNull(m.Path));
     }
 
     [Fact]
@@ -79,20 +76,18 @@ public class WikiController_GetMediaGalleryTests : WikiControllerTestBase
             .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
-        var allMedia = new List<MediaGalleryItem>
+        var allMedia = new List<MediaFileInfo>
         {
-            new MediaGalleryItem
+            new MediaFileInfo
             {
-                Path = "images/logo.png",
+                AbsolutePath = "images/logo.png",
                 FileName = "logo.png",
-                Url = string.Empty,
                 MediaType = MediaType.Image
             },
-            new MediaGalleryItem
+            new MediaFileInfo
             {
-                Path = "restricted/secret.pdf",
+                AbsolutePath = "restricted/secret.pdf",
                 FileName = "secret.pdf",
-                Url = string.Empty,
                 MediaType = MediaType.Document
             }
         };
@@ -112,14 +107,14 @@ public class WikiController_GetMediaGalleryTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.GetMediaGallery(CancellationToken.None);
+        var result = await _controller.GetMediaGallery(string.Empty, CancellationToken.None);
 
         // Assert
         var partialViewResult = Assert.IsType<PartialViewResult>(result);
         var model = Assert.IsType<List<MediaGalleryItem>>(partialViewResult.Model);
 
         Assert.Single(model);
-        Assert.Equal("images/logo.png", model[0].Path);
+        Assert.Equal("images/logo.png", model[0].AbsolutePath);
     }
 
     [Fact]
@@ -131,7 +126,7 @@ public class WikiController_GetMediaGalleryTests : WikiControllerTestBase
             .ReturnsAsync((IWikiUserWithPermissions?)null);
 
         // Act
-        var result = await _controller.GetMediaGallery(CancellationToken.None);
+        var result = await _controller.GetMediaGallery(string.Empty, CancellationToken.None);
 
         // Assert
         Assert.IsType<ForbidResult>(result);
@@ -151,7 +146,7 @@ public class WikiController_GetMediaGalleryTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.GetMediaGallery(CancellationToken.None);
+        var result = await _controller.GetMediaGallery(string.Empty, CancellationToken.None);
 
         // Assert
         Assert.IsType<ForbidResult>(result);

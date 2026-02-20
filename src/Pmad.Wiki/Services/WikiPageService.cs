@@ -315,10 +315,10 @@ public sealed class WikiPageService : IWikiPageService
         }
     }
 
-    public async Task<List<Models.MediaGalleryItem>> GetAllMediaFilesAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Models.MediaFileInfo>> GetAllMediaFilesAsync(CancellationToken cancellationToken = default)
     {
         var repository = GetRepository();
-        var mediaFiles = new List<Models.MediaGalleryItem>();
+        var mediaFiles = new List<Models.MediaFileInfo>();
 
         try
         {
@@ -329,23 +329,11 @@ public sealed class WikiPageService : IWikiPageService
                     var extension = Path.GetExtension(item.Path).ToLowerInvariant();
                     if (_options.AllowedMediaExtensions.Contains(extension))
                     {
-                        GitCommit? lastCommit = null;
-                        await foreach (var commit in repository.GetFileHistoryAsync(item.Path, _options.BranchName, cancellationToken))
+                        mediaFiles.Add(new Models.MediaFileInfo
                         {
-                            lastCommit = commit;
-                            break;
-                        }
-
-                        var fileName = Path.GetFileName(item.Path);
-                        var mediaType = ContentTypeHelper.GetMediaType(extension);
-
-                        mediaFiles.Add(new Models.MediaGalleryItem
-                        {
-                            Path = item.Path,
-                            FileName = fileName,
-                            Url = string.Empty,
-                            MediaType = mediaType,
-                            LastModified = lastCommit?.Metadata.AuthorDate
+                            AbsolutePath = item.Path,
+                            FileName = Path.GetFileName(item.Path),
+                            MediaType = ContentTypeHelper.GetMediaType(extension)
                         });
                     }
                 }
@@ -356,6 +344,6 @@ public sealed class WikiPageService : IWikiPageService
             // Repository might be empty or branch doesn't exist
         }
 
-        return mediaFiles.OrderByDescending(m => m.LastModified).ThenBy(m => m.Path).ToList();
+        return mediaFiles.OrderBy(m => m.AbsolutePath).ToList();
     }
 }

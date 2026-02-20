@@ -577,7 +577,8 @@ document.addEventListener('DOMContentLoaded', function () {
         mediaGalleryModal.addEventListener('show.bs.modal', async function () {
             if (!mediaLoaded) {
                 try {
-                    const response = await fetch(config.apiEndpoints.getMediaGallery);
+                    const currentPageName = config.currentPage.pageName;
+                    const response = await fetch(`${config.apiEndpoints.getMediaGallery}?currentPageName=${encodeURIComponent(currentPageName)}`);
 
                     if (!response.ok) {
                         throw new Error('Failed to load media');

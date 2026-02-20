@@ -933,9 +933,9 @@ public class WikiPageServiceIntegrationTests : IDisposable
 
         // Assert
         Assert.NotEmpty(result);
-        Assert.Contains(result, m => m.Path == "images/logo.png" && m.MediaType == Models.MediaType.Image);
-        Assert.Contains(result, m => m.Path == "photos/picture.jpg" && m.MediaType == Models.MediaType.Image);
-        Assert.Contains(result, m => m.Path == "documents/guide.pdf" && m.MediaType == Models.MediaType.Document);
+        Assert.Contains(result, m => m.AbsolutePath == "images/logo.png" && m.MediaType == Models.MediaType.Image);
+        Assert.Contains(result, m => m.AbsolutePath == "photos/picture.jpg" && m.MediaType == Models.MediaType.Image);
+        Assert.Contains(result, m => m.AbsolutePath == "documents/guide.pdf" && m.MediaType == Models.MediaType.Document);
     }
 
     [Fact]
@@ -981,7 +981,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
 
         // Assert
         Assert.Single(result);
-        Assert.Equal("images/valid.png", result[0].Path);
+        Assert.Equal("images/valid.png", result[0].AbsolutePath);
         Assert.Equal(Models.MediaType.Image, result[0].MediaType);
     }
 

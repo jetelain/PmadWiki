@@ -22,5 +22,5 @@ public interface IWikiPageService
 
     Task<byte[]?> GetMediaFileAsync(string filePath, CancellationToken cancellationToken = default);
 
-    Task<List<Models.MediaGalleryItem>> GetAllMediaFilesAsync(CancellationToken cancellationToken = default);
+    Task<List<Models.MediaFileInfo>> GetAllMediaFilesAsync(CancellationToken cancellationToken = default);
 }

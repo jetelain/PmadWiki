@@ -473,7 +473,7 @@ namespace Pmad.Wiki.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetMediaGallery(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetMediaGallery(string currentPageName, CancellationToken cancellationToken)
         {
             var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
             if (wikiUser == null || !wikiUser.CanEdit)
@@ -484,12 +484,18 @@ namespace Pmad.Wiki.Controllers
             var mediaFiles = await _pageService.GetAllMediaFilesAsync(cancellationToken);
 
             var accessibleMedia = new List<Models.MediaGalleryItem>();
-            foreach (var media in mediaFiles)
+            foreach (var mediaFile in mediaFiles)
             {
-                if (await _pagePermissionHelper.CanView(wikiUser, media.Path, cancellationToken))
+                if (await _pagePermissionHelper.CanView(wikiUser, mediaFile.AbsolutePath, cancellationToken))
                 {
-                    media.Url = Url.Action("Media", "Wiki", new { id = media.Path }) ?? string.Empty;
-                    accessibleMedia.Add(media);
+                    accessibleMedia.Add(new Models.MediaGalleryItem
+                    {
+                        AbsolutePath = mediaFile.AbsolutePath,
+                        FileName = mediaFile.FileName,
+                        MediaType = mediaFile.MediaType,
+                        Url = Url.Action("Media", "Wiki", new { id = mediaFile.AbsolutePath }) ?? string.Empty,
+                        Path = WikiFilePathHelper.GetRelativePath(currentPageName, mediaFile.AbsolutePath)
+                    });
                 }
             }
 
