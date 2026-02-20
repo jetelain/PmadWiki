@@ -21,4 +21,6 @@ public interface IWikiPageService
     Task<string?> GetPageTitleAsync(string pageName, string? culture, CancellationToken cancellationToken = default);
 
     Task<byte[]?> GetMediaFileAsync(string filePath, CancellationToken cancellationToken = default);
+
+    Task<List<Models.MediaFileInfo>> GetAllMediaFilesAsync(CancellationToken cancellationToken = default);
 }

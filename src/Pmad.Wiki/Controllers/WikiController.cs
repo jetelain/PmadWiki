@@ -471,6 +471,37 @@ namespace Pmad.Wiki.Controllers
             return PartialView("_PageLinkList", pages);
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetMediaGallery(string currentPageName, CancellationToken cancellationToken)
+        {
+            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            if (wikiUser == null || !wikiUser.CanEdit)
+            {
+                return Forbid();
+            }
+
+            var mediaFiles = await _pageService.GetAllMediaFilesAsync(cancellationToken);
+
+            var accessibleMedia = new List<Models.MediaGalleryItem>();
+            foreach (var mediaFile in mediaFiles)
+            {
+                if (await _pagePermissionHelper.CanView(wikiUser, mediaFile.AbsolutePath, cancellationToken))
+                {
+                    accessibleMedia.Add(new Models.MediaGalleryItem
+                    {
+                        AbsolutePath = mediaFile.AbsolutePath,
+                        FileName = mediaFile.FileName,
+                        MediaType = mediaFile.MediaType,
+                        Url = Url.Action("Media", "Wiki", new { id = mediaFile.AbsolutePath }) ?? string.Empty,
+                        Path = WikiFilePathHelper.GetRelativePath(currentPageName, mediaFile.AbsolutePath)
+                    });
+                }
+            }
+
+            return PartialView("_MediaGalleryList", accessibleMedia);
+        }
+
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]

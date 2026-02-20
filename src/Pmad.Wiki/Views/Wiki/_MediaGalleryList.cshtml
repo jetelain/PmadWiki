@@ -1,0 +1,52 @@
+@model List<Pmad.Wiki.Models.MediaGalleryItem>
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Pmad.Wiki.Resources.WikiResources> Localizer
+
+@if (Model == null || Model.Count == 0)
+{
+    <div class="text-center text-muted py-3">
+        <i class="bi bi-image"></i>
+        <p>@Localizer["No media files found."]</p>
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var media in Model)
+        {
+            var mediaTypeStr = media.MediaType.ToString().ToLowerInvariant();
+            <div class="col-md-4 col-sm-6">
+                <div class="card h-100 media-gallery-item" data-path="@media.Path" data-filename="@media.FileName" data-url="@media.Url" data-media-type="@mediaTypeStr">
+                    <div class="card-body d-flex flex-column">
+                        <div class="text-center mb-2 flex-grow-1 d-flex align-items-center justify-content-center media-preview-container">
+                            @if (media.MediaType == Pmad.Wiki.Models.MediaType.Image)
+                            {
+                                <img src="@media.Url" alt="@media.FileName" class="img-fluid media-preview-image" />
+                            }
+                            else if (media.MediaType == Pmad.Wiki.Models.MediaType.Video)
+                            {
+                                <i class="bi bi-camera-video media-icon-large"></i>
+                            }
+                            else if (media.MediaType == Pmad.Wiki.Models.MediaType.Document)
+                            {
+                                <i class="bi bi-file-pdf media-icon-pdf"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-file-earmark media-icon-large"></i>
+                            }
+                        </div>
+                        <h6 class="card-title text-truncate" title="@media.FileName">@media.FileName</h6>
+                        <p class="card-text small text-muted mb-2">
+                            <span class="text-truncate d-block" title="@media.AbsolutePath">@media.AbsolutePath</span>
+                        </p>
+                        <button type="button" class="btn btn-sm btn-primary w-100 insert-media-btn">
+                            <i class="bi bi-plus-circle"></i> @Localizer["Insert"]
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+

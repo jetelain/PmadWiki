@@ -906,5 +906,85 @@ public class WikiPageServiceIntegrationTests : IDisposable
         Assert.Equal(binaryData, retrievedMedia);
     }
 
+    [Fact]
+    public async Task GetAllMediaFilesAsync_ReturnsAllMediaFiles()
+    {
+        // Arrange
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        var author = CreateTestUser();
+
+        var pngData = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var jpgData = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 };
+        var pdfData = new byte[] { 0x25, 0x50, 0x44, 0x46 };
+
+        var content = "# Test Page\n\nPage with multiple media files.";
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images/logo.png"] = pngData,
+            ["photos/picture.jpg"] = jpgData,
+            ["documents/guide.pdf"] = pdfData
+        };
+
+        await _service.SavePageWithMediaAsync("mediatest", null, content, "Add media files", author, mediaFiles, CancellationToken.None);
+
+        // Act
+        var result = await _service.GetAllMediaFilesAsync(CancellationToken.None);
+
+        // Assert
+        Assert.NotEmpty(result);
+        Assert.Contains(result, m => m.AbsolutePath == "images/logo.png" && m.MediaType == Models.MediaType.Image);
+        Assert.Contains(result, m => m.AbsolutePath == "photos/picture.jpg" && m.MediaType == Models.MediaType.Image);
+        Assert.Contains(result, m => m.AbsolutePath == "documents/guide.pdf" && m.MediaType == Models.MediaType.Document);
+    }
+
+    [Fact]
+    public async Task GetAllMediaFilesAsync_WithNoMediaFiles_ReturnsEmptyList()
+    {
+        // Arrange
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+
+        // Act
+        var result = await _service.GetAllMediaFilesAsync(CancellationToken.None);
+
+        // Assert
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetAllMediaFilesAsync_FiltersOnlyAllowedExtensions()
+    {
+        // Arrange
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        var author = CreateTestUser();
+
+        var imageData = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var content = "# Test Page";
+
+        var mediaFiles = new Dictionary<string, byte[]>
+        {
+            ["images/valid.png"] = imageData
+        };
+
+        await _service.SavePageWithMediaAsync("test", null, content, "Add media", author, mediaFiles, CancellationToken.None);
+
+        // Verify media was committed using GetMediaFileAsync
+        var retrievedMedia = await _service.GetMediaFileAsync("images/valid.png", CancellationToken.None);
+        Assert.NotNull(retrievedMedia);
+
+        CommitFile("data/text.txt", "This is text", "Add text file");
+
+        // Act
+        var result = await _service.GetAllMediaFilesAsync(CancellationToken.None);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("images/valid.png", result[0].AbsolutePath);
+        Assert.Equal(Models.MediaType.Image, result[0].MediaType);
+    }
+
     #endregion
 }
+

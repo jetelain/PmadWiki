@@ -14,4 +14,15 @@ internal static class ContentTypeHelper
         }
         return contentType;
     }
+
+    internal static Models.MediaType GetMediaType(string extension)
+    {
+        return extension.ToLowerInvariant() switch
+        {
+            ".png" or ".jpg" or ".jpeg" or ".gif" or ".svg" or ".webp" => Models.MediaType.Image,
+            ".mp4" or ".webm" or ".ogg" => Models.MediaType.Video,
+            ".pdf" => Models.MediaType.Document,
+            _ => Models.MediaType.File
+        };
+    }
 }

@@ -389,5 +389,58 @@ public class WikiFilePathHelperTest
         // Assert
         Assert.False(result);
     }
+
+    #region SanitizeFileName Tests
+
+    [Theory]
+    [InlineData("screenshot", "screenshot")]
+    [InlineData("MyDocument", "MyDocument")]
+    [InlineData("report2024", "report2024")]
+    [InlineData("my_file_name", "my_file_name")]
+    [InlineData("my-file-name", "my-file-name")]
+    [InlineData("my document file", "my-document-file")]
+    [InlineData("backup.tar", "backup-tar")]
+    [InlineData("file.name.with.dots", "file-name-with-dots")]
+    [InlineData("file@name#with$special%chars", "filenamewithspecialchars")]
+    [InlineData("???", "file")]
+    [InlineData("My Photo (2024).jpg", "My-Photo-2024-jpg")]
+    [InlineData("", "file")]
+    [InlineData("@#$%^&*()", "file")]
+    [InlineData("   ", "---")]
+    [InlineData(" file name ", "-file-name-")]
+    [InlineData("file\tname\twith\ttabs", "file-name-with-tabs")]
+    [InlineData("file\nname", "file-name")]
+    [InlineData("Screenshot 2024-01-15 at 10.30.45", "Screenshot-2024-01-15-at-10-30-45")]
+    [InlineData("Annual Report (Final Version)", "Annual-Report-Final-Version")]
+    [InlineData("database_backup.2024.01.15", "database_backup-2024-01-15")]
+    public void SanitizeFileName_WithVariousInputs_ReturnsExpectedOutput(string input, string expected)
+    {
+        // Act
+        var result = WikiFilePathHelper.SanitizeFileName(input);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData(150, 100)]
+    [InlineData(100, 100)]
+    [InlineData(99, 99)]
+    [InlineData(50, 50)]
+    [InlineData(1, 1)]
+    public void SanitizeFileName_WithVariousLengths_HandlesCorrectly(int inputLength, int expectedLength)
+    {
+        // Arrange
+        var input = new string('a', inputLength);
+
+        // Act
+        var result = WikiFilePathHelper.SanitizeFileName(input);
+
+        // Assert
+        Assert.Equal(expectedLength, result.Length);
+        Assert.Equal(new string('a', expectedLength), result);
+    }
+
+    #endregion
 }
 

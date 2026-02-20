@@ -563,6 +563,120 @@ document.addEventListener('DOMContentLoaded', function () {
         insertTextWithUndo(textarea, start, end, wikiLink, wikiLink.length);
     }
 
+    // Media Gallery modal functionality
+    const mediaGalleryModal = document.getElementById('mediaGalleryModal');
+    const mediaSearchInput = document.getElementById('mediaSearchInput');
+    const mediaGallery = document.getElementById('mediaGallery');
+    const mediaGalleryContainer = document.getElementById('mediaGalleryContainer');
+    
+    let mediaLoaded = false;
+    let allMediaItems = [];
+
+    if (mediaGalleryModal) {
+        // Load media when modal is shown
+        mediaGalleryModal.addEventListener('show.bs.modal', async function () {
+            if (!mediaLoaded) {
+                try {
+                    const currentPageName = config.currentPage.pageName;
+                    const response = await fetch(`${config.apiEndpoints.getMediaGallery}?currentPageName=${encodeURIComponent(currentPageName)}`);
+
+                    if (!response.ok) {
+                        throw new Error('Failed to load media');
+                    }
+
+                    const html = await response.text();
+
+                    if (mediaGallery) {
+                        mediaGallery.innerHTML = html;
+                        attachMediaGalleryHandlers();
+                        allMediaItems = Array.from(mediaGallery.querySelectorAll('.media-gallery-item'));
+                    }
+
+                    mediaLoaded = true;
+
+                    if (mediaGalleryContainer) {
+                        mediaGalleryContainer.style.display = 'none';
+                    }
+                    if (mediaGallery) {
+                        mediaGallery.style.display = '';
+                    }
+                } catch (error) {
+                    console.error('Error loading media gallery:', error);
+                    if (mediaGalleryContainer) {
+                        mediaGalleryContainer.innerHTML = '';
+                        mediaGalleryContainer.appendChild(createAlert(config.labels.failedToLoadMedia));
+                    }
+                }
+            }
+        });
+    }
+
+    function attachMediaGalleryHandlers() {
+        if (!mediaGallery) return;
+
+        const insertButtons = mediaGallery.querySelectorAll('.insert-media-btn');
+
+        insertButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const card = this.closest('.media-gallery-item');
+                const mediaPath = card.getAttribute('data-path');
+                const fileName = card.getAttribute('data-filename');
+                const mediaUrl = card.getAttribute('data-url');
+                const mediaType = card.getAttribute('data-media-type');
+                
+                handleMediaSelection(mediaPath, fileName, mediaUrl, mediaType);
+            });
+        });
+    }
+
+    if (mediaSearchInput && mediaGallery) {
+        mediaSearchInput.addEventListener('input', function () {
+            const searchTerm = this.value.toLowerCase();
+
+            allMediaItems.forEach(item => {
+                const path = item.getAttribute('data-path').toLowerCase();
+                const fileName = item.getAttribute('data-filename').toLowerCase();
+
+                if (path.includes(searchTerm) || fileName.includes(searchTerm)) {
+                    item.closest('.col-md-4').style.display = '';
+                } else {
+                    item.closest('.col-md-4').style.display = 'none';
+                }
+            });
+        });
+    }
+
+    function handleMediaSelection(mediaPath, fileName, mediaUrl, mediaType) {
+        const modalElement = document.getElementById('mediaGalleryModal');
+
+        modalElement.addEventListener('hidden.bs.modal', () => {
+            if (mediaSearchInput) {
+                mediaSearchInput.value = '';
+                allMediaItems.forEach(item => {
+                    item.closest('.col-md-4').style.display = '';
+                });
+            }
+            insertMediaReference(textarea, mediaPath, fileName, mediaType);
+        }, { once: true });
+
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        modal?.hide();
+    }
+
+    function insertMediaReference(textarea, mediaPath, fileName, mediaType) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+
+        let markdownRef;
+        if (mediaType === 'image') {
+            markdownRef = `![${fileName}](${mediaPath})`;
+        } else {
+            markdownRef = `[${fileName}](${mediaPath})`;
+        }
+
+        insertTextWithUndo(textarea, start, end, markdownRef, markdownRef.length);
+    }
+
     function insertTextWithUndo(textarea, start, end, newText, cursorOffset) {
         textarea.focus();
         textarea.setSelectionRange(start, end);

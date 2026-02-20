@@ -314,4 +314,36 @@ public sealed class WikiPageService : IWikiPageService
             return null;
         }
     }
+
+    public async Task<List<Models.MediaFileInfo>> GetAllMediaFilesAsync(CancellationToken cancellationToken = default)
+    {
+        var repository = GetRepository();
+        var mediaFiles = new List<Models.MediaFileInfo>();
+
+        try
+        {
+            await foreach (var item in repository.EnumerateCommitTreeAsync(_options.BranchName, null, cancellationToken))
+            {
+                if (item.Entry.Kind == GitTreeEntryKind.Blob)
+                {
+                    var extension = Path.GetExtension(item.Path).ToLowerInvariant();
+                    if (_options.AllowedMediaExtensions.Contains(extension))
+                    {
+                        mediaFiles.Add(new Models.MediaFileInfo
+                        {
+                            AbsolutePath = item.Path,
+                            FileName = Path.GetFileName(item.Path),
+                            MediaType = ContentTypeHelper.GetMediaType(extension)
+                        });
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // Repository might be empty or branch doesn't exist
+        }
+
+        return mediaFiles.OrderBy(m => m.AbsolutePath).ToList();
+    }
 }

@@ -140,3 +140,51 @@
 a:hover .template-card .card-title {
     color: #0056b3;
 }
+
+/* Media Gallery */
+.media-gallery-item {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+    .media-gallery-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .media-gallery-item .card-body {
+        padding: 0.75rem;
+    }
+
+    .media-gallery-item img {
+        border-radius: 0.25rem;
+    }
+
+    .media-gallery-item .card-title {
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .media-gallery-item .card-text {
+        font-size: 0.75rem;
+    }
+
+.media-preview-container {
+    min-height: 120px;
+}
+
+.media-preview-image {
+    max-height: 120px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.media-icon-large {
+    font-size: 3rem;
+    color: #6c757d;
+}
+
+.media-icon-pdf {
+    font-size: 3rem;
+    color: #dc3545;
+}

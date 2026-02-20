@@ -179,13 +179,13 @@ public class WikiPageEditServiceTest
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "test",
             null,
-            It.Is<string>(c => c.Contains("![Screenshot](medias/abc123def456.png)")),
+            It.Is<string>(c => c.Contains("![Screenshot](medias/screenshot_abc123def456.png)")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.ContainsKey("medias/abc123def456.png") &&
-                m["medias/abc123def456.png"].SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/screenshot_abc123def456.png") &&
+                m["medias/screenshot_abc123def456.png"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -227,13 +227,13 @@ public class WikiPageEditServiceTest
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "docs/guide",
             null,
-            It.Is<string>(c => c.Contains("![Diagram](medias/abc789def012.svg)")),
+            It.Is<string>(c => c.Contains("![Diagram](medias/diagram_abc789def012.svg)")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.ContainsKey("docs/medias/abc789def012.svg") &&
-                m["docs/medias/abc789def012.svg"].SequenceEqual(mediaContent)),
+                m.ContainsKey("docs/medias/diagram_abc789def012.svg") &&
+                m["docs/medias/diagram_abc789def012.svg"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -275,13 +275,13 @@ public class WikiPageEditServiceTest
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "test",
             null,
-            It.Is<string>(c => c.Contains("[Download](medias/abcdef123456)")),
+            It.Is<string>(c => c.Contains("[Download](medias/datafile_abcdef123456)")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.ContainsKey("medias/abcdef123456") &&
-                m["medias/abcdef123456"].SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/datafile_abcdef123456") &&
+                m["medias/datafile_abcdef123456"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -323,13 +323,13 @@ public class WikiPageEditServiceTest
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "test",
             null,
-            It.Is<string>(c => c.Contains("[Download](medias/fedcba987654.gz)")),
+            It.Is<string>(c => c.Contains("[Download](medias/backup-tar_fedcba987654.gz)")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.ContainsKey("medias/fedcba987654.gz") &&
-                m["medias/fedcba987654.gz"].SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/backup-tar_fedcba987654.gz") &&
+                m["medias/backup-tar_fedcba987654.gz"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -413,19 +413,19 @@ More text.
             "test",
             null,
             It.Is<string>(c =>
-                c.Contains("![Image 1](medias/aabbccdd0001.png)") &&
-                c.Contains("![Image 2](medias/aabbccdd0002.jpg)") &&
-                c.Contains("[Download PDF](medias/aabbccdd0003.pdf)")),
+                c.Contains("![Image 1](medias/photo1_aabbccdd0001.png)") &&
+                c.Contains("![Image 2](medias/photo2_aabbccdd0002.jpg)") &&
+                c.Contains("[Download PDF](medias/document_aabbccdd0003.pdf)")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 3 &&
-                m.ContainsKey("medias/aabbccdd0001.png") &&
-                m.ContainsKey("medias/aabbccdd0002.jpg") &&
-                m.ContainsKey("medias/aabbccdd0003.pdf") &&
-                m["medias/aabbccdd0001.png"].SequenceEqual(mediaContent1) &&
-                m["medias/aabbccdd0002.jpg"].SequenceEqual(mediaContent2) &&
-                m["medias/aabbccdd0003.pdf"].SequenceEqual(mediaContent3)),
+                m.ContainsKey("medias/photo1_aabbccdd0001.png") &&
+                m.ContainsKey("medias/photo2_aabbccdd0002.jpg") &&
+                m.ContainsKey("medias/document_aabbccdd0003.pdf") &&
+                m["medias/photo1_aabbccdd0001.png"].SequenceEqual(mediaContent1) &&
+                m["medias/photo2_aabbccdd0002.jpg"].SequenceEqual(mediaContent2) &&
+                m["medias/document_aabbccdd0003.pdf"].SequenceEqual(mediaContent3)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -476,14 +476,14 @@ The same image appears twice.";
             "test",
             null,
             It.Is<string>(c =>
-                c.Contains("![First reference](medias/abcdef123789.png)") &&
-                c.Contains("![Second reference](medias/abcdef123789.png)")),
+                c.Contains("![First reference](medias/logo_abcdef123789.png)") &&
+                c.Contains("![Second reference](medias/logo_abcdef123789.png)")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.ContainsKey("medias/abcdef123789.png") &&
-                m["medias/abcdef123789.png"].SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/logo_abcdef123789.png") &&
+                m["medias/logo_abcdef123789.png"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
 
         _mockTempMediaStorage.Verify(
@@ -612,14 +612,14 @@ The same image appears twice.";
             "test",
             null,
             It.Is<string>(c =>
-                c.Contains("![Valid](medias/abcd1234ef56.png)") &&
+                c.Contains("![Valid](medias/valid_abcd1234ef56.png)") &&
                 c.Contains("![Invalid](/wiki/tempmedia/999999999999)")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.ContainsKey("medias/abcd1234ef56.png") &&
-                m["medias/abcd1234ef56.png"].SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/valid_abcd1234ef56.png") &&
+                m["medias/valid_abcd1234ef56.png"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -686,13 +686,13 @@ The same image appears twice.";
         _mockPageService.Verify(x => x.SavePageWithMediaAsync(
             "test",
             null,
-            It.Is<string>(c => c.Contains("![Image](medias/a1b2c3d4e5f6.png)")),
+            It.Is<string>(c => c.Contains("![Image](medias/image_a1b2c3d4e5f6.png)")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.ContainsKey("medias/a1b2c3d4e5f6.png") &&
-                m["medias/a1b2c3d4e5f6.png"].SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/image_a1b2c3d4e5f6.png") &&
+                m["medias/image_a1b2c3d4e5f6.png"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -747,7 +747,7 @@ The same image appears twice.";
             "test",
             null,
             It.Is<string>(c =>
-                c.Contains("![Temp Image](medias/cafe12345678.png)") &&
+                c.Contains("![Temp Image](medias/temp_cafe12345678.png)") &&
                 c.Contains("![External Image](https://example.com/image.png)") &&
                 c.Contains("![Relative Image](../images/other.png)") &&
                 c.Contains("[Link](/wiki/view/OtherPage)") &&
@@ -756,8 +756,8 @@ The same image appears twice.";
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.ContainsKey("medias/cafe12345678.png") &&
-                m["medias/cafe12345678.png"].SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/temp_cafe12345678.png") &&
+                m["medias/temp_cafe12345678.png"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -804,14 +804,14 @@ The same image appears twice.";
             "test",
             null,
             It.Is<string>(c =>
-                c.Contains($@"<img src=""medias/dada123beeee.png"" alt=""Image"" />") &&
-                c.Contains($@"<a href=""medias/dada123beeee.png"">Download</a>")),
+                c.Contains($@"<img src=""medias/file_dada123beeee.png"" alt=""Image"" />") &&
+                c.Contains($@"<a href=""medias/file_dada123beeee.png"">Download</a>")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 1 &&
-                m.ContainsKey("medias/dada123beeee.png") &&
-                m["medias/dada123beeee.png"].SequenceEqual(mediaContent)),
+                m.ContainsKey("medias/file_dada123beeee.png") &&
+                m["medias/file_dada123beeee.png"].SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -897,8 +897,8 @@ The same image appears twice.";
                 It.IsAny<IWikiUser>(),
                 It.Is<Dictionary<string, byte[]>>(m =>
                     m.Count == 1 &&
-                    m.ContainsKey("medias/fade00000000.png") &&
-                    m["medias/fade00000000.png"].SequenceEqual(mediaContent)),
+                    m.ContainsKey("medias/image_fade00000000.png") &&
+                    m["medias/image_fade00000000.png"].SequenceEqual(mediaContent)),
                 cancellationToken),
             Times.Once);
     }
@@ -984,16 +984,16 @@ That's it!";
             "docs/tutorial",
             null,
             It.Is<string>(c =>
-                c.Contains("![Screenshot 1](medias/abcdef000001.png)") &&
-                c.Contains("![Screenshot 2](medias/abcdef000002.jpg)")),
+                c.Contains("![Screenshot 1](medias/screenshot-1_abcdef000001.png)") &&
+                c.Contains("![Screenshot 2](medias/screenshot-2_abcdef000002.jpg)")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 2 &&
-                m.ContainsKey("docs/medias/abcdef000001.png") &&
-                m.ContainsKey("docs/medias/abcdef000002.jpg") &&
-                m["docs/medias/abcdef000001.png"].SequenceEqual(mediaContent1) &&
-                m["docs/medias/abcdef000002.jpg"].SequenceEqual(mediaContent2)),
+                m.ContainsKey("docs/medias/screenshot-1_abcdef000001.png") &&
+                m.ContainsKey("docs/medias/screenshot-2_abcdef000002.jpg") &&
+                m["docs/medias/screenshot-1_abcdef000001.png"].SequenceEqual(mediaContent1) &&
+                m["docs/medias/screenshot-2_abcdef000002.jpg"].SequenceEqual(mediaContent2)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -1086,22 +1086,22 @@ That's it!";
             "gallery",
             null,
             It.Is<string>(c =>
-                c.Contains("![PNG Image](medias/aabbccddee01.png)") &&
-                c.Contains("![JPEG Image](medias/aabbccddee02.jpg)") &&
-                c.Contains("![GIF Animation](medias/aabbccddee03.gif)") &&
-                c.Contains("![SVG Graphic](medias/aabbccddee04.svg)") &&
-                c.Contains("[PDF Document](medias/aabbccddee05.pdf)") &&
-                c.Contains($@"<video src=""medias/aabbccddee06.mp4"" controls></video>")),
+                c.Contains("![PNG Image](medias/image_aabbccddee01.png)") &&
+                c.Contains("![JPEG Image](medias/photo_aabbccddee02.jpg)") &&
+                c.Contains("![GIF Animation](medias/anim_aabbccddee03.gif)") &&
+                c.Contains("![SVG Graphic](medias/vector_aabbccddee04.svg)") &&
+                c.Contains("[PDF Document](medias/doc_aabbccddee05.pdf)") &&
+                c.Contains($@"<video src=""medias/video_aabbccddee06.mp4"" controls></video>")),
             commitMessage,
             author,
             It.Is<Dictionary<string, byte[]>>(m =>
                 m.Count == 6 &&
-                m.ContainsKey("medias/aabbccddee01.png") &&
-                m.ContainsKey("medias/aabbccddee02.jpg") &&
-                m.ContainsKey("medias/aabbccddee03.gif") &&
-                m.ContainsKey("medias/aabbccddee04.svg") &&
-                m.ContainsKey("medias/aabbccddee05.pdf") &&
-                m.ContainsKey("medias/aabbccddee06.mp4")),
+                m.ContainsKey("medias/image_aabbccddee01.png") &&
+                m.ContainsKey("medias/photo_aabbccddee02.jpg") &&
+                m.ContainsKey("medias/anim_aabbccddee03.gif") &&
+                m.ContainsKey("medias/vector_aabbccddee04.svg") &&
+                m.ContainsKey("medias/doc_aabbccddee05.pdf") &&
+                m.ContainsKey("medias/video_aabbccddee06.mp4")),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
