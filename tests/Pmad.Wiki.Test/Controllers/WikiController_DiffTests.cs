@@ -1,4 +1,4 @@
-using System.Security.Claims;
+ï»¿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -20,7 +20,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Original Content",
             ContentHash = "hash1",
-            HtmlContent = "<h1>Original Content</h1>",
             Title = "Test Page",
             LastModifiedBy = "author1",
             LastModified = DateTimeOffset.UtcNow.AddDays(-2)
@@ -31,7 +30,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Updated Content",
             ContentHash = "hash2",
-            HtmlContent = "<h1>Updated Content</h1>",
             Title = "Test Page",
             LastModifiedBy = "author2",
             LastModified = DateTimeOffset.UtcNow.AddDays(-1)
@@ -225,7 +223,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Content",
             ContentHash = "hash2",
-            HtmlContent = "<h1>Content</h1>",
             Title = "Test Page"
         };
 
@@ -249,7 +246,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Content",
             ContentHash = "hash1",
-            HtmlContent = "<h1>Content</h1>",
             Title = "Test Page"
         };
 
@@ -296,7 +292,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Contenu Original",
             ContentHash = "hash1",
-            HtmlContent = "<h1>Contenu Original</h1>",
             Title = "Page Test",
             Culture = "fr"
         };
@@ -304,9 +299,8 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Contenu Mis à Jour",
+            Content = "# Contenu Mis Ã  Jour",
             ContentHash = "hash2",
-            HtmlContent = "<h1>Contenu Mis à Jour</h1>",
             Title = "Page Test",
             Culture = "fr"
         };
@@ -316,14 +310,14 @@ public class WikiController_DiffTests : WikiControllerTestBase
             new WikiHistoryItem
             {
                 CommitId = "commit1",
-                Message = "Création",
+                Message = "CrÃ©ation",
                 AuthorName = "Jean Dupont",
                 Timestamp = DateTimeOffset.UtcNow.AddDays(-2)
             },
             new WikiHistoryItem
             {
                 CommitId = "commit2",
-                Message = "Mise à jour",
+                Message = "Mise Ã  jour",
                 AuthorName = "Marie Martin",
                 Timestamp = DateTimeOffset.UtcNow.AddDays(-1)
             }
@@ -352,8 +346,8 @@ public class WikiController_DiffTests : WikiControllerTestBase
         Assert.Equal("fr", model.Culture);
         Assert.Equal("Jean Dupont", model.FromAuthorName);
         Assert.Equal("Marie Martin", model.ToAuthorName);
-        Assert.Equal("Création", model.FromMessage);
-        Assert.Equal("Mise à jour", model.ToMessage);
+        Assert.Equal("CrÃ©ation", model.FromMessage);
+        Assert.Equal("Mise Ã  jour", model.ToMessage);
     }
 
     [Fact]
@@ -443,7 +437,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Test Page"
         };
 
@@ -452,7 +445,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Test Page"
         };
 
@@ -517,7 +509,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Test Page"
         };
 
@@ -526,7 +517,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Test Page"
         };
 
@@ -581,7 +571,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Test Page",
             LastModifiedBy = "pageauthor1",
             LastModified = DateTimeOffset.UtcNow.AddDays(-5)
@@ -592,7 +581,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Test Page",
             LastModifiedBy = "pageauthor2",
             LastModified = DateTimeOffset.UtcNow.AddDays(-3)
@@ -644,7 +632,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Test Page",
             LastModifiedBy = "pageauthor1",
             LastModified = DateTimeOffset.UtcNow.AddDays(-5)
@@ -655,7 +642,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Test Page",
             LastModifiedBy = "pageauthor2",
             LastModified = DateTimeOffset.UtcNow.AddDays(-3)
@@ -707,7 +693,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Test Page",
             LastModifiedBy = "pageauthor1",
             LastModified = DateTimeOffset.UtcNow.AddDays(-5)
@@ -718,7 +703,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Test Page",
             LastModifiedBy = "pageauthor2",
             LastModified = DateTimeOffset.UtcNow.AddDays(-3)
@@ -762,7 +746,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Test Page",
             LastModifiedBy = null,
             LastModified = null
@@ -773,7 +756,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Test Page",
             LastModifiedBy = null,
             LastModified = null
@@ -817,7 +799,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "docs/api/reference",
             Content = "# API v1",
             ContentHash = "hash1",
-            HtmlContent = "<h1>API v1</h1>",
             Title = "API Reference"
         };
 
@@ -826,7 +807,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "docs/api/reference",
             Content = "# API v2",
             ContentHash = "hash2",
-            HtmlContent = "<h1>API v2</h1>",
             Title = "API Reference"
         };
 
@@ -878,7 +858,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "docs/guide",
             Content = "# Guide v1",
             ContentHash = "hash1",
-            HtmlContent = "<h1>Guide v1</h1>",
             Title = "User Guide"
         };
 
@@ -887,7 +866,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "docs/guide",
             Content = "# Guide v2",
             ContentHash = "hash2",
-            HtmlContent = "<h1>Guide v2</h1>",
             Title = "User Guide"
         };
 
@@ -952,7 +930,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "docs/guide",
             Content = "# Guide v1",
             ContentHash = "hash1",
-            HtmlContent = "<h1>Guide v1</h1>",
             Title = "Guide Utilisateur",
             Culture = "fr"
         };
@@ -962,7 +939,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "docs/guide",
             Content = "# Guide v2",
             ContentHash = "hash2",
-            HtmlContent = "<h1>Guide v2</h1>",
             Title = "Guide Utilisateur",
             Culture = "fr"
         };
@@ -979,7 +955,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
             new WikiHistoryItem
             {
                 CommitId = "commit2",
-                Message = "Deuxième",
+                Message = "DeuxiÃ¨me",
                 AuthorName = "Auteur",
                 Timestamp = DateTimeOffset.UtcNow
             }
@@ -1028,7 +1004,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Test Page"
         };
 
@@ -1037,7 +1012,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Test Page"
         };
 
@@ -1094,7 +1068,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Test Page"
         };
 
@@ -1103,7 +1076,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Test Page"
         };
 
@@ -1159,7 +1131,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "PublicPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Public Page"
         };
 
@@ -1168,7 +1139,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "PublicPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Public Page"
         };
 
@@ -1233,7 +1203,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "PublicPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Public Page"
         };
 
@@ -1242,7 +1211,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "PublicPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Public Page"
         };
 
@@ -1304,7 +1272,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Test Page"
         };
 
@@ -1313,7 +1280,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Test Page"
         };
 
@@ -1371,7 +1337,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Original Content\nFirst paragraph.",
             ContentHash = "hash1",
-            HtmlContent = "<h1>Original Content</h1><p>First paragraph.</p>",
             Title = "Test Page"
         };
 
@@ -1380,7 +1345,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Updated Content\nSecond paragraph.",
             ContentHash = "hash2",
-            HtmlContent = "<h1>Updated Content</h1><p>Second paragraph.</p>",
             Title = "Test Page"
         };
 
@@ -1445,7 +1409,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "docs/api/v2/reference",
             Content = "# API v2.0",
             ContentHash = "hash1",
-            HtmlContent = "<h1>API v2.0</h1>",
             Title = "API v2 Reference"
         };
 
@@ -1454,7 +1417,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "docs/api/v2/reference",
             Content = "# API v2.1",
             ContentHash = "hash2",
-            HtmlContent = "<h1>API v2.1</h1>",
             Title = "API v2 Reference"
         };
 
@@ -1527,7 +1489,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "docs/guide",
             Content = "# Guide v1",
             ContentHash = "hash1",
-            HtmlContent = "<h1>Guide v1</h1>",
             Title = "User Guide"
         };
 
@@ -1536,7 +1497,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "docs/guide",
             Content = "# Guide v2",
             ContentHash = "hash2",
-            HtmlContent = "<h1>Guide v2</h1>",
             Title = "User Guide"
         };
 
@@ -1599,7 +1559,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Test Page"
         };
 
@@ -1608,7 +1567,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Test Page"
         };
 
@@ -1678,7 +1636,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# From",
             ContentHash = "hash1",
-            HtmlContent = "<h1>From</h1>",
             Title = "Test Page"
         };
 
@@ -1687,7 +1644,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# To",
             ContentHash = "hash2",
-            HtmlContent = "<h1>To</h1>",
             Title = "Test Page"
         };
 
@@ -1763,7 +1719,6 @@ public class WikiController_DiffTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Contenu Original",
             ContentHash = "hash1",
-            HtmlContent = "<h1>Contenu Original</h1>",
             Title = "Page Test",
             Culture = "fr"
         };
@@ -1771,9 +1726,8 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Contenu Modifié",
+            Content = "# Contenu ModifiÃ©",
             ContentHash = "hash2",
-            HtmlContent = "<h1>Contenu Modifié</h1>",
             Title = "Page Test",
             Culture = "fr"
         };

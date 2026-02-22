@@ -101,7 +101,7 @@ namespace Pmad.Wiki.Controllers
             var viewModel = new WikiPageViewModel
             {
                 PageName = id,
-                HtmlContent = page.HtmlContent,
+                HtmlContent = _markdownRenderService.ToHtml(page.Content, culture, id),
                 Title = page.Title,
                 CanEdit = canEdit,
                 Culture = culture,
@@ -241,7 +241,7 @@ namespace Pmad.Wiki.Controllers
             var viewModel = new WikiPageRevisionViewModel
             {
                 PageName = id,
-                HtmlContent = page.HtmlContent,
+                HtmlContent = _markdownRenderService.ToHtml(page.Content, culture, id),
                 Title = page.Title,
                 Culture = culture,
                 CommitId = commitId,

@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -20,7 +20,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Test Content",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Test Content</h1>",
             Title = "Test Page",
             LastModifiedBy = "testuser",
             LastModified = DateTimeOffset.UtcNow
@@ -33,6 +32,10 @@ public class WikiController_ViewTests : WikiControllerTestBase
         _mockPageService
             .Setup(x => x.GetAvailableCulturesForPageAsync("TestPage", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<string> { "en", "fr" });
+
+        _mockMarkdownRenderService
+            .Setup(x => x.ToHtml("# Test Content", null, "TestPage"))
+            .Returns("<h1>Test Content</h1>");
 
         // Act
         var result = await _controller.View("TestPage", null, CancellationToken.None);
@@ -60,7 +63,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "Home",
             Content = "# Home",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Home</h1>",
             Title = "Home Page"
         };
 
@@ -90,7 +92,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "Home",
             Content = "# Home",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Home</h1>",
             Title = "Home Page"
         };
 
@@ -190,7 +191,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Test",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Test</h1>",
             Title = "Test Page"
         };
 
@@ -297,12 +297,12 @@ public class WikiController_ViewTests : WikiControllerTestBase
             .Setup(x => x.CheckPageAccessAsync("TestPage", new[] { "users" }, It.IsAny<CancellationToken>()))
             .ReturnsAsync(pageAccess);
 
+
         var page = new WikiPage
         {
             PageName = "TestPage",
             Content = "# Test",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Test</h1>",
             Title = "Test Page"
         };
 
@@ -465,7 +465,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Contenu Test",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Contenu Test</h1>",
             Title = "Page Test",
             Culture = "fr"
         };
@@ -509,7 +508,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Test",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Test</h1>",
             Title = "Test Page"
         };
 
@@ -563,7 +561,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Test",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Test</h1>",
             Title = "Test Page"
         };
 
@@ -617,7 +614,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "RestrictedPage",
             Content = "# Restricted",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Restricted</h1>",
             Title = "Restricted Page"
         };
 
@@ -650,7 +646,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "docs/api/reference",
             Content = "# API Reference",
             ContentHash = "hash123",
-            HtmlContent = "<h1>API Reference</h1>",
             Title = "API Reference"
         };
 
@@ -680,7 +675,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "docs/guide",
             Content = "# User Guide",
             ContentHash = "hash123",
-            HtmlContent = "<h1>User Guide</h1>",
             Title = "User Guide"
         };
 
@@ -723,7 +717,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "docs/guide",
             Content = "# Guide Utilisateur",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Guide Utilisateur</h1>",
             Title = "Guide Utilisateur",
             Culture = "fr"
         };
@@ -766,7 +759,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "docs/api/v2/reference",
             Content = "# API v2 Reference",
             ContentHash = "hash123",
-            HtmlContent = "<h1>API v2 Reference</h1>",
             Title = "API v2 Reference"
         };
 
@@ -817,7 +809,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "docs/guide",
             Content = "# User Guide",
             ContentHash = "hash123",
-            HtmlContent = "<h1>User Guide</h1>",
             Title = "User Guide"
         };
 
@@ -858,7 +849,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Test",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Test</h1>",
             Title = "Test Page"
         };
 
@@ -888,7 +878,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Test",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Test</h1>",
             Title = "Test Page"
         };
 
@@ -923,7 +912,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Test",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Test</h1>",
             Title = "Test Page",
             LastModifiedBy = null,
             LastModified = null
@@ -958,7 +946,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "PublicPage",
             Content = "# Public",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Public</h1>",
             Title = "Public Page"
         };
 
@@ -995,7 +982,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Test",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Test</h1>",
             Title = "Test Page"
         };
 
@@ -1040,7 +1026,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "PublicPage",
             Content = "# Public",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Public</h1>",
             Title = "Public Page"
         };
 
@@ -1074,7 +1059,6 @@ public class WikiController_ViewTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Test",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Test</h1>",
             Title = "Test Page"
         };
 
