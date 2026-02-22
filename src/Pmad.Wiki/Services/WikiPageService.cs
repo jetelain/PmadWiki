@@ -207,34 +207,27 @@ public sealed class WikiPageService : IWikiPageService
 
         try
         {
-            await foreach (var item in repository.EnumerateCommitTreeAsync(_options.BranchName, null, cancellationToken))
+            var files = await repository.ListFilesWithLastChangeAsync(_options.BranchName, null, 
+                path => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase), cancellationToken);
+
+            foreach (var file in files)
             {
-                if (item.Entry.Kind == GitTreeEntryKind.Blob && item.Path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+                var (pageName, culture) = WikiFilePathHelper.ParsePagePath(file.Path);
+
+                var key = $"{pageName}:{culture ?? _options.NeutralMarkdownPageCulture}";
+
+                if (!pages.ContainsKey(key))
                 {
-                    var (pageName, culture) = WikiFilePathHelper.ParsePagePath(item.Path);
-                    
-                    var key = $"{pageName}:{culture ?? _options.NeutralMarkdownPageCulture}";
-                    
-                    if (!pages.ContainsKey(key))
+                    var title = await _titleCache.GetPageTitleAsync(pageName, culture, cancellationToken);
+
+                    pages[key] = new WikiPageInfo
                     {
-                        GitCommit? lastCommit = null;
-                        await foreach (var commit in repository.GetFileHistoryAsync(item.Path, _options.BranchName, cancellationToken))
-                        {
-                            lastCommit = commit;
-                            break;
-                        }
-
-                        var title = await _titleCache.GetPageTitleAsync(pageName, culture, cancellationToken);
-
-                        pages[key] = new WikiPageInfo
-                        {
-                            PageName = pageName,
-                            Title = title,
-                            Culture = culture,
-                            LastModified = lastCommit?.Metadata.AuthorDate,
-                            LastModifiedBy = lastCommit?.Metadata.AuthorName
-                        };
-                    }
+                        PageName = pageName,
+                        Title = title,
+                        Culture = culture,
+                        LastModified = file.Commit.Metadata.AuthorDate,
+                        LastModifiedBy = file.Commit.Metadata.AuthorName
+                    };
                 }
             }
         }

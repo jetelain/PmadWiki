@@ -593,32 +593,20 @@ public class WikiPageServiceTest
     public async Task GetAllPagesAsync_ReturnsAllPages()
     {
         // Arrange
-        var files = new[]
-        {
-            CreateTreeItem("Home.md", GitTreeEntryKind.Blob),
-            CreateTreeItem("About.md", GitTreeEntryKind.Blob),
-            CreateTreeItem("docs/Guide.md", GitTreeEntryKind.Blob)
-        };
-
         var commit1 = CreateMockCommit("commit1", "User1", "user1@example.com", "Add Home");
         var commit2 = CreateMockCommit("commit2", "User2", "user2@example.com", "Add About");
         var commit3 = CreateMockCommit("commit3", "User3", "user3@example.com", "Add Guide");
 
-        _mockRepository
-            .Setup(x => x.EnumerateCommitTreeAsync("main", null, It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(files));
+        var fileLastChanges = new List<GitFileLastChange>
+        {
+            new("Home.md", commit1),
+            new("About.md", commit2),
+            new("docs/Guide.md", commit3)
+        };
 
         _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("Home.md", "main", It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(commit1));
-
-        _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("About.md", "main", It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(commit2));
-
-        _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("docs/Guide.md", "main", It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(commit3));
+            .Setup(x => x.ListFilesWithLastChangeAsync("main", null, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(fileLastChanges);
 
         _mockTitleCache
             .Setup(x => x.GetPageTitleAsync("Home", null, It.IsAny<CancellationToken>()))
@@ -655,23 +643,17 @@ public class WikiPageServiceTest
     public async Task GetAllPagesAsync_FiltersNonMarkdownFiles()
     {
         // Arrange
-        var files = new[]
-        {
-            CreateTreeItem("page.md", GitTreeEntryKind.Blob),
-            CreateTreeItem("image.png", GitTreeEntryKind.Blob),
-            CreateTreeItem("data.json", GitTreeEntryKind.Blob),
-            CreateTreeItem("directory", GitTreeEntryKind.Tree)
-        };
-
         var commit = CreateMockCommit("commit1", "User", "user@example.com", "Add page");
 
-        _mockRepository
-            .Setup(x => x.EnumerateCommitTreeAsync("main", null, It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(files));
+        // ListFilesWithLastChangeAsync already applies the fileFilter, so it returns only .md files
+        var fileLastChanges = new List<GitFileLastChange>
+        {
+            new("page.md", commit)
+        };
 
         _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("page.md", "main", It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(commit));
+            .Setup(x => x.ListFilesWithLastChangeAsync("main", null, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(fileLastChanges);
 
         _mockTitleCache
             .Setup(x => x.GetPageTitleAsync("page", null, It.IsAny<CancellationToken>()))
@@ -689,32 +671,20 @@ public class WikiPageServiceTest
     public async Task GetAllPagesAsync_HandlesMultipleCultures()
     {
         // Arrange
-        var files = new[]
-        {
-            CreateTreeItem("test.md", GitTreeEntryKind.Blob),
-            CreateTreeItem("test.fr.md", GitTreeEntryKind.Blob),
-            CreateTreeItem("test.de.md", GitTreeEntryKind.Blob)
-        };
-
         var commit1 = CreateMockCommit("commit1", "User", "user@example.com", "Add English");
         var commit2 = CreateMockCommit("commit2", "User", "user@example.com", "Add French");
         var commit3 = CreateMockCommit("commit3", "User", "user@example.com", "Add German");
 
-        _mockRepository
-            .Setup(x => x.EnumerateCommitTreeAsync("main", null, It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(files));
+        var fileLastChanges = new List<GitFileLastChange>
+        {
+            new("test.md", commit1),
+            new("test.fr.md", commit2),
+            new("test.de.md", commit3)
+        };
 
         _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(commit1));
-
-        _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("test.fr.md", "main", It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(commit2));
-
-        _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("test.de.md", "main", It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(commit3));
+            .Setup(x => x.ListFilesWithLastChangeAsync("main", null, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(fileLastChanges);
 
         _mockTitleCache
             .Setup(x => x.GetPageTitleAsync("test", null, It.IsAny<CancellationToken>()))
@@ -744,8 +714,8 @@ public class WikiPageServiceTest
     {
         // Arrange
         _mockRepository
-            .Setup(x => x.EnumerateCommitTreeAsync("main", null, It.IsAny<CancellationToken>()))
-            .Throws(new Exception("Repository is empty"));
+            .Setup(x => x.ListFilesWithLastChangeAsync("main", null, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("Repository is empty"));
 
         // Act
         var result = await _service.GetAllPagesAsync(CancellationToken.None);
@@ -758,26 +728,22 @@ public class WikiPageServiceTest
     public async Task GetAllPagesAsync_OrdersByPageName()
     {
         // Arrange
-        var files = new[]
-        {
-            CreateTreeItem("Zebra.md", GitTreeEntryKind.Blob),
-            CreateTreeItem("Apple.md", GitTreeEntryKind.Blob),
-            CreateTreeItem("Mango.md", GitTreeEntryKind.Blob)
-        };
-
         var commit = CreateMockCommit("commit1", "User", "user@example.com", "Commit");
 
-        _mockRepository
-            .Setup(x => x.EnumerateCommitTreeAsync("main", null, It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable(files));
-
-        foreach (var file in files)
+        var fileLastChanges = new List<GitFileLastChange>
         {
-            _mockRepository
-                .Setup(x => x.GetFileHistoryAsync(file.Path, "main", It.IsAny<CancellationToken>()))
-                .Returns(AsyncEnumerable(commit));
+            new("Zebra.md", commit),
+            new("Apple.md", commit),
+            new("Mango.md", commit)
+        };
 
-            var pageName = Path.GetFileNameWithoutExtension(file.Path);
+        _mockRepository
+            .Setup(x => x.ListFilesWithLastChangeAsync("main", null, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(fileLastChanges);
+
+        foreach (var item in fileLastChanges)
+        {
+            var pageName = Path.GetFileNameWithoutExtension(item.Path);
             _mockTitleCache
                 .Setup(x => x.GetPageTitleAsync(pageName, null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(pageName);
