@@ -180,7 +180,7 @@ public sealed class WikiPageService : IWikiPageService
         {
             var commit = await repository.GetCommitAsync(_options.BranchName, cancellationToken);
             
-            await foreach (var item in repository.EnumerateCommitTreeAsync(_options.BranchName, string.IsNullOrEmpty(directory) ? null : directory, cancellationToken))
+            await foreach (var item in repository.EnumerateCommitTreeAsync(_options.BranchName, string.IsNullOrEmpty(directory) ? null : directory, SearchOption.TopDirectoryOnly, cancellationToken))
             {
                 if (item.Entry.Kind == GitTreeEntryKind.Blob)
                 {
@@ -208,7 +208,7 @@ public sealed class WikiPageService : IWikiPageService
         try
         {
             var files = await repository.ListFilesWithLastChangeAsync(_options.BranchName, null, 
-                path => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase), cancellationToken);
+                path => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase), SearchOption.AllDirectories, cancellationToken);
 
             foreach (var file in files)
             {
@@ -315,7 +315,7 @@ public sealed class WikiPageService : IWikiPageService
 
         try
         {
-            await foreach (var item in repository.EnumerateCommitTreeAsync(_options.BranchName, null, cancellationToken))
+            await foreach (var item in repository.EnumerateCommitTreeAsync(_options.BranchName, null, SearchOption.AllDirectories, cancellationToken))
             {
                 if (item.Entry.Kind == GitTreeEntryKind.Blob)
                 {
