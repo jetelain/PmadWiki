@@ -1,11 +1,9 @@
 using System.Text;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Pmad.Git.HttpServer;
 using Pmad.Git.LocalRepositories;
 using Pmad.Wiki.Services;
-using Pmad.Wiki.Test.Infrastructure;
 
 namespace Pmad.Wiki.Test.Services;
 
@@ -35,7 +33,6 @@ public class WikiPageServiceTest
         };
 
         var optionsWrapper = Options.Create(_options);
-        var linkGenerator = CreateMockLinkGenerator();
 
         _mockGitRepositoryService
             .Setup(x => x.GetRepositoryByPath(It.IsAny<string>()))
@@ -45,13 +42,7 @@ public class WikiPageServiceTest
             _mockGitRepositoryService.Object,
             _mockWikiUserService.Object,
             _mockTitleCache.Object,
-            new MarkdownRenderService(optionsWrapper, linkGenerator),
             optionsWrapper);
-    }
-
-    private static LinkGenerator CreateMockLinkGenerator()
-    {
-        return new TestLinkGenerator();
     }
 
     #region GetPageAsync Tests
@@ -86,8 +77,6 @@ public class WikiPageServiceTest
         Assert.Equal("test", result.PageName);
         Assert.Equal(content, result.Content);
         Assert.Equal("Test Page", result.Title);
-        Assert.Contains("<h1", result.HtmlContent);
-        Assert.Contains("Test Page</h1>", result.HtmlContent);
         Assert.Equal(hash.Value, result.ContentHash);
         Assert.Equal("Test User", result.LastModifiedBy);
         Assert.NotNull(result.LastModified);
@@ -375,8 +364,6 @@ public class WikiPageServiceTest
         Assert.NotNull(result);
         Assert.Equal("test", result.PageName);
         Assert.Equal(content, result.Content);
-        Assert.Contains("<h1", result.HtmlContent);
-        Assert.Contains("Old Version</h1>", result.HtmlContent);
         Assert.Equal("User", result.LastModifiedBy);
     }
 

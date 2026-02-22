@@ -1,15 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using Pmad.Git.HttpServer;
-using Pmad.Git.LocalRepositories;
-using Pmad.Wiki.Helpers;
 using Pmad.Wiki.Services;
-using Pmad.Wiki.Test.Infrastructure;
 
 namespace Pmad.Wiki.Test.Integration;
 
@@ -52,14 +47,12 @@ public class WikiPageServiceIntegrationTests : IDisposable
         _serviceProvider = services.BuildServiceProvider();
 
         var optionsWrapper = Options.Create(_options);
-        var linkGenerator = new TestLinkGenerator();
         var gitRepositoryService = _serviceProvider.GetRequiredService<IGitRepositoryService>();
 
         _service = new WikiPageService(
             gitRepositoryService,
             _mockWikiUserService.Object,
             new WikiPageTitleCache(gitRepositoryService, optionsWrapper),
-            new MarkdownRenderService(optionsWrapper, linkGenerator),
             optionsWrapper);
     }
 
@@ -244,8 +237,6 @@ public class WikiPageServiceIntegrationTests : IDisposable
         Assert.NotNull(result);
         Assert.Equal("test", result.PageName);
         Assert.Equal(content, result.Content);
-        Assert.Contains("<h1", result.HtmlContent);
-        Assert.Contains("Test Page</h1>", result.HtmlContent);
         Assert.NotNull(result.ContentHash);
         Assert.Equal("Test User", result.LastModifiedBy);
         Assert.NotNull(result.LastModified);

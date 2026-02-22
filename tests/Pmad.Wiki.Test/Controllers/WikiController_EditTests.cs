@@ -28,7 +28,6 @@ public class WikiController_EditTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Existing Content",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Existing Content</h1>",
             Title = "Test Page"
         };
 
@@ -102,7 +101,6 @@ public class WikiController_EditTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Contenu",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Contenu</h1>",
             Title = "Page Test",
             Culture = "fr"
         };
@@ -143,7 +141,6 @@ public class WikiController_EditTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Old Version Content",
             ContentHash = "oldhash",
-            HtmlContent = "<h1>Old Version Content</h1>",
             Title = "Test Page"
         };
 
@@ -192,7 +189,6 @@ public class WikiController_EditTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Old Content",
             ContentHash = "oldhash",
-            HtmlContent = "<h1>Old Content</h1>",
             Title = "Test Page"
         };
 
@@ -370,7 +366,6 @@ public class WikiController_EditTests : WikiControllerTestBase
             PageName = "AdminPage",
             Content = "# Admin Content",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Admin Content</h1>",
             Title = "Admin Page"
         };
 
@@ -435,7 +430,6 @@ public class WikiController_EditTests : WikiControllerTestBase
             PageName = "docs/guide",
             Content = "# Guide",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Guide</h1>",
             Title = "User Guide"
         };
 
@@ -483,7 +477,6 @@ public class WikiController_EditTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Ancien contenu",
             ContentHash = "oldhash",
-            HtmlContent = "<h1>Ancien contenu</h1>",
             Title = "Page Test",
             Culture = "fr"
         };
@@ -856,7 +849,6 @@ public class WikiController_EditTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Different Content",
             ContentHash = "newhash123",
-            HtmlContent = "<h1>Different Content</h1>",
             LastModifiedBy = "otheruser",
             Title = "Test Page"
         };
@@ -911,7 +903,6 @@ public class WikiController_EditTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Same Content",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Same Content</h1>",
             Title = "Test Page"
         };
 
@@ -1130,7 +1121,6 @@ public class WikiController_EditTests : WikiControllerTestBase
             PageName = "TestPage",
             Content = "# Old Content",
             ContentHash = "hash123",
-            HtmlContent = "<h1>Old Content</h1>",
             Title = "Test Page"
         };
 

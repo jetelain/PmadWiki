@@ -1,4 +1,4 @@
-using Moq;
+﻿using Moq;
 using Pmad.Wiki.Models;
 using Pmad.Wiki.Services;
 
@@ -95,7 +95,6 @@ Content here";
                 PageName = "_templates/article",
                 Content = pageContent,
                 ContentHash = "hash",
-                HtmlContent = "<p>Content</p>",
                 Title = "Article Template",
                 Culture = null
             });
@@ -292,7 +291,6 @@ This is the template content.";
                 PageName = "_templates/complete",
                 Content = pageContent,
                 ContentHash = "hash",
-                HtmlContent = "<p>Content</p>",
                 Title = "Complete",
                 Culture = null
             });
@@ -337,7 +335,6 @@ This is a simple template without front matter.";
                 PageName = "_templates/simple",
                 Content = pageContent,
                 ContentHash = "hash",
-                HtmlContent = "<p>Content</p>",
                 Title = "Simple Template",
                 Culture = null
             });
@@ -388,7 +385,6 @@ description: Has only some fields
                 PageName = "_templates/partial",
                 Content = pageContent,
                 ContentHash = "hash",
-                HtmlContent = "<p>Content</p>",
                 Title = "Partial",
                 Culture = null
             });
@@ -433,7 +429,6 @@ description: Template without title in front matter
                 PageName = "_templates/fallback",
                 Content = pageContent,
                 ContentHash = "hash",
-                HtmlContent = "<p>Content</p>",
                 Title = "Fallback Title",
                 Culture = null
             });
@@ -475,7 +470,6 @@ description: Template without title in front matter
                 PageName = "_templates/noTitle",
                 Content = pageContent,
                 ContentHash = "hash",
-                HtmlContent = "<p>Content</p>",
                 Title = null,
                 Culture = null
             });
@@ -686,7 +680,6 @@ description: Template for articles
                 PageName = "_templates/article",
                 Content = pageContent,
                 ContentHash = "hash",
-                HtmlContent = "<p>Content</p>",
                 Title = "Article Template",
                 Culture = null
             });
@@ -1195,7 +1188,6 @@ pattern: articles/{year}/{month}/article-{date}
                 PageName = "_templates/article",
                 Content = pageContent,
                 ContentHash = "hash",
-                HtmlContent = "<p>Content</p>",
                 Title = "Article Template",
                 Culture = null
             });
@@ -1245,7 +1237,6 @@ Date: {date}";
                 PageName = "_templates/daily-log",
                 Content = pageContent,
                 ContentHash = "hash",
-                HtmlContent = "<p>Content</p>",
                 Title = "Daily Log Template",
                 Culture = null
             });
@@ -1294,7 +1285,6 @@ title: {title}
                 PageName = pageName,
                 Content = pageContent,
                 ContentHash = "hash",
-                HtmlContent = "<p>Content</p>",
                 Title = title,
                 Culture = null
             });
@@ -1309,7 +1299,6 @@ title: {title}
                 PageName = pageName,
                 Content = content,
                 ContentHash = "hash",
-                HtmlContent = "<p>Content</p>",
                 Title = null,
                 Culture = null
             });

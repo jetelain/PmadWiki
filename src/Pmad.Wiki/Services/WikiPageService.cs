@@ -12,20 +12,17 @@ public sealed class WikiPageService : IWikiPageService
     private readonly IWikiUserService _wikiUserService;
     private readonly IWikiPageTitleCache _titleCache;
     private readonly WikiOptions _options;
-    private readonly IMarkdownRenderService _markdownRenderService;
 
     public WikiPageService(
         IGitRepositoryService gitRepositoryService, 
         IWikiUserService wikiUserService, 
         IWikiPageTitleCache titleCache,
-        IMarkdownRenderService markdownRenderService,
         IOptions<WikiOptions> options)
     {
         _wikiUserService = wikiUserService;
         _gitRepositoryService = gitRepositoryService;
         _titleCache = titleCache;
         _options = options.Value;
-        _markdownRenderService = markdownRenderService;
     }
 
     public async Task EnsureRepositoryCreated()
@@ -54,7 +51,6 @@ public sealed class WikiPageService : IWikiPageService
         {
             var gitFile = await repository.ReadFileAndHashAsync(filePath, _options.BranchName, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
-            var htmlContent = _markdownRenderService.ToHtml(contentText, culture, pageName);
             
             // Extract title and populate cache
             var title = _titleCache.ExtractAndCacheTitle(pageName, culture, contentText);
@@ -71,7 +67,6 @@ public sealed class WikiPageService : IWikiPageService
                 PageName = pageName,
                 Content = contentText,
                 ContentHash = gitFile.Hash.Value,
-                HtmlContent = htmlContent,
                 Title = title,
                 Culture = culture,
                 LastModifiedBy = lastCommit?.Metadata.AuthorName,
@@ -129,7 +124,6 @@ public sealed class WikiPageService : IWikiPageService
         {
             var gitFile = await repository.ReadFileAndHashAsync(filePath, commitId, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
-            var htmlContent = _markdownRenderService.ToHtml(contentText, culture, pageName);
             
             var title = MarkdownTitleExtractor.ExtractFirstTitle(contentText, pageName);
 
@@ -140,7 +134,6 @@ public sealed class WikiPageService : IWikiPageService
                 PageName = pageName,
                 Content = contentText,
                 ContentHash = gitFile.Hash.Value,
-                HtmlContent = htmlContent,
                 Title = title,
                 Culture = culture,
                 LastModifiedBy = commit.Metadata.AuthorName,
