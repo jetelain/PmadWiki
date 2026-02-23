@@ -61,9 +61,9 @@ public class WikiPageTitleCache : IWikiPageTitleCache
         return title;
     }
 
-    public string ExtractAndCacheTitle(string pageName, string? culture, WikiPageFrontMatter frontMatter, string contentWithoutFrontMatter)
+    public string ExtractAndCacheTitle(string pageName, string? culture, WikiPageContent content)
     {
-        var title = MarkdownTitleExtractor.ExtractFirstTitle(frontMatter, contentWithoutFrontMatter, pageName);
+        var title = MarkdownTitleExtractor.ExtractFirstTitle(content, pageName);
         var cacheKey = GetCacheKey(pageName, culture);
         _titleCache[cacheKey] = title;
         return title;

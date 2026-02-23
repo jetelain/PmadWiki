@@ -5,9 +5,9 @@ namespace Pmad.Wiki.Services;
 
 public class WikiPage
 {
-    private (WikiPageFrontMatter FrontMatter, string ContentWithoutFrontMatter)? _parsed;
+    private WikiPageContent? _parsed;
 
-    internal (WikiPageFrontMatter FrontMatter, string ContentWithoutFrontMatter) Parsed
+    internal WikiPageContent Parsed
     {
         get => _parsed ??= WikiPageFrontMatterParser.Parse(Content);
         set => _parsed = value;

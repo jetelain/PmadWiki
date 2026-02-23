@@ -52,8 +52,8 @@ public sealed class WikiPageService : IWikiPageService
             var gitFile = await repository.ReadFileAndHashAsync(filePath, _options.BranchName, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
 
-            var (frontMatter, contentWithoutFrontMatter) = WikiPageFrontMatterParser.Parse(contentText);
-            var title = _titleCache.ExtractAndCacheTitle(pageName, culture, frontMatter, contentWithoutFrontMatter);
+            var parsed = WikiPageFrontMatterParser.Parse(contentText);
+            var title = _titleCache.ExtractAndCacheTitle(pageName, culture, parsed);
 
             GitCommit? lastCommit = null;
             await foreach (var commit in repository.GetFileHistoryAsync(filePath, _options.BranchName, cancellationToken))
@@ -64,7 +64,7 @@ public sealed class WikiPageService : IWikiPageService
 
             return new WikiPage
             {
-                Parsed = (frontMatter, contentWithoutFrontMatter),
+                Parsed = parsed,
                 PageName = pageName,
                 Content = contentText,
                 ContentHash = gitFile.Hash.Value,
@@ -126,14 +126,14 @@ public sealed class WikiPageService : IWikiPageService
             var gitFile = await repository.ReadFileAndHashAsync(filePath, commitId, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
 
-            var (frontMatter, contentWithoutFrontMatter) = WikiPageFrontMatterParser.Parse(contentText);
-            var title = MarkdownTitleExtractor.ExtractFirstTitle(frontMatter, contentWithoutFrontMatter, pageName);
+            var parsed = WikiPageFrontMatterParser.Parse(contentText);
+            var title = MarkdownTitleExtractor.ExtractFirstTitle(parsed, pageName);
 
             var commit = await repository.GetCommitAsync(commitId, cancellationToken);
 
             return new WikiPage
             {
-                Parsed = (frontMatter, contentWithoutFrontMatter),
+                Parsed = parsed,
                 PageName = pageName,
                 Content = contentText,
                 ContentHash = gitFile.Hash.Value,

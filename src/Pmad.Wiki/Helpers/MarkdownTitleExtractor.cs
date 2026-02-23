@@ -25,18 +25,17 @@ public static partial class MarkdownTitleExtractor
             return GetLastPart(pageName);
         }
 
-        var (frontMatter, content) = WikiPageFrontMatterParser.Parse(markdownContent);
-        return ExtractFirstTitle(frontMatter, content, pageName);
+        return ExtractFirstTitle(WikiPageFrontMatterParser.Parse(markdownContent), pageName);
     }
 
-    public static string ExtractFirstTitle(WikiPageFrontMatter frontMatter, string contentWithoutFrontMatter, string pageName)
+    public static string ExtractFirstTitle(WikiPageContent content, string pageName)
     {
-        if (!string.IsNullOrEmpty(frontMatter.Title))
+        if (!string.IsNullOrEmpty(content.FrontMatter.Title))
         {
-            return frontMatter.Title;
+            return content.FrontMatter.Title;
         }
 
-        var match = FirstH1Regex().Match(contentWithoutFrontMatter);
+        var match = FirstH1Regex().Match(content.ContentWithoutFrontMatter);
         if (match.Success)
         {
             return match.Groups[1].Value.Trim();

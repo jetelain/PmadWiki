@@ -6,6 +6,6 @@ public interface IWikiPageTitleCache
 {
     Task<string?> GetPageTitleAsync(string pageName, string? culture, CancellationToken cancellationToken = default);
     string ExtractAndCacheTitle(string pageName, string? culture, string content);
-    string ExtractAndCacheTitle(string pageName, string? culture, WikiPageFrontMatter frontMatter, string contentWithoutFrontMatter);
+    string ExtractAndCacheTitle(string pageName, string? culture, WikiPageContent content);
     void ClearCache();
 }
