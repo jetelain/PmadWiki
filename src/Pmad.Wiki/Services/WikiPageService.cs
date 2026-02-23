@@ -51,9 +51,9 @@ public sealed class WikiPageService : IWikiPageService
         {
             var gitFile = await repository.ReadFileAndHashAsync(filePath, _options.BranchName, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
-            
-            // Extract title and populate cache
-            var title = _titleCache.ExtractAndCacheTitle(pageName, culture, contentText);
+
+            var (frontMatter, contentWithoutFrontMatter) = WikiPageFrontMatterParser.Parse(contentText);
+            var title = _titleCache.ExtractAndCacheTitle(pageName, culture, frontMatter, contentWithoutFrontMatter);
 
             GitCommit? lastCommit = null;
             await foreach (var commit in repository.GetFileHistoryAsync(filePath, _options.BranchName, cancellationToken))
@@ -64,6 +64,7 @@ public sealed class WikiPageService : IWikiPageService
 
             return new WikiPage
             {
+                Parsed = (frontMatter, contentWithoutFrontMatter),
                 PageName = pageName,
                 Content = contentText,
                 ContentHash = gitFile.Hash.Value,
@@ -124,13 +125,15 @@ public sealed class WikiPageService : IWikiPageService
         {
             var gitFile = await repository.ReadFileAndHashAsync(filePath, commitId, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
-            
-            var title = MarkdownTitleExtractor.ExtractFirstTitle(contentText, pageName);
+
+            var (frontMatter, contentWithoutFrontMatter) = WikiPageFrontMatterParser.Parse(contentText);
+            var title = MarkdownTitleExtractor.ExtractFirstTitle(frontMatter, contentWithoutFrontMatter, pageName);
 
             var commit = await repository.GetCommitAsync(commitId, cancellationToken);
 
             return new WikiPage
             {
+                Parsed = (frontMatter, contentWithoutFrontMatter),
                 PageName = pageName,
                 Content = contentText,
                 ContentHash = gitFile.Hash.Value,
