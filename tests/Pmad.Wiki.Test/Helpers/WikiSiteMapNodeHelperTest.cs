@@ -593,4 +593,98 @@ public class WikiSiteMapNodeHelperTest
     }
 
     #endregion
+
+    #region BuildSubPages Tests
+
+    [Fact]
+    public void BuildSubPages_WithFlatSubPages_ReturnsDirectChildrenOnly()
+    {
+        // Arrange: page "Foo" has sub-pages "Foo/Bar" and "Foo/Baz"
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "Foo/Bar", Title = "Bar", Culture = null },
+            new WikiPageInfo { PageName = "Foo/Baz", Title = "Baz", Culture = null }
+        };
+
+        // Act
+        var result = WikiSiteMapNodeHelper.BuildSubPages(pages, "en", "Foo");
+
+        // Assert: root nodes are Bar and Baz, not Foo
+        Assert.Equal(2, result.Count);
+        Assert.Equal("Foo/Bar", result[0].PageName);
+        Assert.Equal("Bar", result[0].DisplayName);
+        Assert.Equal(0, result[0].Level);
+        Assert.Equal("Foo/Baz", result[1].PageName);
+        Assert.Equal("Baz", result[1].DisplayName);
+        Assert.Equal(0, result[1].Level);
+    }
+
+    [Fact]
+    public void BuildSubPages_WithNestedPage_ReturnsCorrectHierarchy()
+    {
+        // Arrange: page "Foo/Bar" has sub-pages "Foo/Bar/Child1" and "Foo/Bar/Child1/Grand"
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "Foo/Bar/Child1", Title = "Child1", Culture = null },
+            new WikiPageInfo { PageName = "Foo/Bar/Child1/Grand", Title = "Grand", Culture = null }
+        };
+
+        // Act
+        var result = WikiSiteMapNodeHelper.BuildSubPages(pages, "en", "Foo/Bar");
+
+        // Assert: root is Child1 (level 0), not Foo or Bar
+        Assert.Single(result);
+        var child1 = result[0];
+        Assert.Equal("Foo/Bar/Child1", child1.PageName);
+        Assert.Equal("Child1", child1.DisplayName);
+        Assert.Equal(0, child1.Level);
+        Assert.True(child1.HasPage);
+
+        Assert.Single(child1.Children);
+        var grand = child1.Children[0];
+        Assert.Equal("Foo/Bar/Child1/Grand", grand.PageName);
+        Assert.Equal("Grand", grand.DisplayName);
+        Assert.Equal(1, grand.Level);
+        Assert.True(grand.HasPage);
+    }
+
+    [Fact]
+    public void BuildSubPages_WithMissingIntermediateFolder_CreatesFolderNode()
+    {
+        // Arrange: page "Section" has sub-page "Section/Topic/Detail" with no "Section/Topic" page
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "Section/Topic/Detail", Title = "Detail", Culture = null }
+        };
+
+        // Act
+        var result = WikiSiteMapNodeHelper.BuildSubPages(pages, "en", "Section");
+
+        // Assert: root is a folder node "Topic" (level 0), Detail is a child (level 1)
+        Assert.Single(result);
+        var folder = result[0];
+        Assert.Equal("Section/Topic", folder.PageName);
+        Assert.Equal("Topic", folder.DisplayName);
+        Assert.False(folder.HasPage);
+        Assert.Equal(0, folder.Level);
+
+        Assert.Single(folder.Children);
+        var detail = folder.Children[0];
+        Assert.Equal("Section/Topic/Detail", detail.PageName);
+        Assert.Equal("Detail", detail.DisplayName);
+        Assert.True(detail.HasPage);
+        Assert.Equal(1, detail.Level);
+    }
+
+    [Fact]
+    public void BuildSubPages_WithEmptyList_ReturnsEmptyList()
+    {
+        var result = WikiSiteMapNodeHelper.BuildSubPages(new List<WikiPageInfo>(), "en", "Foo");
+        Assert.Empty(result);
+    }
+
+    #endregion
 }
+
+
+

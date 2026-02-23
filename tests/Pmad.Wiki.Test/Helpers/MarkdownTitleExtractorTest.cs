@@ -130,4 +130,43 @@ Content follows.";
         // Assert
         Assert.Equal("Welcome to `Code` and **Bold**", title);
     }
+
+    [Fact]
+    public void ExtractFirstTitle_WithFrontMatterTitle_ReturnsFrontMatterTitle()
+    {
+        // Arrange
+        var markdown = "---\ntitle: Front Matter Title\n---\n# H1 Title\n\nContent.";
+
+        // Act
+        var title = MarkdownTitleExtractor.ExtractFirstTitle(markdown, "Fallback");
+
+        // Assert
+        Assert.Equal("Front Matter Title", title);
+    }
+
+    [Fact]
+    public void ExtractFirstTitle_WithFrontMatterNoTitle_FallsBackToH1()
+    {
+        // Arrange
+        var markdown = "---\nshowSubPages: true\n---\n# H1 Title\n\nContent.";
+
+        // Act
+        var title = MarkdownTitleExtractor.ExtractFirstTitle(markdown, "Fallback");
+
+        // Assert
+        Assert.Equal("H1 Title", title);
+    }
+
+    [Fact]
+    public void ExtractFirstTitle_WithFrontMatterNoTitleNoH1_ReturnsFallback()
+    {
+        // Arrange
+        var markdown = "---\nshowSubPages: true\n---\n\nContent without heading.";
+
+        // Act
+        var title = MarkdownTitleExtractor.ExtractFirstTitle(markdown, "MyPage");
+
+        // Assert
+        Assert.Equal("MyPage", title);
+    }
 }

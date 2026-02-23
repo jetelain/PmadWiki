@@ -24,7 +24,13 @@ public static partial class MarkdownTitleExtractor
             return GetLastPart(pageName);
         }
 
-        var match = FirstH1Regex().Match(markdownContent);
+        var (frontMatter, content) = WikiPageFrontMatterParser.Parse(markdownContent);
+        if (!string.IsNullOrEmpty(frontMatter.Title))
+        {
+            return frontMatter.Title;
+        }
+
+        var match = FirstH1Regex().Match(content);
         if (match.Success)
         {
             return match.Groups[1].Value.Trim();

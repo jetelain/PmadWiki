@@ -98,10 +98,12 @@ namespace Pmad.Wiki.Controllers
 
             var availableCultures = await _pageService.GetAvailableCulturesForPageAsync(id, cancellationToken);
 
+            var (frontMatter, contentWithoutFrontMatter) = WikiPageFrontMatterParser.Parse(page.Content);
+
             var viewModel = new WikiPageViewModel
             {
                 PageName = id,
-                HtmlContent = _markdownRenderService.ToHtml(page.Content, culture, id),
+                HtmlContent = _markdownRenderService.ToHtml(contentWithoutFrontMatter, culture, id),
                 Title = page.Title,
                 CanEdit = canEdit,
                 Culture = culture,
@@ -109,6 +111,13 @@ namespace Pmad.Wiki.Controllers
                 LastModifiedBy = page.LastModifiedBy,
                 LastModified = page.LastModified
             };
+
+            if (frontMatter.ShowSubPages)
+            {
+                var subPages = await _pagePermissionHelper.GetAccessibleSubPages(wikiUser, id, frontMatter.SubPagesRecursive, cancellationToken);
+
+                viewModel.SubPages = WikiSiteMapNodeHelper.BuildSubPages(subPages, _options.NeutralMarkdownPageCulture, id);
+            }
 
             await GenerateBreadcrumbAsync(id, culture, viewModel.Breadcrumb, cancellationToken);
 

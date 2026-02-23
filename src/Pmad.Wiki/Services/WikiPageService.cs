@@ -193,15 +193,28 @@ public sealed class WikiPageService : IWikiPageService
         return cultures;
     }
 
-    public async Task<List<WikiPageInfo>> GetAllPagesAsync(CancellationToken cancellationToken = default)
+    public Task<List<WikiPageInfo>> GetSubPagesAsync(string pageName, bool recursive = true, CancellationToken cancellationToken = default)
+    {
+        return GetPages(
+            pageName, 
+            recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly, 
+            cancellationToken);
+    }
+
+    public Task<List<WikiPageInfo>> GetAllPagesAsync(CancellationToken cancellationToken = default)
+    {
+        return GetPages(null, SearchOption.AllDirectories, cancellationToken);
+    }
+
+    private async Task<List<WikiPageInfo>> GetPages(string? directory, SearchOption searchOption, CancellationToken cancellationToken)
     {
         var repository = GetRepository();
         var pages = new Dictionary<string, WikiPageInfo>();
 
         try
         {
-            var files = await repository.ListFilesWithLastChangeAsync(_options.BranchName, null, 
-                path => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase), SearchOption.AllDirectories, cancellationToken);
+            var files = await repository.ListFilesWithLastChangeAsync(_options.BranchName, directory,
+                path => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase), searchOption, cancellationToken);
 
             foreach (var file in files)
             {

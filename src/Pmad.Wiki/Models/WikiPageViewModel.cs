@@ -11,4 +11,5 @@ public class WikiPageViewModel
     public List<string> AvailableCultures { get; set; } = new();
     public string? LastModifiedBy { get; set; }
     public DateTimeOffset? LastModified { get; set; }
+    public List<WikiSiteMapNode> SubPages { get; set; } = new();
 }

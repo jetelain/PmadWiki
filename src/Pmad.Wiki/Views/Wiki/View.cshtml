@@ -57,13 +57,26 @@
         </div>
     </div>
 
-    <div class="wiki-content mb-5">
+    <div class="wiki-content">
         @Html.Raw(Model.HtmlContent)
-    </div>    
-    
+    </div>
+
+    @if (Model.SubPages.Any())
+    {
+        <div class="mt-4">
+            <h2 class="h5">@Localizer["Sub-pages"]</h2>
+            <div class="wiki-sitemap-tree">
+                @foreach (var node in Model.SubPages)
+                {
+                    @await Html.PartialAsync("_SubPageNode", node)
+                }
+            </div>
+        </div>
+    }
+
     @if (Model.LastModified.HasValue)
     {
-        <div class="text-muted small">
+        <div class="text-muted small mt-4">
             @if (!string.IsNullOrEmpty(Model.LastModifiedBy))
             {
                 @Localizer["Last modified: {0:f} by {1}", Model.LastModified.Value, Model.LastModifiedBy]
