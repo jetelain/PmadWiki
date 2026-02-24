@@ -13,6 +13,6 @@ public static class WikiPageFrontMatterParser
     {
         var (frontMatter, content) = WikiFrontMatterParser.Parse<WikiPageFrontMatter>(rawContent);
         if (string.IsNullOrEmpty(frontMatter.Title)) frontMatter.Title = null;
-        return new (frontMatter, content);
+        return new WikiPageContent(frontMatter, content, rawContent);
     }
 }
