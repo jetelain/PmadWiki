@@ -2,7 +2,7 @@ using Pmad.Wiki.Helpers;
 
 namespace Pmad.Wiki.Test.Helpers;
 
-public class WikiPageFrontMatterParserTest
+public class WikiPageContentParserTest
 {
     [Fact]
     public void Parse_WithNoFrontMatter_ReturnsEmptyObjectAndFullContent()
@@ -11,7 +11,7 @@ public class WikiPageFrontMatterParserTest
         var content = "# Test Page\n\nThis is the content.";
 
         // Act
-        var (frontMatter, parsedContent, rawContent) = WikiPageFrontMatterParser.Parse(content);
+        var (frontMatter, parsedContent, rawContent) = WikiPageContentParser.Parse(content);
 
         // Assert
         Assert.Null(frontMatter.Title);
@@ -31,7 +31,7 @@ title: My Page
 # Content";
 
         // Act
-        var (frontMatter, parsedContent, rawContent) = WikiPageFrontMatterParser.Parse(content);
+        var (frontMatter, parsedContent, rawContent) = WikiPageContentParser.Parse(content);
 
         // Assert
         Assert.Equal("My Page", frontMatter.Title);
@@ -49,7 +49,7 @@ title:
 Content";
 
         // Act
-        var (frontMatter, parsedContent, rawContent) = WikiPageFrontMatterParser.Parse(content);
+        var (frontMatter, parsedContent, rawContent) = WikiPageContentParser.Parse(content);
 
         // Assert
         Assert.Null(frontMatter.Title);
@@ -67,7 +67,7 @@ showSubPages: true
 Content";
 
         // Act
-        var (frontMatter, parsedContent, rawContent) = WikiPageFrontMatterParser.Parse(content);
+        var (frontMatter, parsedContent, rawContent) = WikiPageContentParser.Parse(content);
 
         // Assert
         Assert.True(frontMatter.ShowSubPages);
@@ -86,7 +86,7 @@ subPagesRecursive: true
 Content";
 
         // Act
-        var (frontMatter, parsedContent, rawContent) = WikiPageFrontMatterParser.Parse(content);
+        var (frontMatter, parsedContent, rawContent) = WikiPageContentParser.Parse(content);
 
         // Assert
         Assert.True(frontMatter.ShowSubPages);
@@ -108,7 +108,7 @@ subPagesRecursive: true
 Some text here.";
 
         // Act
-        var (frontMatter, parsedContent, rawContent) = WikiPageFrontMatterParser.Parse(content);
+        var (frontMatter, parsedContent, rawContent) = WikiPageContentParser.Parse(content);
 
         // Assert
         Assert.Equal("My Wiki Page", frontMatter.Title);
@@ -128,7 +128,7 @@ title: Test
 ";
 
         // Act
-        var (frontMatter, parsedContent, rawContent) = WikiPageFrontMatterParser.Parse(content);
+        var (frontMatter, parsedContent, rawContent) = WikiPageContentParser.Parse(content);
 
         // Assert
         Assert.Equal("Test", frontMatter.Title);
@@ -143,7 +143,7 @@ title: Test
         var content = "---\r\ntitle: Test\r\nshowSubPages: true\r\n---\r\nContent";
 
         // Act
-        var (frontMatter, parsedContent, rawContent) = WikiPageFrontMatterParser.Parse(content);
+        var (frontMatter, parsedContent, rawContent) = WikiPageContentParser.Parse(content);
 
         // Assert
         Assert.Equal("Test", frontMatter.Title);
@@ -164,7 +164,7 @@ title: Test
 More content";
 
         // Act
-        var (frontMatter, parsedContent, rawContent) = WikiPageFrontMatterParser.Parse(content);
+        var (frontMatter, parsedContent, rawContent) = WikiPageContentParser.Parse(content);
 
         // Assert
         Assert.Equal("Test", frontMatter.Title);
@@ -183,7 +183,7 @@ title: ""My Page: With Special Characters""
 Content";
 
         // Act
-        var (frontMatter, parsedContent, rawContent) = WikiPageFrontMatterParser.Parse(content);
+        var (frontMatter, parsedContent, rawContent) = WikiPageContentParser.Parse(content);
 
         // Assert
         Assert.Equal("My Page: With Special Characters", frontMatter.Title);
@@ -201,7 +201,7 @@ showSubPages: false
 Content";
 
         // Act
-        var (frontMatter, parsedContent, rawContent) = WikiPageFrontMatterParser.Parse(content);
+        var (frontMatter, parsedContent, rawContent) = WikiPageContentParser.Parse(content);
 
         // Assert
         Assert.Equal("Test", frontMatter.Title);
@@ -220,7 +220,7 @@ title: Test
 Body";
 
         // Act
-        var result = WikiPageFrontMatterParser.Parse(content);
+        var result = WikiPageContentParser.Parse(content);
 
         // Assert
         Assert.NotNull(result.FrontMatter);

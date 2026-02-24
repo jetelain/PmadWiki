@@ -76,7 +76,7 @@ public class WikiPageServiceTest
         // Assert
         Assert.NotNull(result);
         Assert.Equal("test", result.PageName);
-        Assert.Equal(content, result.Content);
+        Assert.Equal(content, result.RawContent);
         Assert.Equal("Test Page", result.Title);
         Assert.Equal(hash.Value, result.ContentHash);
         Assert.Equal("Test User", result.LastModifiedBy);
@@ -364,7 +364,7 @@ public class WikiPageServiceTest
         // Assert
         Assert.NotNull(result);
         Assert.Equal("test", result.PageName);
-        Assert.Equal(content, result.Content);
+        Assert.Equal(content, result.RawContent);
         Assert.Equal("User", result.LastModifiedBy);
     }
 

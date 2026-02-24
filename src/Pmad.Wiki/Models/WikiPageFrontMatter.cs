@@ -3,7 +3,7 @@ namespace Pmad.Wiki.Models;
 /// <summary>
 /// Represents the front matter metadata for a wiki content page.
 /// </summary>
-public class WikiPageFrontMatter
+public record class WikiPageFrontMatter
 {
     /// <summary>
     /// Gets or sets the display title of the page, overriding the first H1 heading.

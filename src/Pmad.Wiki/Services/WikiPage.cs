@@ -5,18 +5,11 @@ namespace Pmad.Wiki.Services;
 
 public class WikiPage
 {
-    private WikiPageContent? _parsed;
-
-    internal WikiPageContent Parsed
-    {
-        get => _parsed ??= WikiPageFrontMatterParser.Parse(Content);
-        set => _parsed = value;
-    }
-
+    public required WikiPageContent Content { get; set; }
     public required string PageName { get; set; }
-    public required string Content { get; set; }
-    public WikiPageFrontMatter FrontMatter => Parsed.FrontMatter;
-    public string ContentWithoutFrontMatter => Parsed.ContentWithoutFrontMatter;
+    public string RawContent => Content.RawContent;
+    public WikiPageFrontMatter FrontMatter => Content.FrontMatter;
+    public string ContentWithoutFrontMatter => Content.ContentWithoutFrontMatter;
     public required string Title { get; set; }
     public string? Culture { get; set; }
     public string? LastModifiedBy { get; set; }

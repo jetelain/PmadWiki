@@ -236,7 +236,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
         // Assert
         Assert.NotNull(result);
         Assert.Equal("test", result.PageName);
-        Assert.Equal(content, result.Content);
+        Assert.Equal(content, result.RawContent);
         Assert.NotNull(result.ContentHash);
         Assert.Equal("Test User", result.LastModifiedBy);
         Assert.NotNull(result.LastModified);
@@ -256,8 +256,8 @@ public class WikiPageServiceIntegrationTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        Assert.Contains("Version 3", result.Content);
-        Assert.Contains("Third version", result.Content);
+        Assert.Contains("Version 3", result.RawContent);
+        Assert.Contains("Third version", result.RawContent);
     }
 
     [Fact]
@@ -294,8 +294,8 @@ public class WikiPageServiceIntegrationTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        Assert.Contains("Old Version", result.Content);
-        Assert.Contains("Old content", result.Content);
+        Assert.Contains("Old Version", result.RawContent);
+        Assert.Contains("Old content", result.RawContent);
     }
 
     [Fact]
@@ -313,11 +313,11 @@ public class WikiPageServiceIntegrationTests : IDisposable
         // Assert
         Assert.NotNull(guide);
         Assert.Equal("docs/guide", guide.PageName);
-        Assert.Contains("User Guide", guide.Content);
+        Assert.Contains("User Guide", guide.RawContent);
 
         Assert.NotNull(apiRef);
         Assert.Equal("docs/api/reference", apiRef.PageName);
-        Assert.Contains("API Reference", apiRef.Content);
+        Assert.Contains("API Reference", apiRef.RawContent);
     }
 
     [Fact]
@@ -336,13 +336,13 @@ public class WikiPageServiceIntegrationTests : IDisposable
 
         // Assert
         Assert.NotNull(english);
-        Assert.Contains("English version", english.Content);
+        Assert.Contains("English version", english.RawContent);
 
         Assert.NotNull(french);
-        Assert.Contains("Version française", french.Content);
+        Assert.Contains("Version française", french.RawContent);
 
         Assert.NotNull(german);
-        Assert.Contains("Deutsche Version", german.Content);
+        Assert.Contains("Deutsche Version", german.RawContent);
     }
 
     [Fact]
@@ -520,7 +520,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
         // Verify page can be read back
         var page = await _service.GetPageAsync("level1/level2/level3/page", null, CancellationToken.None);
         Assert.NotNull(page);
-        Assert.Equal(content, page.Content);
+        Assert.Equal(content, page.RawContent);
     }
 
     [Fact]
@@ -567,15 +567,15 @@ public class WikiPageServiceIntegrationTests : IDisposable
         // Verify we can read a few random pages
         var page0 = await _service.GetPageAsync("page000", null, CancellationToken.None);
         Assert.NotNull(page0);
-        Assert.Contains("Content for page 0", page0.Content);
+        Assert.Contains("Content for page 0", page0.RawContent);
 
         var page50 = await _service.GetPageAsync("page050", null, CancellationToken.None);
         Assert.NotNull(page50);
-        Assert.Contains("Content for page 50", page50.Content);
+        Assert.Contains("Content for page 50", page50.RawContent);
 
         var page99 = await _service.GetPageAsync("page099", null, CancellationToken.None);
         Assert.NotNull(page99);
-        Assert.Contains("Content for page 99", page99.Content);
+        Assert.Contains("Content for page 99", page99.RawContent);
     }
 
     [Fact]
@@ -621,7 +621,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
 
         var quickStart = await _service.GetPageAsync("docs/guides/QuickStart", null, CancellationToken.None);
         Assert.NotNull(quickStart);
-        Assert.Contains("Content for docs/guides/QuickStart.md", quickStart.Content);
+        Assert.Contains("Content for docs/guides/QuickStart.md", quickStart.RawContent);
 
         var v2Endpoints = await _service.GetPageAsync("docs/api/v2/Endpoints", null, CancellationToken.None);
         Assert.NotNull(v2Endpoints);
@@ -656,7 +656,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
         var firstCommit = history[49].CommitId;
         var oldVersion = await _service.GetPageAtRevisionAsync("page", null, firstCommit, CancellationToken.None);
         Assert.NotNull(oldVersion);
-        Assert.Contains("Version 1", oldVersion.Content);
+        Assert.Contains("Version 1", oldVersion.RawContent);
     }
 
     [Fact]
@@ -788,7 +788,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
         // Verify current version
         var currentPage = await _service.GetPageAsync("evolving", null, CancellationToken.None);
         Assert.NotNull(currentPage);
-        Assert.Contains("Version 20", currentPage.Content);
+        Assert.Contains("Version 20", currentPage.RawContent);
     }
 
     #endregion
@@ -826,7 +826,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
         // Assert
         var page = await _service.GetPageAsync("first", null, CancellationToken.None);
         Assert.NotNull(page);
-        Assert.Equal(content, page.Content);
+        Assert.Equal(content, page.RawContent);
 
         // Verify with git
         var gitContent = GetGitFileContent("first.md");
@@ -848,7 +848,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(content, result.Content);
+        Assert.Equal(content, result.RawContent);
     }
 
     [Fact]
@@ -864,7 +864,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(content, result.Content);
+        Assert.Equal(content, result.RawContent);
     }
 
     [Fact]

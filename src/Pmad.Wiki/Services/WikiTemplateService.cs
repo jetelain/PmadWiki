@@ -101,7 +101,7 @@ public sealed class WikiTemplateService : IWikiTemplateService
         }
 
         // Parse front matter from content
-        var (frontMatter, content) = WikiTemplateFrontMatterParser.Parse(page.Content);
+        var (frontMatter, content) = WikiTemplateFrontMatterParser.Parse(page.RawContent);
 
         // Get display name from front matter, or fallback to the page title
         var displayName = frontMatter.Title;

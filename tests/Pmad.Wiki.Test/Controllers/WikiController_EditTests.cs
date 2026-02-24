@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Pmad.Wiki.Controllers;
+using Pmad.Wiki.Helpers;
 using Pmad.Wiki.Models;
 using Pmad.Wiki.Services;
 
@@ -26,7 +27,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Existing Content",
+            Content = WikiPageContentParser.Parse("# Existing Content"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -43,7 +44,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
-        
+
         Assert.Equal("TestPage", model.PageName);
         Assert.Equal("# Existing Content", model.Content);
         Assert.Equal("Update page TestPage", model.CommitMessage);
@@ -76,7 +77,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
-        
+
         Assert.Equal("NewPage", model.PageName);
         Assert.Equal(string.Empty, model.Content);
         Assert.Equal("Create page NewPage", model.CommitMessage);
@@ -99,7 +100,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Contenu",
+            Content = WikiPageContentParser.Parse("# Contenu"),
             ContentHash = "hash123",
             Title = "Page Test",
             Culture = "fr"
@@ -117,7 +118,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
-        
+
         Assert.Equal("TestPage", model.PageName);
         Assert.Equal("# Contenu", model.Content);
         Assert.Equal("fr", model.Culture);
@@ -139,7 +140,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         var historicalPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Old Version Content",
+            Content = WikiPageContentParser.Parse("# Old Version Content"),
             ContentHash = "oldhash",
             Title = "Test Page"
         };
@@ -156,7 +157,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
-        
+
         Assert.Equal("TestPage", model.PageName);
         Assert.Equal("# Old Version Content", model.Content);
         Assert.Equal("Restore page TestPage to revision abc123de", model.CommitMessage);
@@ -187,7 +188,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         var historicalPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Old Content",
+            Content = WikiPageContentParser.Parse("# Old Content"),
             ContentHash = "oldhash",
             Title = "Test Page"
         };
@@ -204,7 +205,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
-        
+
         Assert.Equal("Restore page TestPage to revision abc12", model.CommitMessage);
     }
 
@@ -364,7 +365,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "AdminPage",
-            Content = "# Admin Content",
+            Content = WikiPageContentParser.Parse("# Admin Content"),
             ContentHash = "hash123",
             Title = "Admin Page"
         };
@@ -408,7 +409,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
-        
+
         Assert.Equal("docs/api/reference", model.PageName);
         Assert.Equal("Create page docs/api/reference", model.CommitMessage);
     }
@@ -428,7 +429,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# Guide",
+            Content = WikiPageContentParser.Parse("# Guide"),
             ContentHash = "hash123",
             Title = "User Guide"
         };
@@ -453,7 +454,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
-        
+
         Assert.Equal(2, model.Breadcrumb.Count);
         Assert.Equal("docs", model.Breadcrumb[0].PageName);
         Assert.Equal("docs/guide", model.Breadcrumb[1].PageName);
@@ -475,7 +476,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         var historicalPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Ancien contenu",
+            Content = WikiPageContentParser.Parse("# Ancien contenu"),
             ContentHash = "oldhash",
             Title = "Page Test",
             Culture = "fr"
@@ -493,7 +494,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
-        
+
         Assert.Equal("TestPage", model.PageName);
         Assert.Equal("fr", model.Culture);
         Assert.Equal("# Ancien contenu", model.Content);
@@ -528,7 +529,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
-        
+
         Assert.Equal("NewPage", model.PageName);
         Assert.Equal("de", model.Culture);
         Assert.Equal(string.Empty, model.Content);
@@ -847,7 +848,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         var currentPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Different Content",
+            Content = WikiPageContentParser.Parse("# Different Content"),
             ContentHash = "newhash123",
             LastModifiedBy = "otheruser",
             Title = "Test Page"
@@ -901,7 +902,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         var currentPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Same Content",
+            Content = WikiPageContentParser.Parse("# Same Content"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -1119,7 +1120,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         var currentPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Old Content",
+            Content = WikiPageContentParser.Parse("# Old Content"),
             ContentHash = "hash123",
             Title = "Test Page"
         };

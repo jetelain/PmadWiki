@@ -52,7 +52,7 @@ public sealed class WikiPageService : IWikiPageService
             var gitFile = await repository.ReadFileAndHashAsync(filePath, _options.BranchName, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
 
-            var parsed = WikiPageFrontMatterParser.Parse(contentText);
+            var parsed = WikiPageContentParser.Parse(contentText);
             var title = _titleCache.ExtractAndCacheTitle(pageName, culture, parsed);
 
             GitCommit? lastCommit = null;
@@ -64,9 +64,8 @@ public sealed class WikiPageService : IWikiPageService
 
             return new WikiPage
             {
-                Parsed = parsed,
+                Content = parsed,
                 PageName = pageName,
-                Content = contentText,
                 ContentHash = gitFile.Hash.Value,
                 Title = title,
                 Culture = culture,
@@ -126,16 +125,15 @@ public sealed class WikiPageService : IWikiPageService
             var gitFile = await repository.ReadFileAndHashAsync(filePath, commitId, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
 
-            var parsed = WikiPageFrontMatterParser.Parse(contentText);
+            var parsed = WikiPageContentParser.Parse(contentText);
             var title = MarkdownTitleExtractor.ExtractFirstTitle(parsed, pageName);
 
             var commit = await repository.GetCommitAsync(commitId, cancellationToken);
 
             return new WikiPage
             {
-                Parsed = parsed,
+                Content = parsed,
                 PageName = pageName,
-                Content = contentText,
                 ContentHash = gitFile.Hash.Value,
                 Title = title,
                 Culture = culture,

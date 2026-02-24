@@ -25,7 +25,7 @@ public static partial class MarkdownTitleExtractor
             return GetLastPart(pageName);
         }
 
-        return ExtractFirstTitle(WikiPageFrontMatterParser.Parse(markdownContent), pageName);
+        return ExtractFirstTitle(WikiPageContentParser.Parse(markdownContent), pageName);
     }
 
     public static string ExtractFirstTitle(WikiPageContent content, string pageName)
