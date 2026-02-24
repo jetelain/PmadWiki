@@ -239,7 +239,7 @@ public class WikiSiteMapNodeHelperTest
     #region Build Tests - Culture Support
 
     [Fact]
-    public void Build_WithrequestedCulturePage_UsesCulturePage()
+    public void Build_WithRequestedCulturePage_UsesCulturePage()
     {
         // Arrange
         var pages = new List<WikiPageInfo>
@@ -269,7 +269,7 @@ public class WikiSiteMapNodeHelperTest
     }
 
     [Fact]
-    public void Build_WithMultipleCulturesSamePageName_PrefersrequestedCulture()
+    public void Build_WithMultipleCulturesSamePageName_PrefersRequestedCulture()
     {
         // Arrange
         var pages = new List<WikiPageInfo>
