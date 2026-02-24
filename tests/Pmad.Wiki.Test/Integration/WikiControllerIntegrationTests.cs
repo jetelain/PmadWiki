@@ -519,7 +519,7 @@ public class WikiControllerIntegrationTests : IDisposable
         CommitFile("docs/api/Reference.md", "# Reference", "Add reference");
 
         // Act
-        var result = await CreateController().SiteMap(CancellationToken.None);
+        var result = await CreateController().SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -852,7 +852,7 @@ public class WikiControllerIntegrationTests : IDisposable
         }
 
         // Act
-        var result = await CreateController().SiteMap(CancellationToken.None);
+        var result = await CreateController().SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);

@@ -114,7 +114,7 @@ namespace Pmad.Wiki.Controllers
             {
                 var subPages = await _pagePermissionHelper.GetAccessibleSubPages(wikiUser, id, page.FrontMatter.SubPagesRecursive, cancellationToken);
 
-                viewModel.SubPages = WikiSiteMapNodeHelper.BuildSubPages(subPages, _options.NeutralMarkdownPageCulture, id);
+                viewModel.SubPages = WikiSiteMapNodeHelper.BuildSubPages(subPages, culture ?? _options.NeutralMarkdownPageCulture, id);
             }
 
             await GenerateBreadcrumbAsync(id, culture, viewModel.Breadcrumb, cancellationToken);
@@ -342,7 +342,7 @@ namespace Pmad.Wiki.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> SiteMap(CancellationToken cancellationToken)
+        public async Task<IActionResult> SiteMap(string? culture, CancellationToken cancellationToken)
         {
             if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
             {
@@ -361,7 +361,7 @@ namespace Pmad.Wiki.Controllers
 
             var allPages = await _pagePermissionHelper.GetAllAccessiblePages(wikiUser, cancellationToken);
 
-            var rootNodes = WikiSiteMapNodeHelper.Build(allPages, _options.NeutralMarkdownPageCulture);
+            var rootNodes = WikiSiteMapNodeHelper.Build(allPages, culture ?? _options.NeutralMarkdownPageCulture);
 
             var viewModel = new WikiSiteMapViewModel
             {

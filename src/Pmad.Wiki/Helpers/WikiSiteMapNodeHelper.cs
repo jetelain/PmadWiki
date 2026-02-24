@@ -5,17 +5,17 @@ namespace Pmad.Wiki.Helpers;
 
 internal static class WikiSiteMapNodeHelper
 {
-    internal static List<WikiSiteMapNode> Build(List<WikiPageInfo> allPages, string neutralMarkdownPageCulture)
+    internal static List<WikiSiteMapNode> Build(List<WikiPageInfo> allPages, string culture)
     {
-        return BuildInternal(allPages, neutralMarkdownPageCulture, parentPrefix: null);
+        return BuildInternal(allPages, culture, parentPrefix: null);
     }
 
-    internal static List<WikiSiteMapNode> BuildSubPages(List<WikiPageInfo> subPages, string neutralMarkdownPageCulture, string parentPageName)
+    internal static List<WikiSiteMapNode> BuildSubPages(List<WikiPageInfo> subPages, string culture, string parentPageName)
     {
-        return BuildInternal(subPages, neutralMarkdownPageCulture, parentPrefix: parentPageName + "/");
+        return BuildInternal(subPages, culture, parentPrefix: parentPageName + "/");
     }
 
-    private static List<WikiSiteMapNode> BuildInternal(List<WikiPageInfo> allPages, string neutralMarkdownPageCulture, string? parentPrefix)
+    private static List<WikiSiteMapNode> BuildInternal(List<WikiPageInfo> allPages, string culture, string? parentPrefix)
     {
         // Group pages by neutral culture (page name)
         var pageGroups = allPages.GroupBy(p => p.PageName).ToList();
@@ -49,7 +49,9 @@ internal static class WikiSiteMapNodeHelper
                 {
                     if (currentFullPath == pageName)
                     {
-                        var pageInfo = group.FirstOrDefault(p => p.Culture == null || p.Culture == neutralMarkdownPageCulture);
+                        var pageInfo = group.FirstOrDefault(p => p.Culture == culture) 
+                            ?? group.FirstOrDefault(p => p.Culture == null)
+                            ?? group.OrderBy(p => p.Culture).First();
                         node = new WikiSiteMapNode
                         {
                             PageName = currentFullPath,
