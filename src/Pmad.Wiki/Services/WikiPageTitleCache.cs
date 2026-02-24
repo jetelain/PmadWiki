@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Pmad.Git.HttpServer;
 using Pmad.Git.LocalRepositories;
 using Pmad.Wiki.Helpers;
+using Pmad.Wiki.Models;
 
 namespace Pmad.Wiki.Services;
 
@@ -56,9 +57,15 @@ public class WikiPageTitleCache : IWikiPageTitleCache
     {
         var title = MarkdownTitleExtractor.ExtractFirstTitle(content, pageName);
         var cacheKey = GetCacheKey(pageName, culture);
-
         _titleCache[cacheKey] = title;
+        return title;
+    }
 
+    public string ExtractAndCacheTitle(string pageName, string? culture, WikiPageContent content)
+    {
+        var title = MarkdownTitleExtractor.ExtractFirstTitle(content, pageName);
+        var cacheKey = GetCacheKey(pageName, culture);
+        _titleCache[cacheKey] = title;
         return title;
     }
 

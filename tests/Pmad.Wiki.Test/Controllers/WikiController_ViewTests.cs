@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using Pmad.Wiki.Helpers;
 using Pmad.Wiki.Models;
 using Pmad.Wiki.Services;
 
@@ -18,7 +19,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test Content",
+            Content = WikiPageContentParser.Parse("# Test Content"),
             ContentHash = "hash123",
             Title = "Test Page",
             LastModifiedBy = "testuser",
@@ -61,7 +62,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "Home",
-            Content = "# Home",
+            Content = WikiPageContentParser.Parse("# Home"),
             ContentHash = "hash123",
             Title = "Home Page"
         };
@@ -90,7 +91,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "Home",
-            Content = "# Home",
+            Content = WikiPageContentParser.Parse("# Home"),
             ContentHash = "hash123",
             Title = "Home Page"
         };
@@ -189,7 +190,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -301,7 +302,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -463,7 +464,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Contenu Test",
+            Content = WikiPageContentParser.Parse("# Contenu Test"),
             ContentHash = "hash123",
             Title = "Page Test",
             Culture = "fr"
@@ -506,7 +507,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -559,7 +560,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -612,7 +613,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "RestrictedPage",
-            Content = "# Restricted",
+            Content = WikiPageContentParser.Parse("# Restricted"),
             ContentHash = "hash123",
             Title = "Restricted Page"
         };
@@ -644,7 +645,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "docs/api/reference",
-            Content = "# API Reference",
+            Content = WikiPageContentParser.Parse("# API Reference"),
             ContentHash = "hash123",
             Title = "API Reference"
         };
@@ -673,7 +674,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# User Guide",
+            Content = WikiPageContentParser.Parse("# User Guide"),
             ContentHash = "hash123",
             Title = "User Guide"
         };
@@ -715,7 +716,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# Guide Utilisateur",
+            Content = WikiPageContentParser.Parse("# Guide Utilisateur"),
             ContentHash = "hash123",
             Title = "Guide Utilisateur",
             Culture = "fr"
@@ -757,7 +758,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "docs/api/v2/reference",
-            Content = "# API v2 Reference",
+            Content = WikiPageContentParser.Parse("# API v2 Reference"),
             ContentHash = "hash123",
             Title = "API v2 Reference"
         };
@@ -807,7 +808,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# User Guide",
+            Content = WikiPageContentParser.Parse("# User Guide"),
             ContentHash = "hash123",
             Title = "User Guide"
         };
@@ -847,7 +848,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -876,7 +877,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -910,7 +911,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page",
             LastModifiedBy = null,
@@ -944,7 +945,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "PublicPage",
-            Content = "# Public",
+            Content = WikiPageContentParser.Parse("# Public"),
             ContentHash = "hash123",
             Title = "Public Page"
         };
@@ -980,7 +981,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -1024,7 +1025,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "PublicPage",
-            Content = "# Public",
+            Content = WikiPageContentParser.Parse("# Public"),
             ContentHash = "hash123",
             Title = "Public Page"
         };
@@ -1057,7 +1058,7 @@ public class WikiController_ViewTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -1114,6 +1115,370 @@ public class WikiController_ViewTests : WikiControllerTestBase
         Assert.Equal("Edit", redirectResult.ActionName);
         Assert.Equal("NewPage", redirectResult.RouteValues?["id"]);
         Assert.Equal("de", redirectResult.RouteValues?["culture"]);
+    }
+
+    [Fact]
+    public async Task View_WithShowSubPagesFalse_SubPagesIsEmpty()
+    {
+        // Arrange: page has ShowSubPages = false (default) → GetSubPagesAsync must not be called
+        var page = new WikiPage
+        {
+            PageName = "docs",
+            Content = WikiPageContentParser.Parse("# Docs"),
+            ContentHash = "hash123",
+            Title = "Docs"
+        };
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("docs", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(page);
+
+        _mockPageService
+            .Setup(x => x.GetAvailableCulturesForPageAsync("docs", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<string>());
+
+        // Act
+        var result = await _controller.View("docs", null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageViewModel>(viewResult.Model);
+
+        Assert.Empty(model.SubPages);
+        _mockPageService.Verify(
+            x => x.GetSubPagesAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task View_WithShowSubPagesTrue_PopulatesSubPages()
+    {
+        // Arrange: page has ShowSubPages = true → direct children are fetched and built
+        var page = new WikiPage
+        {
+            PageName = "docs",
+            Content = WikiPageContentParser.Parse("---\nshowSubPages: true\n---\n# Docs"),
+            ContentHash = "hash123",
+            Title = "Docs"
+        };
+
+        var subPageInfos = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "docs/guide", Title = "Guide", Culture = null },
+            new WikiPageInfo { PageName = "docs/api", Title = "API", Culture = null }
+        };
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("docs", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(page);
+
+        _mockPageService
+            .Setup(x => x.GetAvailableCulturesForPageAsync("docs", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<string>());
+
+        _mockPageService
+            .Setup(x => x.GetSubPagesAsync("docs", false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(subPageInfos);
+
+        // Act
+        var result = await _controller.View("docs", null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageViewModel>(viewResult.Model);
+
+        Assert.Equal(2, model.SubPages.Count);
+        Assert.Contains(model.SubPages, n => n.PageName == "docs/api");
+        Assert.Contains(model.SubPages, n => n.PageName == "docs/guide");
+        _mockPageService.Verify(
+            x => x.GetSubPagesAsync("docs", false, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task View_WithShowSubPagesTrueAndSubPagesRecursiveTrue_FetchesRecursively()
+    {
+        // Arrange: page has ShowSubPages = true and SubPagesRecursive = true → recursive fetch
+        var page = new WikiPage
+        {
+            PageName = "docs",
+            Content = WikiPageContentParser.Parse("---\nshowSubPages: true\nsubPagesRecursive: true\n---\n# Docs"),
+            ContentHash = "hash123",
+            Title = "Docs"
+        };
+
+        var subPageInfos = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "docs/guide", Title = "Guide", Culture = null },
+            new WikiPageInfo { PageName = "docs/guide/install", Title = "Installation", Culture = null }
+        };
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("docs", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(page);
+
+        _mockPageService
+            .Setup(x => x.GetAvailableCulturesForPageAsync("docs", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<string>());
+
+        _mockPageService
+            .Setup(x => x.GetSubPagesAsync("docs", true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(subPageInfos);
+
+        // Act
+        var result = await _controller.View("docs", null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageViewModel>(viewResult.Model);
+
+        // docs/guide is a root sub-page node with docs/guide/install as its child
+        Assert.Single(model.SubPages);
+        var guideNode = model.SubPages[0];
+        Assert.Equal("docs/guide", guideNode.PageName);
+        Assert.Equal("Guide", guideNode.DisplayName);
+        Assert.Single(guideNode.Children);
+        Assert.Equal("docs/guide/install", guideNode.Children[0].PageName);
+
+        _mockPageService.Verify(
+            x => x.GetSubPagesAsync("docs", true, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task View_WithShowSubPagesTrue_SubPageNodesHaveCorrectLevels()
+    {
+        // Arrange
+        var page = new WikiPage
+        {
+            PageName = "docs",
+            Content = WikiPageContentParser.Parse("---\nshowSubPages: true\nsubPagesRecursive: true\n---\n# Docs"),
+            ContentHash = "hash123",
+            Title = "Docs"
+        };
+
+        var subPageInfos = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "docs/guide", Title = "Guide", Culture = null },
+            new WikiPageInfo { PageName = "docs/guide/install", Title = "Installation", Culture = null }
+        };
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("docs", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(page);
+
+        _mockPageService
+            .Setup(x => x.GetAvailableCulturesForPageAsync("docs", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<string>());
+
+        _mockPageService
+            .Setup(x => x.GetSubPagesAsync("docs", true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(subPageInfos);
+
+        // Act
+        var result = await _controller.View("docs", null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageViewModel>(viewResult.Model);
+
+        // Levels are relative to the parent page, so direct children start at 0
+        var guideNode = model.SubPages[0];
+        Assert.Equal(0, guideNode.Level);
+        Assert.Equal(1, guideNode.Children[0].Level);
+    }
+
+    [Fact]
+    public async Task View_WithShowSubPagesTrueAndNullCulture_UsesNeutralMarkdownPageCulture()
+    {
+        // Arrange: culture=null → BuildSubPages is called with NeutralMarkdownPageCulture ("en")
+        _options.NeutralMarkdownPageCulture = "en";
+
+        var page = new WikiPage
+        {
+            PageName = "docs",
+            Content = WikiPageContentParser.Parse("---\nshowSubPages: true\n---\n# Docs"),
+            ContentHash = "hash123",
+            Title = "Docs"
+        };
+
+        var subPageInfos = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "docs/guide", Title = "Guide EN", Culture = "en" },
+            new WikiPageInfo { PageName = "docs/guide", Title = "Guide FR", Culture = "fr" }
+        };
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("docs", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(page);
+
+        _mockPageService
+            .Setup(x => x.GetAvailableCulturesForPageAsync("docs", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<string>());
+
+        _mockPageService
+            .Setup(x => x.GetSubPagesAsync("docs", false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(subPageInfos);
+
+        // Act
+        var result = await _controller.View("docs", null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageViewModel>(viewResult.Model);
+
+        Assert.Single(model.SubPages);
+        Assert.Equal("Guide EN", model.SubPages[0].DisplayName);
+        Assert.Equal("en", model.SubPages[0].Culture);
+    }
+
+    [Fact]
+    public async Task View_WithShowSubPagesTrueAndExplicitCulture_UsesThatCultureForSubPages()
+    {
+        // Arrange: culture="fr" → BuildSubPages uses "fr" for display names
+        _options.NeutralMarkdownPageCulture = "en";
+
+        var page = new WikiPage
+        {
+            PageName = "docs",
+            Content = WikiPageContentParser.Parse("---\nshowSubPages: true\n---\n# Docs"),
+            ContentHash = "hash123",
+            Title = "Docs"
+        };
+
+        var subPageInfos = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "docs/guide", Title = "Guide EN", Culture = "en" },
+            new WikiPageInfo { PageName = "docs/guide", Title = "Guide FR", Culture = "fr" }
+        };
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("docs", "fr", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(page);
+
+        _mockPageService
+            .Setup(x => x.GetAvailableCulturesForPageAsync("docs", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<string> { "en", "fr" });
+
+        _mockPageService
+            .Setup(x => x.GetSubPagesAsync("docs", false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(subPageInfos);
+
+        // Act
+        var result = await _controller.View("docs", "fr", CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageViewModel>(viewResult.Model);
+
+        Assert.Single(model.SubPages);
+        Assert.Equal("Guide FR", model.SubPages[0].DisplayName);
+        Assert.Equal("fr", model.SubPages[0].Culture);
+    }
+
+    [Fact]
+    public async Task View_WithShowSubPagesTrueAndNoSubPages_SubPagesIsEmpty()
+    {
+        // Arrange: ShowSubPages = true but no sub-pages exist
+        var page = new WikiPage
+        {
+            PageName = "docs",
+            Content = WikiPageContentParser.Parse("---\nshowSubPages: true\n---\n# Docs"),
+            ContentHash = "hash123",
+            Title = "Docs"
+        };
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("docs", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(page);
+
+        _mockPageService
+            .Setup(x => x.GetAvailableCulturesForPageAsync("docs", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<string>());
+
+        _mockPageService
+            .Setup(x => x.GetSubPagesAsync("docs", false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<WikiPageInfo>());
+
+        // Act
+        var result = await _controller.View("docs", null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageViewModel>(viewResult.Model);
+
+        Assert.Empty(model.SubPages);
+        _mockPageService.Verify(
+            x => x.GetSubPagesAsync("docs", false, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task View_WithShowSubPagesTrueAndPageLevelPermissions_FiltersInaccessibleSubPages()
+    {
+        // Arrange: ShowSubPages = true with page-level permissions filtering out one sub-page
+        _options.UsePageLevelPermissions = true;
+
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanView).Returns(true);
+        mockUser.Setup(x => x.CanEdit).Returns(false);
+        mockUser.Setup(x => x.Groups).Returns(new[] { "users" });
+
+        _mockUserService
+            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var page = new WikiPage
+        {
+            PageName = "docs",
+            Content = WikiPageContentParser.Parse("---\nshowSubPages: true\n---\n# Docs"),
+            ContentHash = "hash123",
+            Title = "Docs"
+        };
+
+        var subPageInfos = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "docs/guide", Title = "Guide", Culture = null },
+            new WikiPageInfo { PageName = "docs/admin", Title = "Admin", Culture = null }
+        };
+
+        _mockAccessControlService
+            .Setup(x => x.CheckPageAccessAsync("docs", new[] { "users" }, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = false });
+
+        _mockAccessControlService
+            .Setup(x => x.CheckPageAccessAsync("docs/guide", new[] { "users" }, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = false });
+
+        _mockAccessControlService
+            .Setup(x => x.CheckPageAccessAsync("docs/admin", new[] { "users" }, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageAccessPermissions { CanRead = false, CanEdit = false });
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("docs", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(page);
+
+        _mockPageService
+            .Setup(x => x.GetAvailableCulturesForPageAsync("docs", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<string>());
+
+        _mockPageService
+            .Setup(x => x.GetSubPagesAsync("docs", false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(subPageInfos);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "testuser") }, "TestAuth"));
+        _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
+
+        // Act
+        var result = await _controller.View("docs", null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageViewModel>(viewResult.Model);
+
+        Assert.Single(model.SubPages);
+        Assert.Equal("docs/guide", model.SubPages[0].PageName);
+        Assert.DoesNotContain(model.SubPages, n => n.PageName == "docs/admin");
     }
 
     #endregion

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Pmad.Git.HttpServer;
 using Pmad.Git.LocalRepositories;
+using Pmad.Wiki.Models;
 using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki.Test.Services;
@@ -66,7 +67,7 @@ public class WikiPageServiceTest
             .Returns(AsyncEnumerable(commit));
 
         _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
+            .Setup(x => x.ExtractAndCacheTitle("test", null, It.IsAny<WikiPageContent>()))
             .Returns("Test Page");
 
         // Act
@@ -75,7 +76,7 @@ public class WikiPageServiceTest
         // Assert
         Assert.NotNull(result);
         Assert.Equal("test", result.PageName);
-        Assert.Equal(content, result.Content);
+        Assert.Equal(content, result.RawContent);
         Assert.Equal("Test Page", result.Title);
         Assert.Equal(hash.Value, result.ContentHash);
         Assert.Equal("Test User", result.LastModifiedBy);
@@ -116,7 +117,7 @@ public class WikiPageServiceTest
             .Returns(AsyncEnumerable(commit));
 
         _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", "fr", content))
+            .Setup(x => x.ExtractAndCacheTitle("test", "fr", It.IsAny<WikiPageContent>()))
             .Returns("Page Française");
 
         // Act
@@ -148,7 +149,7 @@ public class WikiPageServiceTest
             .Returns(AsyncEnumerable(commit));
 
         _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("admin/settings", null, content))
+            .Setup(x => x.ExtractAndCacheTitle("admin/settings", null, It.IsAny<WikiPageContent>()))
             .Returns("Admin Settings");
 
         // Act
@@ -179,14 +180,14 @@ public class WikiPageServiceTest
             .Returns(AsyncEnumerable(commit));
 
         _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
+            .Setup(x => x.ExtractAndCacheTitle("test", null, It.IsAny<WikiPageContent>()))
             .Returns("Cached Title");
 
         // Act
         await _service.GetPageAsync("test", null, CancellationToken.None);
 
         // Assert
-        _mockTitleCache.Verify(x => x.ExtractAndCacheTitle("test", null, content), Times.Once);
+        _mockTitleCache.Verify(x => x.ExtractAndCacheTitle("test", null, It.IsAny<WikiPageContent>()), Times.Once);
     }
 
     [Fact]
@@ -207,7 +208,7 @@ public class WikiPageServiceTest
             .Returns(AsyncEnumerable<GitCommit>());
 
         _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
+            .Setup(x => x.ExtractAndCacheTitle("test", null, It.IsAny<WikiPageContent>()))
             .Returns("Test");
 
         // Act
@@ -363,7 +364,7 @@ public class WikiPageServiceTest
         // Assert
         Assert.NotNull(result);
         Assert.Equal("test", result.PageName);
-        Assert.Equal(content, result.Content);
+        Assert.Equal(content, result.RawContent);
         Assert.Equal("User", result.LastModifiedBy);
     }
 

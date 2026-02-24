@@ -12,10 +12,10 @@ public class WikiSiteMapNodeHelperTest
     {
         // Arrange
         var pages = new List<WikiPageInfo>();
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Empty(result);
@@ -36,10 +36,10 @@ public class WikiSiteMapNodeHelperTest
                 LastModifiedBy = "user1"
             }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Single(result);
@@ -65,10 +65,10 @@ public class WikiSiteMapNodeHelperTest
             new WikiPageInfo { PageName = "About", Title = "About Us", Culture = null },
             new WikiPageInfo { PageName = "Contact", Title = "Contact Info", Culture = null }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Equal(3, result.Count);
@@ -91,10 +91,10 @@ public class WikiSiteMapNodeHelperTest
         {
             new WikiPageInfo { PageName = "Docs/Guide", Title = "User Guide", Culture = null }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Single(result);
@@ -120,10 +120,10 @@ public class WikiSiteMapNodeHelperTest
         {
             new WikiPageInfo { PageName = "Docs/API/Getting-Started", Title = "Getting Started", Culture = null }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Single(result);
@@ -154,10 +154,10 @@ public class WikiSiteMapNodeHelperTest
             new WikiPageInfo { PageName = "Docs", Title = "Documentation", Culture = null },
             new WikiPageInfo { PageName = "Docs/Guide", Title = "User Guide", Culture = null }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Single(result);
@@ -183,10 +183,10 @@ public class WikiSiteMapNodeHelperTest
             new WikiPageInfo { PageName = "Docs/API", Title = "API Reference", Culture = null },
             new WikiPageInfo { PageName = "Docs/FAQ", Title = "FAQ", Culture = null }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Single(result);
@@ -212,10 +212,10 @@ public class WikiSiteMapNodeHelperTest
             new WikiPageInfo { PageName = "Docs/API", Title = "API Reference", Culture = null },
             new WikiPageInfo { PageName = "About", Title = "About", Culture = null }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Equal(3, result.Count);
@@ -239,7 +239,7 @@ public class WikiSiteMapNodeHelperTest
     #region Build Tests - Culture Support
 
     [Fact]
-    public void Build_WithNeutralCulturePage_UsesCulturePage()
+    public void Build_WithRequestedCulturePage_UsesCulturePage()
     {
         // Arrange
         var pages = new List<WikiPageInfo>
@@ -253,10 +253,10 @@ public class WikiSiteMapNodeHelperTest
                 LastModifiedBy = "user1"
             }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Single(result);
@@ -269,7 +269,7 @@ public class WikiSiteMapNodeHelperTest
     }
 
     [Fact]
-    public void Build_WithMultipleCulturesSamePageName_PrefersNeutralCulture()
+    public void Build_WithMultipleCulturesSamePageName_PrefersRequestedCulture()
     {
         // Arrange
         var pages = new List<WikiPageInfo>
@@ -291,10 +291,10 @@ public class WikiSiteMapNodeHelperTest
                 LastModifiedBy = "user2"
             }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Single(result);
@@ -306,9 +306,9 @@ public class WikiSiteMapNodeHelperTest
     }
 
     [Fact]
-    public void Build_WithNullCultureAndNeutralCulture_PrefersNullCulture()
+    public void Build_WithRequestedCultureAndNullCulture_PrefersRequestedCulture()
     {
-        // Arrange
+        // Arrange: both null and "en" cultures exist; "en" is requested so it should win
         var pages = new List<WikiPageInfo>
         {
             new WikiPageInfo 
@@ -328,10 +328,47 @@ public class WikiSiteMapNodeHelperTest
                 LastModifiedBy = "user2"
             }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
+
+        // Assert
+        Assert.Single(result);
+        var node = result[0];
+        Assert.Equal("Home Page English", node.DisplayName);
+        Assert.Equal("en", node.Culture);
+        Assert.Equal(DateTimeOffset.Parse("2024-01-02T11:00:00Z"), node.LastModified);
+        Assert.Equal("user2", node.LastModifiedBy);
+    }
+
+    [Fact]
+    public void Build_WithNoCultureMatchAndNullCultureFallback_UsesNullCulture()
+    {
+        // Arrange: no "en" page exists, but a null-culture page does; null culture is the second fallback
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo 
+            { 
+                PageName = "Home", 
+                Title = "Home Page Neutral", 
+                Culture = null,
+                LastModified = DateTimeOffset.Parse("2024-01-01T10:00:00Z"),
+                LastModifiedBy = "user1"
+            },
+            new WikiPageInfo 
+            { 
+                PageName = "Home", 
+                Title = "Page d'accueil", 
+                Culture = "fr",
+                LastModified = DateTimeOffset.Parse("2024-01-02T11:00:00Z"),
+                LastModifiedBy = "user2"
+            }
+        };
+        var requestedCulture = "en";
+
+        // Act
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Single(result);
@@ -343,9 +380,9 @@ public class WikiSiteMapNodeHelperTest
     }
 
     [Fact]
-    public void Build_WithOnlyNonNeutralCulture_UsesFirstAvailableCulture()
+    public void Build_WithOnlyNonRequestedCulture_UsesFirstAlphabeticalCulture()
     {
-        // Arrange
+        // Arrange: no "en" and no null-culture page; falls back to first culture alphabetically
         var pages = new List<WikiPageInfo>
         {
             new WikiPageInfo 
@@ -355,22 +392,28 @@ public class WikiSiteMapNodeHelperTest
                 Culture = "fr",
                 LastModified = DateTimeOffset.Parse("2024-01-01T10:00:00Z"),
                 LastModifiedBy = "user1"
+            },
+            new WikiPageInfo 
+            { 
+                PageName = "Home", 
+                Title = "Startseite", 
+                Culture = "de",
+                LastModified = DateTimeOffset.Parse("2024-01-02T11:00:00Z"),
+                LastModifiedBy = "user2"
             }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
-        // Assert
+        // Assert: "de" comes before "fr" alphabetically
         Assert.Single(result);
         var node = result[0];
-        Assert.Equal("Home", node.PageName);
-        Assert.Equal("Home", node.DisplayName);
-        Assert.Null(node.Title);
-        Assert.Null(node.Culture);
-        Assert.Null(node.LastModified);
-        Assert.Null(node.LastModifiedBy);
+        Assert.Equal("Startseite", node.DisplayName);
+        Assert.Equal("de", node.Culture);
+        Assert.Equal(DateTimeOffset.Parse("2024-01-02T11:00:00Z"), node.LastModified);
+        Assert.Equal("user2", node.LastModifiedBy);
     }
 
     #endregion
@@ -387,10 +430,10 @@ public class WikiSiteMapNodeHelperTest
             new WikiPageInfo { PageName = "Apple", Title = "Apple", Culture = null },
             new WikiPageInfo { PageName = "Mango", Title = "Mango", Culture = null }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Equal(3, result.Count);
@@ -409,10 +452,10 @@ public class WikiSiteMapNodeHelperTest
             new WikiPageInfo { PageName = "Docs/Apple", Title = "Apple", Culture = null },
             new WikiPageInfo { PageName = "Docs/Mango", Title = "Mango", Culture = null }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Single(result);
@@ -440,10 +483,10 @@ public class WikiSiteMapNodeHelperTest
                 Culture = null 
             }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Single(result);
@@ -466,10 +509,10 @@ public class WikiSiteMapNodeHelperTest
                 Culture = null 
             }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         var level0 = result[0];
@@ -496,10 +539,10 @@ public class WikiSiteMapNodeHelperTest
             new WikiPageInfo { PageName = "B", Title = "B Title", Culture = null },
             new WikiPageInfo { PageName = "A/X", Title = "X Title", Culture = null }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Equal(2, result.Count);
@@ -519,10 +562,10 @@ public class WikiSiteMapNodeHelperTest
             new WikiPageInfo { PageName = "my_other_page", Title = "My Other Page", Culture = null },
             new WikiPageInfo { PageName = "category/sub-category/my-page", Title = "Nested Page", Culture = null }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Equal(3, result.Count);
@@ -544,10 +587,10 @@ public class WikiSiteMapNodeHelperTest
                 Culture = null 
             }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Single(result);
@@ -575,10 +618,10 @@ public class WikiSiteMapNodeHelperTest
             new WikiPageInfo { PageName = "Docs/Guide", Title = "Guide EN", Culture = "en" },
             new WikiPageInfo { PageName = "Docs/Guide", Title = "Guide FR", Culture = "fr" }
         };
-        var neutralCulture = "en";
+        var requestedCulture = "en";
 
         // Act
-        var result = WikiSiteMapNodeHelper.Build(pages, neutralCulture);
+        var result = WikiSiteMapNodeHelper.Build(pages, requestedCulture);
 
         // Assert
         Assert.Single(result);
@@ -593,4 +636,155 @@ public class WikiSiteMapNodeHelperTest
     }
 
     #endregion
+
+    #region BuildSubPages Tests
+
+    [Fact]
+    public void BuildSubPages_WithFlatSubPages_ReturnsDirectChildrenOnly()
+    {
+        // Arrange: page "Foo" has sub-pages "Foo/Bar" and "Foo/Baz"
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "Foo/Bar", Title = "Bar", Culture = null },
+            new WikiPageInfo { PageName = "Foo/Baz", Title = "Baz", Culture = null }
+        };
+
+        // Act
+        var result = WikiSiteMapNodeHelper.BuildSubPages(pages, "en", "Foo");
+
+        // Assert: root nodes are Bar and Baz, not Foo
+        Assert.Equal(2, result.Count);
+        Assert.Equal("Foo/Bar", result[0].PageName);
+        Assert.Equal("Bar", result[0].DisplayName);
+        Assert.Equal(0, result[0].Level);
+        Assert.Equal("Foo/Baz", result[1].PageName);
+        Assert.Equal("Baz", result[1].DisplayName);
+        Assert.Equal(0, result[1].Level);
+    }
+
+    [Fact]
+    public void BuildSubPages_WithNestedPage_ReturnsCorrectHierarchy()
+    {
+        // Arrange: page "Foo/Bar" has sub-pages "Foo/Bar/Child1" and "Foo/Bar/Child1/Grand"
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "Foo/Bar/Child1", Title = "Child1", Culture = null },
+            new WikiPageInfo { PageName = "Foo/Bar/Child1/Grand", Title = "Grand", Culture = null }
+        };
+
+        // Act
+        var result = WikiSiteMapNodeHelper.BuildSubPages(pages, "en", "Foo/Bar");
+
+        // Assert: root is Child1 (level 0), not Foo or Bar
+        Assert.Single(result);
+        var child1 = result[0];
+        Assert.Equal("Foo/Bar/Child1", child1.PageName);
+        Assert.Equal("Child1", child1.DisplayName);
+        Assert.Equal(0, child1.Level);
+        Assert.True(child1.HasPage);
+
+        Assert.Single(child1.Children);
+        var grand = child1.Children[0];
+        Assert.Equal("Foo/Bar/Child1/Grand", grand.PageName);
+        Assert.Equal("Grand", grand.DisplayName);
+        Assert.Equal(1, grand.Level);
+        Assert.True(grand.HasPage);
+    }
+
+    [Fact]
+    public void BuildSubPages_WithMissingIntermediateFolder_CreatesFolderNode()
+    {
+        // Arrange: page "Section" has sub-page "Section/Topic/Detail" with no "Section/Topic" page
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "Section/Topic/Detail", Title = "Detail", Culture = null }
+        };
+
+        // Act
+        var result = WikiSiteMapNodeHelper.BuildSubPages(pages, "en", "Section");
+
+        // Assert: root is a folder node "Topic" (level 0), Detail is a child (level 1)
+        Assert.Single(result);
+        var folder = result[0];
+        Assert.Equal("Section/Topic", folder.PageName);
+        Assert.Equal("Topic", folder.DisplayName);
+        Assert.False(folder.HasPage);
+        Assert.Equal(0, folder.Level);
+
+        Assert.Single(folder.Children);
+        var detail = folder.Children[0];
+        Assert.Equal("Section/Topic/Detail", detail.PageName);
+        Assert.Equal("Detail", detail.DisplayName);
+        Assert.True(detail.HasPage);
+        Assert.Equal(1, detail.Level);
+    }
+
+    [Fact]
+    public void BuildSubPages_WithEmptyList_ReturnsEmptyList()
+    {
+        var result = WikiSiteMapNodeHelper.BuildSubPages(new List<WikiPageInfo>(), "en", "Foo");
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void BuildSubPages_WithRequestedCulture_UsesRequestedCulturePage()
+    {
+        // Arrange: sub-pages exist in both "en" and "fr"; "en" is requested
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "Foo/Bar", Title = "Bar EN", Culture = "en" },
+            new WikiPageInfo { PageName = "Foo/Bar", Title = "Bar FR", Culture = "fr" }
+        };
+
+        // Act
+        var result = WikiSiteMapNodeHelper.BuildSubPages(pages, "en", "Foo");
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("Bar EN", result[0].DisplayName);
+        Assert.Equal("en", result[0].Culture);
+    }
+
+    [Fact]
+    public void BuildSubPages_WithNoRequestedCultureButNullCultureExists_FallsBackToNullCulture()
+    {
+        // Arrange: no "en" page, but a neutral (null) culture page exists
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "Foo/Bar", Title = "Bar Neutral", Culture = null },
+            new WikiPageInfo { PageName = "Foo/Bar", Title = "Bar FR", Culture = "fr" }
+        };
+
+        // Act
+        var result = WikiSiteMapNodeHelper.BuildSubPages(pages, "en", "Foo");
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("Bar Neutral", result[0].DisplayName);
+        Assert.Null(result[0].Culture);
+    }
+
+    [Fact]
+    public void BuildSubPages_WithOnlyNonRequestedCulture_FallsBackToFirstAlphabeticalCulture()
+    {
+        // Arrange: neither "en" nor null-culture exists; falls back alphabetically
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "Foo/Bar", Title = "Bar FR", Culture = "fr" },
+            new WikiPageInfo { PageName = "Foo/Bar", Title = "Bar DE", Culture = "de" }
+        };
+
+        // Act
+        var result = WikiSiteMapNodeHelper.BuildSubPages(pages, "en", "Foo");
+
+        // Assert: "de" comes before "fr" alphabetically
+        Assert.Single(result);
+        Assert.Equal("Bar DE", result[0].DisplayName);
+        Assert.Equal("de", result[0].Culture);
+    }
+
+    #endregion
 }
+
+
+

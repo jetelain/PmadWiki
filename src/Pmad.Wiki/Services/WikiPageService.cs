@@ -51,9 +51,9 @@ public sealed class WikiPageService : IWikiPageService
         {
             var gitFile = await repository.ReadFileAndHashAsync(filePath, _options.BranchName, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
-            
-            // Extract title and populate cache
-            var title = _titleCache.ExtractAndCacheTitle(pageName, culture, contentText);
+
+            var parsed = WikiPageContentParser.Parse(contentText);
+            var title = _titleCache.ExtractAndCacheTitle(pageName, culture, parsed);
 
             GitCommit? lastCommit = null;
             await foreach (var commit in repository.GetFileHistoryAsync(filePath, _options.BranchName, cancellationToken))
@@ -64,8 +64,8 @@ public sealed class WikiPageService : IWikiPageService
 
             return new WikiPage
             {
+                Content = parsed,
                 PageName = pageName,
-                Content = contentText,
                 ContentHash = gitFile.Hash.Value,
                 Title = title,
                 Culture = culture,
@@ -124,15 +124,16 @@ public sealed class WikiPageService : IWikiPageService
         {
             var gitFile = await repository.ReadFileAndHashAsync(filePath, commitId, cancellationToken);
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
-            
-            var title = MarkdownTitleExtractor.ExtractFirstTitle(contentText, pageName);
+
+            var parsed = WikiPageContentParser.Parse(contentText);
+            var title = MarkdownTitleExtractor.ExtractFirstTitle(parsed, pageName);
 
             var commit = await repository.GetCommitAsync(commitId, cancellationToken);
 
             return new WikiPage
             {
+                Content = parsed,
                 PageName = pageName,
-                Content = contentText,
                 ContentHash = gitFile.Hash.Value,
                 Title = title,
                 Culture = culture,
@@ -193,15 +194,28 @@ public sealed class WikiPageService : IWikiPageService
         return cultures;
     }
 
-    public async Task<List<WikiPageInfo>> GetAllPagesAsync(CancellationToken cancellationToken = default)
+    public Task<List<WikiPageInfo>> GetSubPagesAsync(string pageName, bool recursive = true, CancellationToken cancellationToken = default)
+    {
+        return GetPages(
+            pageName, 
+            recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly, 
+            cancellationToken);
+    }
+
+    public Task<List<WikiPageInfo>> GetAllPagesAsync(CancellationToken cancellationToken = default)
+    {
+        return GetPages(null, SearchOption.AllDirectories, cancellationToken);
+    }
+
+    private async Task<List<WikiPageInfo>> GetPages(string? directory, SearchOption searchOption, CancellationToken cancellationToken)
     {
         var repository = GetRepository();
         var pages = new Dictionary<string, WikiPageInfo>();
 
         try
         {
-            var files = await repository.ListFilesWithLastChangeAsync(_options.BranchName, null, 
-                path => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase), SearchOption.AllDirectories, cancellationToken);
+            var files = await repository.ListFilesWithLastChangeAsync(_options.BranchName, directory,
+                path => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase), searchOption, cancellationToken);
 
             foreach (var file in files)
             {

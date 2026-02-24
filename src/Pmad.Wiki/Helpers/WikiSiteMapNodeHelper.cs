@@ -5,7 +5,17 @@ namespace Pmad.Wiki.Helpers;
 
 internal static class WikiSiteMapNodeHelper
 {
-    internal static List<WikiSiteMapNode> Build(List<WikiPageInfo> allPages, string neutralMarkdownPageCulture)
+    internal static List<WikiSiteMapNode> Build(List<WikiPageInfo> allPages, string culture)
+    {
+        return BuildInternal(allPages, culture, parentPrefix: null);
+    }
+
+    internal static List<WikiSiteMapNode> BuildSubPages(List<WikiPageInfo> subPages, string culture, string parentPageName)
+    {
+        return BuildInternal(subPages, culture, parentPrefix: parentPageName + "/");
+    }
+
+    private static List<WikiSiteMapNode> BuildInternal(List<WikiPageInfo> allPages, string culture, string? parentPrefix)
     {
         // Group pages by neutral culture (page name)
         var pageGroups = allPages.GroupBy(p => p.PageName).ToList();
@@ -17,24 +27,34 @@ internal static class WikiSiteMapNodeHelper
         foreach (var group in pageGroups.OrderBy(g => g.Key))
         {
             var pageName = group.Key;
-            var parts = pageName.Split('/');
+
+            // Strip the parent prefix so paths and levels are relative to the parent page
+            var relativeName = parentPrefix != null && pageName.StartsWith(parentPrefix, StringComparison.Ordinal)
+                ? pageName[parentPrefix.Length..]
+                : pageName;
+
+            var parts = relativeName.Split('/');
 
             WikiSiteMapNode? parentNode = null;
-            var currentPath = "";
+            var currentRelativePath = "";
 
             for (int i = 0; i < parts.Length; i++)
             {
-                if (i > 0) currentPath += "/";
-                currentPath += parts[i];
+                if (i > 0) currentRelativePath += "/";
+                currentRelativePath += parts[i];
 
-                if (!nodesByPath.TryGetValue(currentPath, out var node))
+                var currentFullPath = parentPrefix != null ? parentPrefix + currentRelativePath : currentRelativePath;
+
+                if (!nodesByPath.TryGetValue(currentFullPath, out var node))
                 {
-                    if (currentPath == pageName)
+                    if (currentFullPath == pageName)
                     {
-                        var pageInfo = group.FirstOrDefault(p => p.Culture == null || p.Culture == neutralMarkdownPageCulture);
+                        var pageInfo = group.FirstOrDefault(p => p.Culture == culture) 
+                            ?? group.FirstOrDefault(p => p.Culture == null)
+                            ?? group.OrderBy(p => p.Culture).First();
                         node = new WikiSiteMapNode
                         {
-                            PageName = currentPath,
+                            PageName = currentFullPath,
                             DisplayName = pageInfo?.Title ?? parts[i],
                             Title = pageInfo?.Title,
                             HasPage = true,
@@ -48,14 +68,14 @@ internal static class WikiSiteMapNodeHelper
                     {
                         node = new WikiSiteMapNode
                         {
-                            PageName = currentPath,
+                            PageName = currentFullPath,
                             DisplayName = parts[i],
                             HasPage = false,
                             Level = i
                         };
                     }
 
-                    nodesByPath[currentPath] = node;
+                    nodesByPath[currentFullPath] = node;
 
                     if (parentNode != null)
                     {

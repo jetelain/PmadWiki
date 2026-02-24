@@ -38,7 +38,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -57,7 +57,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
         _options.AllowAnonymousViewing = false;
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         Assert.IsType<ChallengeResult>(result);
@@ -81,7 +81,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
         _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         Assert.IsType<ForbidResult>(result);
@@ -118,7 +118,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
         _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -159,7 +159,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
         _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -189,7 +189,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -209,7 +209,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(new List<WikiPageInfo>());
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -246,7 +246,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -314,7 +314,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
         _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -368,7 +368,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
         _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -404,7 +404,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -446,7 +446,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -498,7 +498,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -529,7 +529,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -549,9 +549,9 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
     }
 
     [Fact]
-    public async Task SiteMap_WithPagesInDifferentCultures_UsesNeutralCulture()
+    public async Task SiteMap_WithNullCulture_FallsBackToNeutralMarkdownPageCulture()
     {
-        // Arrange
+        // Arrange: NeutralMarkdownPageCulture = "en"; culture param = null ? should use "en" pages
         _options.NeutralMarkdownPageCulture = "en";
 
         var pages = new List<WikiPageInfo>
@@ -579,16 +579,141 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<WikiSiteMapViewModel>(viewResult.Model);
-        
+
         Assert.Single(model.RootNodes);
         var homeNode = model.RootNodes[0];
         Assert.Equal("Home", homeNode.PageName);
-        Assert.Equal("Home Page", homeNode.Title); // Should use the "en" version
+        Assert.Equal("Home Page", homeNode.Title); // "en" wins because NeutralMarkdownPageCulture = "en"
+        Assert.Equal("en", homeNode.Culture);
+    }
+
+    [Fact]
+    public async Task SiteMap_WithExplicitCulture_UsesRequestedCultureForDisplayNames()
+    {
+        // Arrange: explicit "fr" passed ? French page titles should be used
+        _options.NeutralMarkdownPageCulture = "en";
+
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "Home", Title = "Home Page", Culture = "en" },
+            new WikiPageInfo { PageName = "Home", Title = "Page d'accueil", Culture = "fr" }
+        };
+
+        _mockPageService
+            .Setup(x => x.GetAllPagesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pages);
+
+        // Act
+        var result = await _controller.SiteMap("fr", CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiSiteMapViewModel>(viewResult.Model);
+
+        Assert.Single(model.RootNodes);
+        var homeNode = model.RootNodes[0];
+        Assert.Equal("Page d'accueil", homeNode.Title);
+        Assert.Equal("fr", homeNode.Culture);
+    }
+
+    [Fact]
+    public async Task SiteMap_WithExplicitCultureMatchingNeutral_UsesThatCultureForDisplayNames()
+    {
+        // Arrange: NeutralMarkdownPageCulture = "en"; passing "en" explicitly should behave the same as null
+        _options.NeutralMarkdownPageCulture = "fr";
+
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "Home", Title = "Home Page", Culture = "en" },
+            new WikiPageInfo { PageName = "Home", Title = "Page d'accueil", Culture = "fr" }
+        };
+
+        _mockPageService
+            .Setup(x => x.GetAllPagesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pages);
+
+        // Act
+        var result = await _controller.SiteMap("en", CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiSiteMapViewModel>(viewResult.Model);
+
+        Assert.Single(model.RootNodes);
+        var homeNode = model.RootNodes[0];
+        Assert.Equal("Home Page", homeNode.Title);
+        Assert.Equal("en", homeNode.Culture);
+    }
+
+    [Fact]
+    public async Task SiteMap_WithExplicitCultureNotPresent_FallsBackToNullCulturePage()
+    {
+        // Arrange: "de" requested but not available; a null-culture page exists as fallback
+        _options.NeutralMarkdownPageCulture = "en";
+
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "Home", Title = "Home Neutral", Culture = null },
+            new WikiPageInfo { PageName = "Home", Title = "Home Page", Culture = "en" }
+        };
+
+        _mockPageService
+            .Setup(x => x.GetAllPagesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pages);
+
+        // Act
+        var result = await _controller.SiteMap("de", CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiSiteMapViewModel>(viewResult.Model);
+
+        Assert.Single(model.RootNodes);
+        var homeNode = model.RootNodes[0];
+        // "de" not found ? falls back to null-culture page
+        Assert.Equal("Home Neutral", homeNode.Title);
+        Assert.Null(homeNode.Culture);
+    }
+
+    [Fact]
+    public async Task SiteMap_WithExplicitCultureAcrossHierarchy_AppliesCultureToAllNodes()
+    {
+        // Arrange: "fr" requested for a multi-level hierarchy
+        _options.NeutralMarkdownPageCulture = "en";
+
+        var pages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "docs", Title = "Documentation EN", Culture = "en" },
+            new WikiPageInfo { PageName = "docs", Title = "Documentation FR", Culture = "fr" },
+            new WikiPageInfo { PageName = "docs/guide", Title = "Guide EN", Culture = "en" },
+            new WikiPageInfo { PageName = "docs/guide", Title = "Guide FR", Culture = "fr" }
+        };
+
+        _mockPageService
+            .Setup(x => x.GetAllPagesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pages);
+
+        // Act
+        var result = await _controller.SiteMap("fr", CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiSiteMapViewModel>(viewResult.Model);
+
+        Assert.Single(model.RootNodes);
+        var docsNode = model.RootNodes[0];
+        Assert.Equal("Documentation FR", docsNode.Title);
+        Assert.Equal("fr", docsNode.Culture);
+
+        Assert.Single(docsNode.Children);
+        var guideNode = docsNode.Children[0];
+        Assert.Equal("Guide FR", guideNode.Title);
+        Assert.Equal("fr", guideNode.Culture);
     }
 
     [Fact]
@@ -624,7 +749,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(new PageAccessPermissions { CanRead = false, CanEdit = false });
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -668,7 +793,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
         _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -701,7 +826,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -738,7 +863,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -789,7 +914,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -823,7 +948,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -869,7 +994,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
         _controller.ControllerContext.HttpContext = new DefaultHttpContext { User = user };
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -913,7 +1038,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -944,7 +1069,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -976,7 +1101,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -1017,7 +1142,7 @@ public class WikiController_SiteMapTests : WikiControllerTestBase
             .ReturnsAsync(pages);
 
         // Act
-        var result = await _controller.SiteMap(CancellationToken.None);
+        var result = await _controller.SiteMap(null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);

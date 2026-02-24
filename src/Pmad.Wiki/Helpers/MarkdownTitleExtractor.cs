@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Pmad.Wiki.Models;
 
 namespace Pmad.Wiki.Helpers;
 
@@ -24,7 +25,17 @@ public static partial class MarkdownTitleExtractor
             return GetLastPart(pageName);
         }
 
-        var match = FirstH1Regex().Match(markdownContent);
+        return ExtractFirstTitle(WikiPageContentParser.Parse(markdownContent), pageName);
+    }
+
+    public static string ExtractFirstTitle(WikiPageContent content, string pageName)
+    {
+        if (!string.IsNullOrEmpty(content.FrontMatter.Title))
+        {
+            return content.FrontMatter.Title;
+        }
+
+        var match = FirstH1Regex().Match(content.ContentWithoutFrontMatter);
         if (match.Success)
         {
             return match.Groups[1].Value.Trim();

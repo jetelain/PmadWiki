@@ -15,6 +15,8 @@ public interface IWikiPageService
     Task<List<string>> GetAvailableCulturesForPageAsync(string pageName, CancellationToken cancellationToken = default);
     
     Task<List<WikiPageInfo>> GetAllPagesAsync(CancellationToken cancellationToken = default);
+
+    Task<List<WikiPageInfo>> GetSubPagesAsync(string pageName, bool recursive = true, CancellationToken cancellationToken = default);
     
     Task SavePageWithMediaAsync(string pageName, string? culture, string content, string commitMessage, Services.IWikiUser author, Dictionary<string, byte[]> mediaFiles, CancellationToken cancellationToken = default);
 

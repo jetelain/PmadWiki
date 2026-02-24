@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using Pmad.Wiki.Helpers;
 using Pmad.Wiki.Models;
 using Pmad.Wiki.Services;
 
@@ -18,7 +19,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test Content",
+            Content = WikiPageContentParser.Parse("# Test Content"),
             ContentHash = "hash123",
             Title = "Test Page",
             LastModifiedBy = "testuser",
@@ -190,7 +191,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Contenu Test",
+            Content = WikiPageContentParser.Parse("# Contenu Test"),
             ContentHash = "hash123",
             Title = "Page Test",
             Culture = "fr",
@@ -317,7 +318,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -371,7 +372,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -414,7 +415,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page",
             LastModifiedBy = "pageauthor",
@@ -460,7 +461,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page",
             LastModifiedBy = null,
@@ -497,7 +498,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "docs/api/reference",
-            Content = "# API Reference",
+            Content = WikiPageContentParser.Parse("# API Reference"),
             ContentHash = "hash123",
             Title = "API Reference"
         };
@@ -538,7 +539,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# User Guide",
+            Content = WikiPageContentParser.Parse("# User Guide"),
             ContentHash = "hash123",
             Title = "User Guide"
         };
@@ -591,7 +592,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# Guide Utilisateur",
+            Content = WikiPageContentParser.Parse("# Guide Utilisateur"),
             ContentHash = "hash123",
             Title = "Guide Utilisateur",
             Culture = "fr"
@@ -645,7 +646,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -687,7 +688,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -730,7 +731,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "PublicPage",
-            Content = "# Public",
+            Content = WikiPageContentParser.Parse("# Public"),
             ContentHash = "hash123",
             Title = "Public Page"
         };
@@ -784,7 +785,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "PublicPage",
-            Content = "# Public",
+            Content = WikiPageContentParser.Parse("# Public"),
             ContentHash = "hash123",
             Title = "Public Page"
         };
@@ -834,7 +835,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -878,7 +879,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test Content",
+            Content = WikiPageContentParser.Parse("# Test Content"),
             ContentHash = "hash123",
             Title = "Test Page Title"
         };
@@ -931,7 +932,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "docs/api/v2/reference",
-            Content = "# API v2 Reference",
+            Content = WikiPageContentParser.Parse("# API v2 Reference"),
             ContentHash = "hash123",
             Title = "API v2 Reference"
         };
@@ -992,7 +993,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# User Guide",
+            Content = WikiPageContentParser.Parse("# User Guide"),
             ContentHash = "hash123",
             Title = "User Guide"
         };
@@ -1043,7 +1044,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -1101,7 +1102,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page"
         };
@@ -1145,7 +1146,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page",
             LastModifiedBy = "testauthor",
@@ -1202,7 +1203,7 @@ public class WikiController_RevisionTests : WikiControllerTestBase
         var page = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Test",
+            Content = WikiPageContentParser.Parse("# Test"),
             ContentHash = "hash123",
             Title = "Test Page",
             Culture = "fr"

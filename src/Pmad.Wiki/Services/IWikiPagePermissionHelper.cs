@@ -4,6 +4,8 @@ public interface IWikiPagePermissionHelper
 {
     Task<List<WikiPageInfo>> GetAllAccessiblePages(IWikiUserWithPermissions? wikiUser, CancellationToken cancellationToken = default);
 
+    Task<List<WikiPageInfo>> GetAccessibleSubPages(IWikiUserWithPermissions? wikiUser, string pageName, bool recursive = true, CancellationToken cancellationToken = default);
+
     ValueTask<bool> CanView(IWikiUserWithPermissions? wikiUser, string pageName, CancellationToken cancellationToken = default);
 
     ValueTask<bool> CanEdit(IWikiUserWithPermissions? wikiUser, string pageName, CancellationToken cancellationToken = default);

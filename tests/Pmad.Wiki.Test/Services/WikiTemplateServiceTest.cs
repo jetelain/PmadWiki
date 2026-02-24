@@ -1,5 +1,5 @@
 ﻿using Moq;
-using Pmad.Wiki.Models;
+using Pmad.Wiki.Helpers;
 using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki.Test.Services;
@@ -93,7 +93,7 @@ Content here";
             .ReturnsAsync(new WikiPage
             {
                 PageName = "_templates/article",
-                Content = pageContent,
+                Content = WikiPageContentParser.Parse(pageContent),
                 ContentHash = "hash",
                 Title = "Article Template",
                 Culture = null
@@ -289,7 +289,7 @@ This is the template content.";
             .ReturnsAsync(new WikiPage
             {
                 PageName = "_templates/complete",
-                Content = pageContent,
+                Content = WikiPageContentParser.Parse(pageContent),
                 ContentHash = "hash",
                 Title = "Complete",
                 Culture = null
@@ -333,7 +333,7 @@ This is a simple template without front matter.";
             .ReturnsAsync(new WikiPage
             {
                 PageName = "_templates/simple",
-                Content = pageContent,
+                Content = WikiPageContentParser.Parse(pageContent),
                 ContentHash = "hash",
                 Title = "Simple Template",
                 Culture = null
@@ -383,7 +383,7 @@ description: Has only some fields
             .ReturnsAsync(new WikiPage
             {
                 PageName = "_templates/partial",
-                Content = pageContent,
+                Content = WikiPageContentParser.Parse(pageContent),
                 ContentHash = "hash",
                 Title = "Partial",
                 Culture = null
@@ -427,7 +427,7 @@ description: Template without title in front matter
             .ReturnsAsync(new WikiPage
             {
                 PageName = "_templates/fallback",
-                Content = pageContent,
+                Content = WikiPageContentParser.Parse(pageContent),
                 ContentHash = "hash",
                 Title = "Fallback Title",
                 Culture = null
@@ -468,7 +468,7 @@ description: Template without title in front matter
             .ReturnsAsync(new WikiPage
             {
                 PageName = "_templates/noTitle",
-                Content = pageContent,
+                Content = WikiPageContentParser.Parse(pageContent),
                 ContentHash = "hash",
                 Title = null,
                 Culture = null
@@ -678,7 +678,7 @@ description: Template for articles
             .ReturnsAsync(new WikiPage
             {
                 PageName = "_templates/article",
-                Content = pageContent,
+                Content = WikiPageContentParser.Parse(pageContent),
                 ContentHash = "hash",
                 Title = "Article Template",
                 Culture = null
@@ -1186,7 +1186,7 @@ pattern: articles/{year}/{month}/article-{date}
             .ReturnsAsync(new WikiPage
             {
                 PageName = "_templates/article",
-                Content = pageContent,
+                Content = WikiPageContentParser.Parse(pageContent),
                 ContentHash = "hash",
                 Title = "Article Template",
                 Culture = null
@@ -1235,7 +1235,7 @@ Date: {date}";
             .ReturnsAsync(new WikiPage
             {
                 PageName = "_templates/daily-log",
-                Content = pageContent,
+                Content = WikiPageContentParser.Parse(pageContent),
                 ContentHash = "hash",
                 Title = "Daily Log Template",
                 Culture = null
@@ -1283,7 +1283,7 @@ title: {title}
             .ReturnsAsync(new WikiPage
             {
                 PageName = pageName,
-                Content = pageContent,
+                Content = WikiPageContentParser.Parse(pageContent),
                 ContentHash = "hash",
                 Title = title,
                 Culture = null
@@ -1297,7 +1297,7 @@ title: {title}
             .ReturnsAsync(new WikiPage
             {
                 PageName = pageName,
-                Content = content,
+                Content = WikiPageContentParser.Parse(content),
                 ContentHash = "hash",
                 Title = null,
                 Culture = null

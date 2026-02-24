@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using Pmad.Wiki.Helpers;
 using Pmad.Wiki.Models;
 using Pmad.Wiki.Services;
 
@@ -18,7 +19,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Original Content",
+            Content = WikiPageContentParser.Parse("# Original Content"),
             ContentHash = "hash1",
             Title = "Test Page",
             LastModifiedBy = "author1",
@@ -28,7 +29,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Updated Content",
+            Content = WikiPageContentParser.Parse("# Updated Content"),
             ContentHash = "hash2",
             Title = "Test Page",
             LastModifiedBy = "author2",
@@ -221,7 +222,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Content",
+            Content = WikiPageContentParser.Parse("# Content"),
             ContentHash = "hash2",
             Title = "Test Page"
         };
@@ -244,7 +245,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Content",
+            Content = WikiPageContentParser.Parse("# Content"),
             ContentHash = "hash1",
             Title = "Test Page"
         };
@@ -290,7 +291,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Contenu Original",
+            Content = WikiPageContentParser.Parse("# Contenu Original"),
             ContentHash = "hash1",
             Title = "Page Test",
             Culture = "fr"
@@ -299,7 +300,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Contenu Mis à Jour",
+            Content = WikiPageContentParser.Parse("# Contenu Mis à Jour"),
             ContentHash = "hash2",
             Title = "Page Test",
             Culture = "fr"
@@ -435,7 +436,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Test Page"
         };
@@ -443,7 +444,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Test Page"
         };
@@ -507,7 +508,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Test Page"
         };
@@ -515,7 +516,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Test Page"
         };
@@ -569,7 +570,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Test Page",
             LastModifiedBy = "pageauthor1",
@@ -579,7 +580,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Test Page",
             LastModifiedBy = "pageauthor2",
@@ -630,7 +631,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Test Page",
             LastModifiedBy = "pageauthor1",
@@ -640,7 +641,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Test Page",
             LastModifiedBy = "pageauthor2",
@@ -691,7 +692,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Test Page",
             LastModifiedBy = "pageauthor1",
@@ -701,7 +702,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Test Page",
             LastModifiedBy = "pageauthor2",
@@ -744,7 +745,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Test Page",
             LastModifiedBy = null,
@@ -754,7 +755,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Test Page",
             LastModifiedBy = null,
@@ -797,7 +798,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "docs/api/reference",
-            Content = "# API v1",
+            Content = WikiPageContentParser.Parse("# API v1"),
             ContentHash = "hash1",
             Title = "API Reference"
         };
@@ -805,7 +806,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "docs/api/reference",
-            Content = "# API v2",
+            Content = WikiPageContentParser.Parse("# API v2"),
             ContentHash = "hash2",
             Title = "API Reference"
         };
@@ -856,7 +857,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# Guide v1",
+            Content = WikiPageContentParser.Parse("# Guide v1"),
             ContentHash = "hash1",
             Title = "User Guide"
         };
@@ -864,7 +865,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# Guide v2",
+            Content = WikiPageContentParser.Parse("# Guide v2"),
             ContentHash = "hash2",
             Title = "User Guide"
         };
@@ -928,7 +929,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# Guide v1",
+            Content = WikiPageContentParser.Parse("# Guide v1"),
             ContentHash = "hash1",
             Title = "Guide Utilisateur",
             Culture = "fr"
@@ -937,7 +938,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# Guide v2",
+            Content = WikiPageContentParser.Parse("# Guide v2"),
             ContentHash = "hash2",
             Title = "Guide Utilisateur",
             Culture = "fr"
@@ -1002,7 +1003,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Test Page"
         };
@@ -1010,7 +1011,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Test Page"
         };
@@ -1066,7 +1067,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Test Page"
         };
@@ -1074,7 +1075,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Test Page"
         };
@@ -1129,7 +1130,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "PublicPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Public Page"
         };
@@ -1137,7 +1138,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "PublicPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Public Page"
         };
@@ -1201,7 +1202,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "PublicPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Public Page"
         };
@@ -1209,7 +1210,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "PublicPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Public Page"
         };
@@ -1270,7 +1271,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Test Page"
         };
@@ -1278,7 +1279,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Test Page"
         };
@@ -1335,7 +1336,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Original Content\nFirst paragraph.",
+            Content = WikiPageContentParser.Parse("# Original Content\nFirst paragraph."),
             ContentHash = "hash1",
             Title = "Test Page"
         };
@@ -1343,7 +1344,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Updated Content\nSecond paragraph.",
+            Content = WikiPageContentParser.Parse("# Updated Content\nSecond paragraph."),
             ContentHash = "hash2",
             Title = "Test Page"
         };
@@ -1407,7 +1408,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "docs/api/v2/reference",
-            Content = "# API v2.0",
+            Content = WikiPageContentParser.Parse("# API v2.0"),
             ContentHash = "hash1",
             Title = "API v2 Reference"
         };
@@ -1415,7 +1416,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "docs/api/v2/reference",
-            Content = "# API v2.1",
+            Content = WikiPageContentParser.Parse("# API v2.1"),
             ContentHash = "hash2",
             Title = "API v2 Reference"
         };
@@ -1487,7 +1488,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# Guide v1",
+            Content = WikiPageContentParser.Parse("# Guide v1"),
             ContentHash = "hash1",
             Title = "User Guide"
         };
@@ -1495,7 +1496,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "docs/guide",
-            Content = "# Guide v2",
+            Content = WikiPageContentParser.Parse("# Guide v2"),
             ContentHash = "hash2",
             Title = "User Guide"
         };
@@ -1557,7 +1558,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Test Page"
         };
@@ -1565,7 +1566,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Test Page"
         };
@@ -1634,7 +1635,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# From",
+            Content = WikiPageContentParser.Parse("# From"),
             ContentHash = "hash1",
             Title = "Test Page"
         };
@@ -1642,7 +1643,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# To",
+            Content = WikiPageContentParser.Parse("# To"),
             ContentHash = "hash2",
             Title = "Test Page"
         };
@@ -1717,7 +1718,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var fromPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Contenu Original",
+            Content = WikiPageContentParser.Parse("# Contenu Original"),
             ContentHash = "hash1",
             Title = "Page Test",
             Culture = "fr"
@@ -1726,7 +1727,7 @@ public class WikiController_DiffTests : WikiControllerTestBase
         var toPage = new WikiPage
         {
             PageName = "TestPage",
-            Content = "# Contenu Modifié",
+            Content = WikiPageContentParser.Parse("# Contenu Modifié"),
             ContentHash = "hash2",
             Title = "Page Test",
             Culture = "fr"

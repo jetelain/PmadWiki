@@ -101,7 +101,7 @@ namespace Pmad.Wiki.Controllers
             var viewModel = new WikiPageViewModel
             {
                 PageName = id,
-                HtmlContent = _markdownRenderService.ToHtml(page.Content, culture, id),
+                HtmlContent = _markdownRenderService.ToHtml(page.ContentWithoutFrontMatter, culture, id),
                 Title = page.Title,
                 CanEdit = canEdit,
                 Culture = culture,
@@ -109,6 +109,13 @@ namespace Pmad.Wiki.Controllers
                 LastModifiedBy = page.LastModifiedBy,
                 LastModified = page.LastModified
             };
+
+            if (page.FrontMatter.ShowSubPages)
+            {
+                var subPages = await _pagePermissionHelper.GetAccessibleSubPages(wikiUser, id, page.FrontMatter.SubPagesRecursive, cancellationToken);
+
+                viewModel.SubPages = WikiSiteMapNodeHelper.BuildSubPages(subPages, culture ?? _options.NeutralMarkdownPageCulture, id);
+            }
 
             await GenerateBreadcrumbAsync(id, culture, viewModel.Breadcrumb, cancellationToken);
 
@@ -241,7 +248,7 @@ namespace Pmad.Wiki.Controllers
             var viewModel = new WikiPageRevisionViewModel
             {
                 PageName = id,
-                HtmlContent = _markdownRenderService.ToHtml(page.Content, culture, id),
+                HtmlContent = _markdownRenderService.ToHtml(page.ContentWithoutFrontMatter, culture, id),
                 Title = page.Title,
                 Culture = culture,
                 CommitId = commitId,
@@ -324,8 +331,8 @@ namespace Pmad.Wiki.Controllers
                 ToTimestamp = toEntry?.Timestamp ?? toPage.LastModified ?? DateTimeOffset.MinValue,
                 FromMessage = fromEntry?.Message ?? "",
                 ToMessage = toEntry?.Message ?? "",
-                FromContent = fromPage.Content,
-                ToContent = toPage.Content,
+                FromContent = fromPage.RawContent,
+                ToContent = toPage.RawContent,
                 CanEdit = wikiUser?.CanEdit == true
             };
 
@@ -335,7 +342,7 @@ namespace Pmad.Wiki.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> SiteMap(CancellationToken cancellationToken)
+        public async Task<IActionResult> SiteMap(string? culture, CancellationToken cancellationToken)
         {
             if (!_options.AllowAnonymousViewing && !User.Identity?.IsAuthenticated == true)
             {
@@ -354,7 +361,7 @@ namespace Pmad.Wiki.Controllers
 
             var allPages = await _pagePermissionHelper.GetAllAccessiblePages(wikiUser, cancellationToken);
 
-            var rootNodes = WikiSiteMapNodeHelper.Build(allPages, _options.NeutralMarkdownPageCulture);
+            var rootNodes = WikiSiteMapNodeHelper.Build(allPages, culture ?? _options.NeutralMarkdownPageCulture);
 
             var viewModel = new WikiSiteMapViewModel
             {
@@ -400,7 +407,7 @@ namespace Pmad.Wiki.Controllers
             {
                 page = await _pageService.GetPageAtRevisionAsync(id, culture, restoreFromCommit, cancellationToken);
                 commitMessage = _localizer["Restore page {0} to revision {1}", id, restoreFromCommit?.Substring(0, Math.Min(8, restoreFromCommit.Length)) ?? string.Empty];
-                content = page?.Content ?? string.Empty;
+                content = page?.RawContent ?? string.Empty;
             }
             else
             {
@@ -424,7 +431,7 @@ namespace Pmad.Wiki.Controllers
                 else
                 {
                     commitMessage = _localizer["Update page {0}", id];
-                    content = page.Content;
+                    content = page.RawContent;
                 }
             }
             
@@ -563,7 +570,7 @@ namespace Pmad.Wiki.Controllers
                         await GenerateBreadcrumbAsync(model.PageName, model.Culture, model.Breadcrumb, cancellationToken);
                         return View(model);
                     }
-                    if (currentPage.Content == model.Content)
+                    if (currentPage.RawContent == model.Content)
                     {
                         // No-op if content is unchanged. Commit would fail due to identical content.
                         return RedirectToAction(nameof(View), new { id = model.PageName, culture = model.Culture });

@@ -56,20 +56,32 @@ public sealed class WikiPagePermissionHelper : IWikiPagePermissionHelper
         return true;
     }
 
+    public async Task<List<WikiPageInfo>> GetAccessibleSubPages(IWikiUserWithPermissions? wikiUser, string pageName, bool recursive = true, CancellationToken cancellationToken = default)
+    {
+        var subPages = await _pageService.GetSubPagesAsync(pageName, recursive, cancellationToken);
+
+        return await FilterAccessiblePages(wikiUser, subPages, cancellationToken);
+    }
+
     public async Task<List<WikiPageInfo>> GetAllAccessiblePages(IWikiUserWithPermissions? wikiUser, CancellationToken cancellationToken = default)
     {
         var allPages = await _pageService.GetAllPagesAsync(cancellationToken);
 
+        return await FilterAccessiblePages(wikiUser, allPages, cancellationToken);
+    }
+
+    private async ValueTask<List<WikiPageInfo>> FilterAccessiblePages(IWikiUserWithPermissions? wikiUser, List<WikiPageInfo> pages, CancellationToken cancellationToken)
+    {
         if (!_options.UsePageLevelPermissions)
         {
-            return allPages;
+            return pages;
         }
 
         // Filter pages based on page-level permissions
         var userGroups = wikiUser?.Groups ?? [];
 
         var filteredPages = new List<WikiPageInfo>();
-        foreach (var page in allPages)
+        foreach (var page in pages)
         {
             var pageAccess = await _accessControlService.CheckPageAccessAsync(page.PageName, userGroups, cancellationToken);
             if (pageAccess.CanRead)
