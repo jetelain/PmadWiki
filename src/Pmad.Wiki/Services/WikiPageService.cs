@@ -56,7 +56,7 @@ public sealed class WikiPageService : IWikiPageService
             var title = _titleCache.ExtractAndCacheTitle(pageName, culture, parsed);
 
             GitCommit? lastCommit = null;
-            await foreach (var commit in repository.GetFileHistoryAsync(filePath, _options.BranchName, cancellationToken))
+            await foreach (var commit in repository.EnumerateFileHistoryAsync(filePath, _options.BranchName, cancellationToken))
             {
                 lastCommit = commit;
                 break;
@@ -87,7 +87,7 @@ public sealed class WikiPageService : IWikiPageService
         var userCache = new Dictionary<string, IWikiUser>();
         try
         {
-            await foreach (var commit in repository.GetFileHistoryAsync(filePath, _options.BranchName, cancellationToken))
+            await foreach (var commit in repository.EnumerateFileHistoryAsync(filePath, _options.BranchName, cancellationToken))
             {
                 if (!userCache.TryGetValue(commit.Metadata.AuthorEmail, out var user))
                 {
@@ -196,6 +196,8 @@ public sealed class WikiPageService : IWikiPageService
 
     public Task<List<WikiPageInfo>> GetSubPagesAsync(string pageName, bool recursive = true, CancellationToken cancellationToken = default)
     {
+        WikiInputValidator.ValidatePageName(pageName);
+
         return GetPages(
             pageName, 
             recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly, 
@@ -214,8 +216,8 @@ public sealed class WikiPageService : IWikiPageService
 
         try
         {
-            var files = await repository.ListFilesWithLastChangeAsync(_options.BranchName, directory,
-                path => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase), searchOption, cancellationToken);
+            var files = await repository.GetFilesWithLastChangeAsync(_options.BranchName, directory, searchOption,
+                path => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase), cancellationToken);
 
             foreach (var file in files)
             {

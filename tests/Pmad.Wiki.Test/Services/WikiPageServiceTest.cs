@@ -63,7 +63,7 @@ public class WikiPageServiceTest
             .ReturnsAsync(gitFile);
 
         _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .Setup(x => x.EnumerateFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable(commit));
 
         _mockTitleCache
@@ -113,7 +113,7 @@ public class WikiPageServiceTest
             .ReturnsAsync(gitFile);
 
         _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("test.fr.md", "main", It.IsAny<CancellationToken>()))
+            .Setup(x => x.EnumerateFileHistoryAsync("test.fr.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable(commit));
 
         _mockTitleCache
@@ -145,7 +145,7 @@ public class WikiPageServiceTest
             .ReturnsAsync(gitFile);
 
         _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("admin/settings.md", "main", It.IsAny<CancellationToken>()))
+            .Setup(x => x.EnumerateFileHistoryAsync("admin/settings.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable(commit));
 
         _mockTitleCache
@@ -176,7 +176,7 @@ public class WikiPageServiceTest
             .ReturnsAsync(gitFile);
 
         _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .Setup(x => x.EnumerateFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable(commit));
 
         _mockTitleCache
@@ -204,7 +204,7 @@ public class WikiPageServiceTest
             .ReturnsAsync(gitFile);
 
         _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .Setup(x => x.EnumerateFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable<GitCommit>());
 
         _mockTitleCache
@@ -236,7 +236,7 @@ public class WikiPageServiceTest
         var wikiUser2 = CreateMockWikiUser("user2@example.com", "User Two");
 
         _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .Setup(x => x.EnumerateFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable(commit1, commit2, commit3));
 
         _mockWikiUserService
@@ -275,7 +275,7 @@ public class WikiPageServiceTest
     {
         // Arrange
         _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("nonexistent.md", "main", It.IsAny<CancellationToken>()))
+            .Setup(x => x.EnumerateFileHistoryAsync("nonexistent.md", "main", It.IsAny<CancellationToken>()))
             .Throws(new FileNotFoundException());
 
         // Act
@@ -296,7 +296,7 @@ public class WikiPageServiceTest
         var wikiUser = CreateMockWikiUser("same@example.com", "Cached User");
 
         _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .Setup(x => x.EnumerateFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable(commit1, commit2, commit3));
 
         _mockWikiUserService
@@ -323,7 +323,7 @@ public class WikiPageServiceTest
         var commit = CreateMockCommit("commit1", "User", "user@example.com", "Commit");
 
         _mockRepository
-            .Setup(x => x.GetFileHistoryAsync("test.fr.md", "main", It.IsAny<CancellationToken>()))
+            .Setup(x => x.EnumerateFileHistoryAsync("test.fr.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable(commit));
 
         // Act
@@ -332,7 +332,7 @@ public class WikiPageServiceTest
         // Assert
         Assert.Single(result);
         _mockRepository.Verify(
-            x => x.GetFileHistoryAsync("test.fr.md", "main", It.IsAny<CancellationToken>()),
+            x => x.EnumerateFileHistoryAsync("test.fr.md", "main", It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -593,7 +593,7 @@ public class WikiPageServiceTest
         };
 
         _mockRepository
-            .Setup(x => x.ListFilesWithLastChangeAsync("main", null, It.IsAny<Func<string, bool>>(), SearchOption.AllDirectories, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetFilesWithLastChangeAsync("main", null, SearchOption.AllDirectories, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(fileLastChanges);
 
         _mockTitleCache
@@ -633,14 +633,14 @@ public class WikiPageServiceTest
         // Arrange
         var commit = CreateMockCommit("commit1", "User", "user@example.com", "Add page");
 
-        // ListFilesWithLastChangeAsync already applies the fileFilter, so it returns only .md files
+        // GetFilesWithLastChangeAsync already applies the fileFilter, so it returns only .md files
         var fileLastChanges = new List<GitFileLastChange>
         {
             new("page.md", commit)
         };
 
         _mockRepository
-            .Setup(x => x.ListFilesWithLastChangeAsync("main", null, It.IsAny<Func<string, bool>>(), SearchOption.AllDirectories, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetFilesWithLastChangeAsync("main", null, SearchOption.AllDirectories, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(fileLastChanges);
 
         _mockTitleCache
@@ -671,7 +671,7 @@ public class WikiPageServiceTest
         };
 
         _mockRepository
-            .Setup(x => x.ListFilesWithLastChangeAsync("main", null, It.IsAny<Func<string, bool>>(), SearchOption.AllDirectories, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetFilesWithLastChangeAsync("main", null, SearchOption.AllDirectories, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(fileLastChanges);
 
         _mockTitleCache
@@ -702,7 +702,7 @@ public class WikiPageServiceTest
     {
         // Arrange
         _mockRepository
-            .Setup(x => x.ListFilesWithLastChangeAsync("main", null, It.IsAny<Func<string, bool>>(), SearchOption.AllDirectories, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetFilesWithLastChangeAsync("main", null, SearchOption.AllDirectories, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Repository is empty"));
 
         // Act
@@ -726,7 +726,7 @@ public class WikiPageServiceTest
         };
 
         _mockRepository
-            .Setup(x => x.ListFilesWithLastChangeAsync("main", null, It.IsAny<Func<string, bool>>(), SearchOption.AllDirectories, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetFilesWithLastChangeAsync("main", null, SearchOption.AllDirectories, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(fileLastChanges);
 
         foreach (var item in fileLastChanges)

@@ -42,9 +42,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- References to Pmad.Git projects Temporary, will be changed to NuGet reference once we have a stable API -->
-		<ProjectReference Include="..\..\PmadGit\src\Pmad.Git.HttpServer\Pmad.Git.HttpServer.csproj" />
-		<ProjectReference Include="..\..\PmadGit\src\Pmad.Git.LocalRepositories\Pmad.Git.LocalRepositories.csproj" />
+		<PackageReference Include="Pmad.Git.LocalRepositories" Version="0.1.111" />
+		<PackageReference Include="Pmad.Git.HttpServer" Version="0.1.111" />
 	</ItemGroup>
 
 </Project>
