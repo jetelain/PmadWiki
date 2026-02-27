@@ -52,7 +52,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
         _service = new WikiPageService(
             gitRepositoryService,
             _mockWikiUserService.Object,
-            new WikiPageTitleCache(gitRepositoryService, optionsWrapper),
+            new WikiPageMetadataCache(gitRepositoryService, optionsWrapper),
             optionsWrapper);
     }
 
