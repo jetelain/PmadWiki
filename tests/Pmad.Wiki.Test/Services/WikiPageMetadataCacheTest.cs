@@ -38,6 +38,8 @@ public class WikiPageMetadataCacheTest
             optionsWrapper);
     }
 
+    #region GetPageMetadataAsync Tests
+
     [Fact]
     public async Task GetPageMetadataAsync_WhenNotCached_ReadsFromRepository()
     {
@@ -104,7 +106,7 @@ public class WikiPageMetadataCacheTest
     public async Task GetPageMetadataAsync_WithCulture_UsesCultureSpecificFile()
     {
         // Arrange
-        var content = "# Titre en Français\n\nContenu.";
+        var content = "# Titre en Fran\u00e7ais\n\nContenu.";
         var contentBytes = Encoding.UTF8.GetBytes(content);
 
         _mockRepository
@@ -116,7 +118,7 @@ public class WikiPageMetadataCacheTest
 
         // Assert
         Assert.NotNull(metadata);
-        Assert.Equal("Titre en Français", metadata.Title);
+        Assert.Equal("Titre en Fran\u00e7ais", metadata.Title);
         _mockRepository.Verify(x => x.ReadFileAsync("test.fr.md", "main", It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -174,6 +176,114 @@ public class WikiPageMetadataCacheTest
     }
 
     [Fact]
+    public async Task GetPageMetadataAsync_WithNoFrontMatter_HasDefaultFrontMatter()
+    {
+        // Arrange
+        var content = "# My Page\n\nContent.";
+        var contentBytes = Encoding.UTF8.GetBytes(content);
+
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(contentBytes);
+
+        // Act
+        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(metadata);
+        Assert.Equal("My Page", metadata.Title);
+        Assert.Null(metadata.FrontMatter.Title);
+        Assert.False(metadata.FrontMatter.ShowSubPages);
+        Assert.False(metadata.FrontMatter.SubPagesRecursive);
+    }
+
+    [Fact]
+    public async Task GetPageMetadataAsync_WithFrontMatterTitle_UsesFrontMatterTitleOverH1()
+    {
+        // Arrange
+        var content = "---\ntitle: Front Matter Title\n---\n# H1 Title\n\nContent.";
+        var contentBytes = Encoding.UTF8.GetBytes(content);
+
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(contentBytes);
+
+        // Act
+        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(metadata);
+        Assert.Equal("Front Matter Title", metadata.Title);
+        Assert.Equal("Front Matter Title", metadata.FrontMatter.Title);
+    }
+
+    [Fact]
+    public async Task GetPageMetadataAsync_WithShowSubPagesTrue_CachesFrontMatter()
+    {
+        // Arrange
+        var content = "---\nshowSubPages: true\n---\n# My Page\n\nContent.";
+        var contentBytes = Encoding.UTF8.GetBytes(content);
+
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(contentBytes);
+
+        // Act
+        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(metadata);
+        Assert.True(metadata.FrontMatter.ShowSubPages);
+        Assert.False(metadata.FrontMatter.SubPagesRecursive);
+    }
+
+    [Fact]
+    public async Task GetPageMetadataAsync_WithSubPagesRecursiveTrue_CachesFrontMatter()
+    {
+        // Arrange
+        var content = "---\nshowSubPages: true\nsubPagesRecursive: true\n---\n# My Page\n\nContent.";
+        var contentBytes = Encoding.UTF8.GetBytes(content);
+
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(contentBytes);
+
+        // Act
+        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(metadata);
+        Assert.True(metadata.FrontMatter.ShowSubPages);
+        Assert.True(metadata.FrontMatter.SubPagesRecursive);
+    }
+
+    [Fact]
+    public async Task GetPageMetadataAsync_WithAllFrontMatterFields_CachesAllFields()
+    {
+        // Arrange
+        var content = "---\ntitle: Custom Title\nshowSubPages: true\nsubPagesRecursive: true\n---\n# H1 Title\n\nContent.";
+        var contentBytes = Encoding.UTF8.GetBytes(content);
+
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(contentBytes);
+
+        // Act
+        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(metadata);
+        Assert.Equal("Custom Title", metadata.Title);
+        Assert.Equal("Custom Title", metadata.FrontMatter.Title);
+        Assert.True(metadata.FrontMatter.ShowSubPages);
+        Assert.True(metadata.FrontMatter.SubPagesRecursive);
+    }
+
+    #endregion
+
+    #region ExtractAndCacheMetadata Tests
+
+    [Fact]
     public async Task ExtractAndCacheMetadata_OverwritesExistingCache()
     {
         // Arrange
@@ -199,11 +309,99 @@ public class WikiPageMetadataCacheTest
     }
 
     [Fact]
+    public async Task ExtractAndCacheMetadata_PreventsUnnecessaryRepositoryAccess()
+    {
+        // Arrange
+        var content = "# Pre-cached Title\n\nContent.";
+
+        // Act - Set metadata before any get
+        _service.ExtractAndCacheMetadata("test", null, content);
+        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+
+        // Assert - Should not call repository at all
+        Assert.NotNull(metadata);
+        Assert.Equal("Pre-cached Title", metadata.Title);
+        _mockRepository.Verify(x => x.ReadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExtractAndCacheMetadata_WithDifferentCultures_CachesSeparately()
+    {
+        // Arrange
+        var enContent = "# English Title\n\nContent.";
+        var frContent = "# Titre Fran\u00e7ais\n\nContent.";
+
+        // Act
+        _service.ExtractAndCacheMetadata("test", null, enContent);
+        _service.ExtractAndCacheMetadata("test", "fr", frContent);
+
+        // Assert - Should retrieve different titles without repository access
+        var enMetadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+        var frMetadata = await _service.GetPageMetadataAsync("test", "fr", CancellationToken.None);
+
+        Assert.NotNull(enMetadata);
+        Assert.NotNull(frMetadata);
+        Assert.Equal("English Title", enMetadata.Title);
+        Assert.Equal("Titre Fran\u00e7ais", frMetadata.Title);
+        _mockRepository.Verify(x => x.ReadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExtractAndCacheMetadata_WithFrontMatter_CachesFrontMatterFields()
+    {
+        // Arrange
+        var content = "---\ntitle: Cached Title\nshowSubPages: true\n---\n# H1\n\nContent.";
+
+        // Act
+        var result = _service.ExtractAndCacheMetadata("test", null, content);
+        var cached = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+
+        // Assert - Both the return value and the cached entry should contain front matter
+        Assert.Equal("Cached Title", result.Title);
+        Assert.True(result.FrontMatter.ShowSubPages);
+        Assert.NotNull(cached);
+        Assert.Equal("Cached Title", cached.Title);
+        Assert.True(cached.FrontMatter.ShowSubPages);
+        _mockRepository.Verify(x => x.ReadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExtractAndCacheMetadata_OverwritesFrontMatterOnUpdate()
+    {
+        // Arrange
+        var oldContent = "---\nshowSubPages: true\n---\n# Old Title\n\nContent.";
+        var newContent = "---\nshowSubPages: false\nsubPagesRecursive: false\n---\n# New Title\n\nContent.";
+        var contentBytes = Encoding.UTF8.GetBytes(oldContent);
+
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(contentBytes);
+
+        // First populate cache with old content
+        await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+
+        // Act - Overwrite with new content
+        _service.ExtractAndCacheMetadata("test", null, newContent);
+        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+
+        // Assert - Should reflect the updated front matter
+        Assert.NotNull(metadata);
+        Assert.Equal("New Title", metadata.Title);
+        Assert.False(metadata.FrontMatter.ShowSubPages);
+        Assert.False(metadata.FrontMatter.SubPagesRecursive);
+        _mockRepository.Verify(x => x.ReadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    #endregion
+
+    #region CacheKeys and ClearCache Tests
+
+    [Fact]
     public async Task CacheKeys_DifferentForDifferentCultures()
     {
         // Arrange
         var enContent = "# English Title\n\nContent.";
-        var frContent = "# Titre Français\n\nContent.";
+        var frContent = "# Titre Fran\u00e7ais\n\nContent.";
 
         _mockRepository
             .Setup(x => x.ReadFileAsync("test.md", "main", It.IsAny<CancellationToken>()))
@@ -221,23 +419,7 @@ public class WikiPageMetadataCacheTest
         Assert.NotNull(enMetadata);
         Assert.NotNull(frMetadata);
         Assert.Equal("English Title", enMetadata.Title);
-        Assert.Equal("Titre Français", frMetadata.Title);
-    }
-
-    [Fact]
-    public async Task ExtractAndCacheMetadata_PreventsUnnecessaryRepositoryAccess()
-    {
-        // Arrange
-        var content = "# Pre-cached Title\n\nContent.";
-
-        // Act - Set metadata before any get
-        _service.ExtractAndCacheMetadata("test", null, content);
-        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
-
-        // Assert - Should not call repository at all
-        Assert.NotNull(metadata);
-        Assert.Equal("Pre-cached Title", metadata.Title);
-        _mockRepository.Verify(x => x.ReadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        Assert.Equal("Titre Fran\u00e7ais", frMetadata.Title);
     }
 
     [Fact]
@@ -276,24 +458,31 @@ public class WikiPageMetadataCacheTest
     }
 
     [Fact]
-    public async Task ExtractAndCacheMetadata_WithDifferentCultures_CachesSeparately()
+    public async Task ClearCache_RemovesFrontMatterFromCache()
     {
-        // Arrange
-        var enContent = "# English Title\n\nContent.";
-        var frContent = "# Titre Français\n\nContent.";
+        // Arrange - Cache a page with front matter, then change what the repo returns
+        var contentWithFrontMatter = "---\nshowSubPages: true\n---\n# My Page\n\nContent.";
+        var contentWithoutFrontMatter = "# My Page\n\nContent.";
+
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Encoding.UTF8.GetBytes(contentWithFrontMatter));
+
+        await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+
+        // Change what the repository returns
+        _mockRepository
+            .Setup(x => x.ReadFileAsync("test.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Encoding.UTF8.GetBytes(contentWithoutFrontMatter));
 
         // Act
-        _service.ExtractAndCacheMetadata("test", null, enContent);
-        _service.ExtractAndCacheMetadata("test", "fr", frContent);
+        _service.ClearCache();
+        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
 
-        // Assert - Should retrieve different titles without repository access
-        var enMetadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
-        var frMetadata = await _service.GetPageMetadataAsync("test", "fr", CancellationToken.None);
-
-        Assert.NotNull(enMetadata);
-        Assert.NotNull(frMetadata);
-        Assert.Equal("English Title", enMetadata.Title);
-        Assert.Equal("Titre Français", frMetadata.Title);
-        _mockRepository.Verify(x => x.ReadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        // Assert - Should reflect the updated content without front matter
+        Assert.NotNull(metadata);
+        Assert.False(metadata.FrontMatter.ShowSubPages);
     }
+
+    #endregion
 }
