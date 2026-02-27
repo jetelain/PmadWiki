@@ -16,7 +16,7 @@ public static class WikiServiceCollectionExtensions
         services.AddSingleton<IMarkdownRenderService, MarkdownRenderService>();
         services.AddScoped<IWikiPageService, WikiPageService>();
         services.AddScoped<IPageAccessControlService, PageAccessControlService>();
-        services.AddSingleton<IWikiPageTitleCache, WikiPageTitleCache>();
+        services.AddSingleton<IWikiPageMetadataCache, WikiPageMetadataCache>();
         services.AddSingleton<ITemporaryMediaStorageService, TemporaryMediaStorageService>();
         services.AddScoped<IWikiPageEditService, WikiPageEditService>();
         services.AddScoped<IWikiTemplateService, WikiTemplateService>();
@@ -48,7 +48,7 @@ public static class WikiServiceCollectionExtensions
                     context.RequestServices.GetRequiredService<IWikiGitAuthorization>().AuthorizeGitHttpAsync(context, operation, cancellationToken);
                 gitOptions.OnReceivePackCompleted = (context, repo, result) => {
                     context.RequestServices.GetRequiredService<IPageAccessControlService>().ClearCache();
-                    context.RequestServices.GetRequiredService<IWikiPageTitleCache>().ClearCache();
+                    context.RequestServices.GetRequiredService<IWikiPageMetadataCache>().ClearCache();
                     return ValueTask.CompletedTask;
                 };
             });

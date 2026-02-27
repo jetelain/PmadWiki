@@ -7,14 +7,14 @@ using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki.Test.Services;
 
-public class WikiPageTitleCacheTest
+public class WikiPageMetadataCacheTest
 {
     private readonly Mock<IGitRepositoryService> _mockGitRepositoryService;
     private readonly Mock<IGitRepository> _mockRepository;
     private readonly WikiOptions _options;
-    private readonly WikiPageTitleCache _service;
+    private readonly WikiPageMetadataCache _service;
 
-    public WikiPageTitleCacheTest()
+    public WikiPageMetadataCacheTest()
     {
         _mockGitRepositoryService = new Mock<IGitRepositoryService>();
         _mockRepository = new Mock<IGitRepository>();
@@ -33,13 +33,13 @@ public class WikiPageTitleCacheTest
             .Setup(x => x.GetRepositoryByPath(It.IsAny<string>()))
             .Returns(_mockRepository.Object);
 
-        _service = new WikiPageTitleCache(
+        _service = new WikiPageMetadataCache(
             _mockGitRepositoryService.Object,
             optionsWrapper);
     }
 
     [Fact]
-    public async Task GetPageTitleAsync_WhenNotCached_ReadsFromRepository()
+    public async Task GetPageMetadataAsync_WhenNotCached_ReadsFromRepository()
     {
         // Arrange
         var content = "# My Page Title\n\nSome content.";
@@ -50,15 +50,16 @@ public class WikiPageTitleCacheTest
             .ReturnsAsync(contentBytes);
 
         // Act
-        var title = await _service.GetPageTitleAsync("test", null, CancellationToken.None);
+        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
 
         // Assert
-        Assert.Equal("My Page Title", title);
+        Assert.NotNull(metadata);
+        Assert.Equal("My Page Title", metadata.Title);
         _mockRepository.Verify(x => x.ReadFileAsync("test.md", "main", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task GetPageTitleAsync_WhenCached_DoesNotReadFromRepository()
+    public async Task GetPageMetadataAsync_WhenCached_DoesNotReadFromRepository()
     {
         // Arrange
         var content = "# Cached Title\n\nContent.";
@@ -69,18 +70,19 @@ public class WikiPageTitleCacheTest
             .ReturnsAsync(contentBytes);
 
         // First call to populate cache
-        await _service.GetPageTitleAsync("test", null, CancellationToken.None);
+        await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
 
         // Act - Second call should use cache
-        var title = await _service.GetPageTitleAsync("test", null, CancellationToken.None);
+        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
 
         // Assert
-        Assert.Equal("Cached Title", title);
+        Assert.NotNull(metadata);
+        Assert.Equal("Cached Title", metadata.Title);
         _mockRepository.Verify(x => x.ReadFileAsync("test.md", "main", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task GetPageTitleAsync_WithNoH1_ReturnsFallback()
+    public async Task GetPageMetadataAsync_WithNoH1_ReturnsFallback()
     {
         // Arrange
         var content = "Just some text without a title.";
@@ -91,14 +93,15 @@ public class WikiPageTitleCacheTest
             .ReturnsAsync(contentBytes);
 
         // Act
-        var title = await _service.GetPageTitleAsync("fallback", null, CancellationToken.None);
+        var metadata = await _service.GetPageMetadataAsync("fallback", null, CancellationToken.None);
 
         // Assert
-        Assert.Equal("fallback", title);
+        Assert.NotNull(metadata);
+        Assert.Equal("fallback", metadata.Title);
     }
 
     [Fact]
-    public async Task GetPageTitleAsync_WithCulture_UsesCultureSpecificFile()
+    public async Task GetPageMetadataAsync_WithCulture_UsesCultureSpecificFile()
     {
         // Arrange
         var content = "# Titre en Français\n\nContenu.";
@@ -109,15 +112,16 @@ public class WikiPageTitleCacheTest
             .ReturnsAsync(contentBytes);
 
         // Act
-        var title = await _service.GetPageTitleAsync("test", "fr", CancellationToken.None);
+        var metadata = await _service.GetPageMetadataAsync("test", "fr", CancellationToken.None);
 
         // Assert
-        Assert.Equal("Titre en Français", title);
+        Assert.NotNull(metadata);
+        Assert.Equal("Titre en Français", metadata.Title);
         _mockRepository.Verify(x => x.ReadFileAsync("test.fr.md", "main", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task GetPageTitleAsync_WithNestedPage_ExtractsTitle()
+    public async Task GetPageMetadataAsync_WithNestedPage_ExtractsTitle()
     {
         // Arrange
         var content = "# Admin Settings\n\nConfiguration page.";
@@ -128,14 +132,15 @@ public class WikiPageTitleCacheTest
             .ReturnsAsync(contentBytes);
 
         // Act
-        var title = await _service.GetPageTitleAsync("admin/settings", null, CancellationToken.None);
+        var metadata = await _service.GetPageMetadataAsync("admin/settings", null, CancellationToken.None);
 
         // Assert
-        Assert.Equal("Admin Settings", title);
+        Assert.NotNull(metadata);
+        Assert.Equal("Admin Settings", metadata.Title);
     }
 
     [Fact]
-    public async Task GetPageTitleAsync_WithNestedPageNoH1_ReturnsLastPart()
+    public async Task GetPageMetadataAsync_WithNestedPageNoH1_ReturnsLastPart()
     {
         // Arrange
         var content = "Just content without title.";
@@ -146,14 +151,15 @@ public class WikiPageTitleCacheTest
             .ReturnsAsync(contentBytes);
 
         // Act
-        var title = await _service.GetPageTitleAsync("admin/settings", null, CancellationToken.None);
+        var metadata = await _service.GetPageMetadataAsync("admin/settings", null, CancellationToken.None);
 
         // Assert
-        Assert.Equal("settings", title);
+        Assert.NotNull(metadata);
+        Assert.Equal("settings", metadata.Title);
     }
 
     [Fact]
-    public async Task GetPageTitleAsync_WhenPageDoesNotExist_ReturnsNull()
+    public async Task GetPageMetadataAsync_WhenPageDoesNotExist_ReturnsNull()
     {
         // Arrange
         _mockRepository
@@ -161,14 +167,14 @@ public class WikiPageTitleCacheTest
             .ThrowsAsync(new FileNotFoundException());
 
         // Act
-        var title = await _service.GetPageTitleAsync("nonexistent", null, CancellationToken.None);
+        var metadata = await _service.GetPageMetadataAsync("nonexistent", null, CancellationToken.None);
 
         // Assert
-        Assert.Null(title);
+        Assert.Null(metadata);
     }
 
     [Fact]
-    public async Task ExtractAndCacheTitle_OverwritesExistingCache()
+    public async Task ExtractAndCacheMetadata_OverwritesExistingCache()
     {
         // Arrange
         var oldContent = "# Old Title\n\nContent.";
@@ -180,14 +186,15 @@ public class WikiPageTitleCacheTest
             .ReturnsAsync(contentBytes);
 
         // First populate cache with old title
-        await _service.GetPageTitleAsync("test", null, CancellationToken.None);
+        await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
 
-        // Act - Set new title
-        _service.ExtractAndCacheTitle("test", null, newContent);
+        // Act - Set new metadata
+        _service.ExtractAndCacheMetadata("test", null, newContent);
 
         // Assert - Should return new title without calling repository
-        var title = await _service.GetPageTitleAsync("test", null, CancellationToken.None);
-        Assert.Equal("New Title", title);
+        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+        Assert.NotNull(metadata);
+        Assert.Equal("New Title", metadata.Title);
         _mockRepository.Verify(x => x.ReadFileAsync("test.md", "main", It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -207,31 +214,34 @@ public class WikiPageTitleCacheTest
             .ReturnsAsync(Encoding.UTF8.GetBytes(frContent));
 
         // Act
-        var enTitle = await _service.GetPageTitleAsync("test", null, CancellationToken.None);
-        var frTitle = await _service.GetPageTitleAsync("test", "fr", CancellationToken.None);
+        var enMetadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+        var frMetadata = await _service.GetPageMetadataAsync("test", "fr", CancellationToken.None);
 
         // Assert
-        Assert.Equal("English Title", enTitle);
-        Assert.Equal("Titre Français", frTitle);
+        Assert.NotNull(enMetadata);
+        Assert.NotNull(frMetadata);
+        Assert.Equal("English Title", enMetadata.Title);
+        Assert.Equal("Titre Français", frMetadata.Title);
     }
 
     [Fact]
-    public async Task ExtractAndCacheTitle_PreventsUnnecessaryRepositoryAccess()
+    public async Task ExtractAndCacheMetadata_PreventsUnnecessaryRepositoryAccess()
     {
         // Arrange
         var content = "# Pre-cached Title\n\nContent.";
 
-        // Act - Set title before any get
-        _service.ExtractAndCacheTitle("test", null, content);
-        var title = await _service.GetPageTitleAsync("test", null, CancellationToken.None);
+        // Act - Set metadata before any get
+        _service.ExtractAndCacheMetadata("test", null, content);
+        var metadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
 
         // Assert - Should not call repository at all
-        Assert.Equal("Pre-cached Title", title);
+        Assert.NotNull(metadata);
+        Assert.Equal("Pre-cached Title", metadata.Title);
         _mockRepository.Verify(x => x.ReadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task ClearCache_RemovesAllCachedTitles()
+    public async Task ClearCache_RemovesAllCachedMetadata()
     {
         // Arrange
         var content1 = "# Title 1\n\nContent.";
@@ -247,41 +257,43 @@ public class WikiPageTitleCacheTest
             .Setup(x => x.ReadFileAsync("page2.md", "main", It.IsAny<CancellationToken>()))
             .ReturnsAsync(contentBytes2);
 
-        // Populate cache with multiple titles
-        await _service.GetPageTitleAsync("page1", null, CancellationToken.None);
-        await _service.GetPageTitleAsync("page2", null, CancellationToken.None);
+        // Populate cache with multiple entries
+        await _service.GetPageMetadataAsync("page1", null, CancellationToken.None);
+        await _service.GetPageMetadataAsync("page2", null, CancellationToken.None);
 
         // Verify they're cached (no additional repository calls)
-        await _service.GetPageTitleAsync("page1", null, CancellationToken.None);
-        await _service.GetPageTitleAsync("page2", null, CancellationToken.None);
+        await _service.GetPageMetadataAsync("page1", null, CancellationToken.None);
+        await _service.GetPageMetadataAsync("page2", null, CancellationToken.None);
         _mockRepository.Verify(x => x.ReadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
 
         // Act
         _service.ClearCache();
 
         // Assert - Should read from repository again after clear
-        await _service.GetPageTitleAsync("page1", null, CancellationToken.None);
-        await _service.GetPageTitleAsync("page2", null, CancellationToken.None);
+        await _service.GetPageMetadataAsync("page1", null, CancellationToken.None);
+        await _service.GetPageMetadataAsync("page2", null, CancellationToken.None);
         _mockRepository.Verify(x => x.ReadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(4));
     }
 
     [Fact]
-    public async Task ExtractAndCacheTitle_WithDifferentCultures_CachesSeparately()
+    public async Task ExtractAndCacheMetadata_WithDifferentCultures_CachesSeparately()
     {
         // Arrange
         var enContent = "# English Title\n\nContent.";
         var frContent = "# Titre Français\n\nContent.";
 
         // Act
-        _service.ExtractAndCacheTitle("test", null, enContent);
-        _service.ExtractAndCacheTitle("test", "fr", frContent);
+        _service.ExtractAndCacheMetadata("test", null, enContent);
+        _service.ExtractAndCacheMetadata("test", "fr", frContent);
 
         // Assert - Should retrieve different titles without repository access
-        var enTitle = await _service.GetPageTitleAsync("test", null, CancellationToken.None);
-        var frTitle = await _service.GetPageTitleAsync("test", "fr", CancellationToken.None);
+        var enMetadata = await _service.GetPageMetadataAsync("test", null, CancellationToken.None);
+        var frMetadata = await _service.GetPageMetadataAsync("test", "fr", CancellationToken.None);
 
-        Assert.Equal("English Title", enTitle);
-        Assert.Equal("Titre Français", frTitle);
+        Assert.NotNull(enMetadata);
+        Assert.NotNull(frMetadata);
+        Assert.Equal("English Title", enMetadata.Title);
+        Assert.Equal("Titre Français", frMetadata.Title);
         _mockRepository.Verify(x => x.ReadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

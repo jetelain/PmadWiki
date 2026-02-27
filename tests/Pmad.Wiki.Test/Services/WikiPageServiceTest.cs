@@ -13,7 +13,7 @@ public class WikiPageServiceTest
     private readonly Mock<IGitRepositoryService> _mockGitRepositoryService;
     private readonly Mock<IGitRepository> _mockRepository;
     private readonly Mock<IWikiUserService> _mockWikiUserService;
-    private readonly Mock<IWikiPageTitleCache> _mockTitleCache;
+    private readonly Mock<IWikiPageMetadataCache> _mockMetadataCache;
     private readonly WikiOptions _options;
     private readonly WikiPageService _service;
 
@@ -22,7 +22,7 @@ public class WikiPageServiceTest
         _mockGitRepositoryService = new Mock<IGitRepositoryService>();
         _mockRepository = new Mock<IGitRepository>();
         _mockWikiUserService = new Mock<IWikiUserService>();
-        _mockTitleCache = new Mock<IWikiPageTitleCache>();
+        _mockMetadataCache = new Mock<IWikiPageMetadataCache>();
 
         _options = new WikiOptions
         {
@@ -42,7 +42,7 @@ public class WikiPageServiceTest
         _service = new WikiPageService(
             _mockGitRepositoryService.Object,
             _mockWikiUserService.Object,
-            _mockTitleCache.Object,
+            _mockMetadataCache.Object,
             optionsWrapper);
     }
 
@@ -66,9 +66,9 @@ public class WikiPageServiceTest
             .Setup(x => x.EnumerateFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable(commit));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", null, It.IsAny<WikiPageContent>()))
-            .Returns("Test Page");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("test", null, It.IsAny<WikiPageContent>()))
+            .Returns(new WikiPageMetadata("Test Page", new()));
 
         // Act
         var result = await _service.GetPageAsync("test", null, CancellationToken.None);
@@ -116,9 +116,9 @@ public class WikiPageServiceTest
             .Setup(x => x.EnumerateFileHistoryAsync("test.fr.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable(commit));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", "fr", It.IsAny<WikiPageContent>()))
-            .Returns("Page Française");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("test", "fr", It.IsAny<WikiPageContent>()))
+            .Returns(new WikiPageMetadata("Page Française", new()));
 
         // Act
         var result = await _service.GetPageAsync("test", "fr", CancellationToken.None);
@@ -148,9 +148,9 @@ public class WikiPageServiceTest
             .Setup(x => x.EnumerateFileHistoryAsync("admin/settings.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable(commit));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("admin/settings", null, It.IsAny<WikiPageContent>()))
-            .Returns("Admin Settings");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("admin/settings", null, It.IsAny<WikiPageContent>()))
+            .Returns(new WikiPageMetadata("Admin Settings", new()));
 
         // Act
         var result = await _service.GetPageAsync("admin/settings", null, CancellationToken.None);
@@ -179,15 +179,15 @@ public class WikiPageServiceTest
             .Setup(x => x.EnumerateFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable(commit));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", null, It.IsAny<WikiPageContent>()))
-            .Returns("Cached Title");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("test", null, It.IsAny<WikiPageContent>()))
+            .Returns(new WikiPageMetadata("Cached Title", new()));
 
         // Act
         await _service.GetPageAsync("test", null, CancellationToken.None);
 
         // Assert
-        _mockTitleCache.Verify(x => x.ExtractAndCacheTitle("test", null, It.IsAny<WikiPageContent>()), Times.Once);
+        _mockMetadataCache.Verify(x => x.ExtractAndCacheMetadata("test", null, It.IsAny<WikiPageContent>()), Times.Once);
     }
 
     [Fact]
@@ -207,9 +207,9 @@ public class WikiPageServiceTest
             .Setup(x => x.EnumerateFileHistoryAsync("test.md", "main", It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable<GitCommit>());
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", null, It.IsAny<WikiPageContent>()))
-            .Returns("Test");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("test", null, It.IsAny<WikiPageContent>()))
+            .Returns(new WikiPageMetadata("Test", new()));
 
         // Act
         var result = await _service.GetPageAsync("test", null, CancellationToken.None);
@@ -431,9 +431,9 @@ public class WikiPageServiceTest
         // Act
         await _service.GetPageAtRevisionAsync("test", null, "commit1", CancellationToken.None);
 
-        // Assert - Should NOT call ExtractAndCacheTitle for historical revisions
-        _mockTitleCache.Verify(
-            x => x.ExtractAndCacheTitle(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+        // Assert - Should NOT call ExtractAndCacheMetadata for historical revisions
+        _mockMetadataCache.Verify(
+            x => x.ExtractAndCacheMetadata(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
             Times.Never);
     }
 
@@ -596,17 +596,17 @@ public class WikiPageServiceTest
             .Setup(x => x.GetFilesWithLastChangeAsync("main", null, SearchOption.AllDirectories, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(fileLastChanges);
 
-        _mockTitleCache
-            .Setup(x => x.GetPageTitleAsync("Home", null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync("Home Page");
+        _mockMetadataCache
+            .Setup(x => x.GetPageMetadataAsync("Home", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPageMetadata("Home Page", new()));
 
-        _mockTitleCache
-            .Setup(x => x.GetPageTitleAsync("About", null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync("About Us");
+        _mockMetadataCache
+            .Setup(x => x.GetPageMetadataAsync("About", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPageMetadata("About Us", new()));
 
-        _mockTitleCache
-            .Setup(x => x.GetPageTitleAsync("docs/Guide", null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync("User Guide");
+        _mockMetadataCache
+            .Setup(x => x.GetPageMetadataAsync("docs/Guide", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPageMetadata("User Guide", new()));
 
         // Act
         var result = await _service.GetAllPagesAsync(CancellationToken.None);
@@ -643,9 +643,9 @@ public class WikiPageServiceTest
             .Setup(x => x.GetFilesWithLastChangeAsync("main", null, SearchOption.AllDirectories, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(fileLastChanges);
 
-        _mockTitleCache
-            .Setup(x => x.GetPageTitleAsync("page", null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync("Page");
+        _mockMetadataCache
+            .Setup(x => x.GetPageMetadataAsync("page", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPageMetadata("Page", new()));
 
         // Act
         var result = await _service.GetAllPagesAsync(CancellationToken.None);
@@ -674,17 +674,17 @@ public class WikiPageServiceTest
             .Setup(x => x.GetFilesWithLastChangeAsync("main", null, SearchOption.AllDirectories, It.IsAny<Func<string, bool>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(fileLastChanges);
 
-        _mockTitleCache
-            .Setup(x => x.GetPageTitleAsync("test", null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync("Test Page");
+        _mockMetadataCache
+            .Setup(x => x.GetPageMetadataAsync("test", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPageMetadata("Test Page", new()));
 
-        _mockTitleCache
-            .Setup(x => x.GetPageTitleAsync("test", "fr", It.IsAny<CancellationToken>()))
-            .ReturnsAsync("Page de Test");
+        _mockMetadataCache
+            .Setup(x => x.GetPageMetadataAsync("test", "fr", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPageMetadata("Page de Test", new()));
 
-        _mockTitleCache
-            .Setup(x => x.GetPageTitleAsync("test", "de", It.IsAny<CancellationToken>()))
-            .ReturnsAsync("Testseite");
+        _mockMetadataCache
+            .Setup(x => x.GetPageMetadataAsync("test", "de", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPageMetadata("Testseite", new()));
 
         // Act
         var result = await _service.GetAllPagesAsync(CancellationToken.None);
@@ -732,9 +732,9 @@ public class WikiPageServiceTest
         foreach (var item in fileLastChanges)
         {
             var pageName = Path.GetFileNameWithoutExtension(item.Path);
-            _mockTitleCache
-                .Setup(x => x.GetPageTitleAsync(pageName, null, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(pageName);
+            _mockMetadataCache
+                .Setup(x => x.GetPageMetadataAsync(pageName, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new WikiPageMetadata(pageName, new()));
         }
 
         // Act
@@ -770,9 +770,9 @@ public class WikiPageServiceTest
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(GitHash.FromBytes(new byte[20]));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
-            .Returns("New Page");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("test", null, content))
+            .Returns(new WikiPageMetadata("New Page", new()));
 
         // Act
         await _service.SavePageWithMediaAsync("test", null, content, "Create new page", author, new(), CancellationToken.None);
@@ -787,7 +787,7 @@ public class WikiPageServiceTest
                 m.AuthorEmail == "user@example.com"),
             It.IsAny<CancellationToken>()), Times.Once);
 
-        _mockTitleCache.Verify(x => x.ExtractAndCacheTitle("test", null, content), Times.Once);
+        _mockMetadataCache.Verify(x => x.ExtractAndCacheMetadata("test", null, content), Times.Once);
     }
 
     [Fact]
@@ -809,9 +809,9 @@ public class WikiPageServiceTest
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(GitHash.FromBytes(new byte[20]));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
-            .Returns("Updated Page");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("test", null, content))
+            .Returns(new WikiPageMetadata("Updated Page", new()));
 
         // Act
         await _service.SavePageWithMediaAsync("test", null, content, "Update page", author, new(), CancellationToken.None);
@@ -859,16 +859,16 @@ public class WikiPageServiceTest
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(GitHash.FromBytes(new byte[20]));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", "fr", content))
-            .Returns("Page Française");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("test", "fr", content))
+            .Returns(new WikiPageMetadata("Page Française", new()));
 
         // Act
         await _service.SavePageWithMediaAsync("test", "fr", content, "Add French page", author, new(), CancellationToken.None);
 
         // Assert
         _mockRepository.Verify(x => x.GetPathTypeAsync("test.fr.md", "main", It.IsAny<CancellationToken>()), Times.Once);
-        _mockTitleCache.Verify(x => x.ExtractAndCacheTitle("test", "fr", content), Times.Once);
+        _mockMetadataCache.Verify(x => x.ExtractAndCacheMetadata("test", "fr", content), Times.Once);
     }
 
     [Fact]
@@ -890,9 +890,9 @@ public class WikiPageServiceTest
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(GitHash.FromBytes(new byte[20]));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("admin/settings", null, content))
-            .Returns("Admin Settings");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("admin/settings", null, content))
+            .Returns(new WikiPageMetadata("Admin Settings", new()));
 
         // Act
         await _service.SavePageWithMediaAsync("admin/settings", null, content, "Add settings page", author, new (), CancellationToken.None);
@@ -927,9 +927,9 @@ public class WikiPageServiceTest
                 (_, ops, _, _) => capturedOps = ops.ToArray())
             .ReturnsAsync(GitHash.FromBytes(new byte[20]));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
-            .Returns("Page with Image");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("test", null, content))
+            .Returns(new WikiPageMetadata("Page with Image", new()));
 
         // Act
         await _service.SavePageWithMediaAsync("test", null, content, "Add page with image", author, mediaFiles, CancellationToken.None);
@@ -944,7 +944,7 @@ public class WikiPageServiceTest
         var mediaOp = capturedOps.OfType<AddFileOperation>().FirstOrDefault(op => op.Path == "images/logo.png");
         Assert.NotNull(mediaOp);
 
-        _mockTitleCache.Verify(x => x.ExtractAndCacheTitle("test", null, content), Times.Once);
+        _mockMetadataCache.Verify(x => x.ExtractAndCacheMetadata("test", null, content), Times.Once);
     }
 
     [Fact]
@@ -975,9 +975,9 @@ public class WikiPageServiceTest
                 (_, ops, _, _) => capturedOps = ops.ToArray())
             .ReturnsAsync(GitHash.FromBytes(new byte[20]));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("gallery", null, content))
-            .Returns("Gallery");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("gallery", null, content))
+            .Returns(new WikiPageMetadata("Gallery", new()));
 
         // Act
         await _service.SavePageWithMediaAsync("gallery", null, content, "Add gallery with media", author, mediaFiles, CancellationToken.None);
@@ -1018,9 +1018,9 @@ public class WikiPageServiceTest
                 (_, ops, _, _) => capturedOps = ops.ToArray())
             .ReturnsAsync(GitHash.FromBytes(new byte[20]));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
-            .Returns("Updated Page");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("test", null, content))
+            .Returns(new WikiPageMetadata("Updated Page", new()));
 
         // Act
         await _service.SavePageWithMediaAsync("test", null, content, "Update page and add media", author, mediaFiles, CancellationToken.None);
@@ -1152,9 +1152,9 @@ public class WikiPageServiceTest
                 (_, ops, _, _) => capturedOps = ops.ToArray())
             .ReturnsAsync(GitHash.FromBytes(new byte[20]));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
-            .Returns("Simple Page");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("test", null, content))
+            .Returns(new WikiPageMetadata("Simple Page", new()));
 
         // Act
         await _service.SavePageWithMediaAsync("test", null, content, "Add simple page", author, mediaFiles, CancellationToken.None);
@@ -1191,9 +1191,9 @@ public class WikiPageServiceTest
                 (_, ops, _, _) => capturedOps = ops.ToArray())
             .ReturnsAsync(GitHash.FromBytes(new byte[20]));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", "fr", content))
-            .Returns("Page Française");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("test", "fr", content))
+            .Returns(new WikiPageMetadata("Page Française", new()));
 
         // Act
         await _service.SavePageWithMediaAsync("test", "fr", content, "Add French page with media", author, mediaFiles, CancellationToken.None);
@@ -1204,7 +1204,7 @@ public class WikiPageServiceTest
         Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "test.fr.md");
         Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "images/banner.jpg");
 
-        _mockTitleCache.Verify(x => x.ExtractAndCacheTitle("test", "fr", content), Times.Once);
+        _mockMetadataCache.Verify(x => x.ExtractAndCacheMetadata("test", "fr", content), Times.Once);
     }
 
     [Fact]
@@ -1233,9 +1233,9 @@ public class WikiPageServiceTest
                 (_, ops, _, _) => capturedOps = ops.ToArray())
             .ReturnsAsync(GitHash.FromBytes(new byte[20]));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("admin/guide", null, content))
-            .Returns("Admin Guide");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("admin/guide", null, content))
+            .Returns(new WikiPageMetadata("Admin Guide", new()));
 
         // Act
         await _service.SavePageWithMediaAsync("admin/guide", null, content, "Add admin guide with screenshot", author, mediaFiles, CancellationToken.None);
@@ -1277,9 +1277,9 @@ public class WikiPageServiceTest
                 (_, ops, _, _) => capturedOps = ops.ToArray())
             .ReturnsAsync(GitHash.FromBytes(new byte[20]));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("media", null, content))
-            .Returns("Rich Media Page");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("media", null, content))
+            .Returns(new WikiPageMetadata("Rich Media Page", new()));
 
         // Act
         await _service.SavePageWithMediaAsync("media", null, content, "Add page with various media", author, mediaFiles, CancellationToken.None);
@@ -1322,9 +1322,9 @@ public class WikiPageServiceTest
                 (_, ops, _, _) => capturedOps = ops.ToArray())
             .ReturnsAsync(GitHash.FromBytes(new byte[20]));
 
-        _mockTitleCache
-            .Setup(x => x.ExtractAndCacheTitle("test", null, content))
-            .Returns("Test Page");
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("test", null, content))
+            .Returns(new WikiPageMetadata("Test Page", new()));
 
         // Act
         await _service.SavePageWithMediaAsync("test", null, content, "Add page with image", author, mediaFiles, CancellationToken.None);
@@ -1369,38 +1369,38 @@ public class WikiPageServiceTest
     #region GetPageTitleAsync Tests
 
     [Fact]
-    public async Task GetPageTitleAsync_DelegatesToTitleCache()
+    public async Task GetPageTitleAsync_DelegatesToMetadataCache()
     {
         // Arrange
-        _mockTitleCache
-            .Setup(x => x.GetPageTitleAsync("test", null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync("Test Title");
+        _mockMetadataCache
+            .Setup(x => x.GetPageMetadataAsync("test", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPageMetadata("Test Title", new()));
 
         // Act
         var result = await _service.GetPageTitleAsync("test", null, CancellationToken.None);
 
         // Assert
         Assert.Equal("Test Title", result);
-        _mockTitleCache.Verify(
-            x => x.GetPageTitleAsync("test", null, It.IsAny<CancellationToken>()),
+        _mockMetadataCache.Verify(
+            x => x.GetPageMetadataAsync("test", null, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
     [Fact]
-    public async Task GetPageTitleAsync_WithCulture_DelegatesToTitleCache()
+    public async Task GetPageTitleAsync_WithCulture_DelegatesToMetadataCache()
     {
         // Arrange
-        _mockTitleCache
-            .Setup(x => x.GetPageTitleAsync("test", "fr", It.IsAny<CancellationToken>()))
-            .ReturnsAsync("Titre du Test");
+        _mockMetadataCache
+            .Setup(x => x.GetPageMetadataAsync("test", "fr", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPageMetadata("Titre du Test", new()));
 
         // Act
         var result = await _service.GetPageTitleAsync("test", "fr", CancellationToken.None);
 
         // Assert
         Assert.Equal("Titre du Test", result);
-        _mockTitleCache.Verify(
-            x => x.GetPageTitleAsync("test", "fr", It.IsAny<CancellationToken>()),
+        _mockMetadataCache.Verify(
+            x => x.GetPageMetadataAsync("test", "fr", It.IsAny<CancellationToken>()),
             Times.Once);
     }
 

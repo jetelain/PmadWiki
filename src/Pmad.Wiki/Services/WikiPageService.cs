@@ -10,18 +10,18 @@ public sealed class WikiPageService : IWikiPageService
 {
     private readonly IGitRepositoryService _gitRepositoryService;
     private readonly IWikiUserService _wikiUserService;
-    private readonly IWikiPageTitleCache _titleCache;
+    private readonly IWikiPageMetadataCache _metadataCache;
     private readonly WikiOptions _options;
 
     public WikiPageService(
         IGitRepositoryService gitRepositoryService, 
         IWikiUserService wikiUserService, 
-        IWikiPageTitleCache titleCache,
+        IWikiPageMetadataCache metadataCache,
         IOptions<WikiOptions> options)
     {
         _wikiUserService = wikiUserService;
         _gitRepositoryService = gitRepositoryService;
-        _titleCache = titleCache;
+        _metadataCache = metadataCache;
         _options = options.Value;
     }
 
@@ -53,7 +53,7 @@ public sealed class WikiPageService : IWikiPageService
             var contentText = Encoding.UTF8.GetString(gitFile.Content);
 
             var parsed = WikiPageContentParser.Parse(contentText);
-            var title = _titleCache.ExtractAndCacheTitle(pageName, culture, parsed);
+            var metadata = _metadataCache.ExtractAndCacheMetadata(pageName, culture, parsed);
 
             GitCommit? lastCommit = null;
             await foreach (var commit in repository.EnumerateFileHistoryAsync(filePath, _options.BranchName, cancellationToken))
@@ -67,7 +67,7 @@ public sealed class WikiPageService : IWikiPageService
                 Content = parsed,
                 PageName = pageName,
                 ContentHash = gitFile.Hash.Value,
-                Title = title,
+                Title = metadata.Title,
                 Culture = culture,
                 LastModifiedBy = lastCommit?.Metadata.AuthorName,
                 LastModified = lastCommit?.Metadata.AuthorDate
@@ -227,12 +227,12 @@ public sealed class WikiPageService : IWikiPageService
 
                 if (!pages.ContainsKey(key))
                 {
-                    var title = await _titleCache.GetPageTitleAsync(pageName, culture, cancellationToken);
+                    var pageMetadata = await _metadataCache.GetPageMetadataAsync(pageName, culture, cancellationToken);
 
                     pages[key] = new WikiPageInfo
                     {
                         PageName = pageName,
-                        Title = title,
+                        Title = pageMetadata?.Title,
                         Culture = culture,
                         LastModified = file.Commit.Metadata.AuthorDate,
                         LastModifiedBy = file.Commit.Metadata.AuthorName
@@ -281,8 +281,8 @@ public sealed class WikiPageService : IWikiPageService
 
         await repository.CreateCommitAsync(_options.BranchName, operations, metadata, cancellationToken);
 
-        // Update the title cache immediately with the new content
-        _titleCache.ExtractAndCacheTitle(pageName, culture, content);
+        // Update the metadata cache immediately with the new content
+        _metadataCache.ExtractAndCacheMetadata(pageName, culture, content);
     }
 
     private IGitRepository GetRepository()
@@ -296,9 +296,10 @@ public sealed class WikiPageService : IWikiPageService
         return Path.Combine(_options.RepositoryRoot, _options.WikiRepositoryName);
     }
 
-    public Task<string?> GetPageTitleAsync(string pageName, string? culture, CancellationToken cancellationToken = default)
+    public async Task<string?> GetPageTitleAsync(string pageName, string? culture, CancellationToken cancellationToken = default)
     {
-        return _titleCache.GetPageTitleAsync(pageName, culture, cancellationToken);
+        var metadata = await _metadataCache.GetPageMetadataAsync(pageName, culture, cancellationToken);
+        return metadata?.Title;
     }
 
     public async Task<byte[]?> GetMediaFileAsync(string filePath, CancellationToken cancellationToken = default)

@@ -8,28 +8,28 @@ using Pmad.Wiki.Models;
 
 namespace Pmad.Wiki.Services;
 
-public class WikiPageTitleCache : IWikiPageTitleCache
+public class WikiPageMetadataCache : IWikiPageMetadataCache
 {
     private readonly IGitRepositoryService _gitRepositoryService;
     private readonly WikiOptions _options;
-    private readonly ConcurrentDictionary<string, string> _titleCache;
+    private readonly ConcurrentDictionary<string, WikiPageMetadata> _metadataCache;
 
-    public WikiPageTitleCache(
+    public WikiPageMetadataCache(
         IGitRepositoryService gitRepositoryService,
         IOptions<WikiOptions> options)
     {
         _gitRepositoryService = gitRepositoryService;
         _options = options.Value;
-        _titleCache = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+        _metadataCache = new ConcurrentDictionary<string, WikiPageMetadata>(StringComparer.Ordinal);
     }
 
-    public async Task<string?> GetPageTitleAsync(string pageName, string? culture, CancellationToken cancellationToken = default)
+    public async Task<WikiPageMetadata?> GetPageMetadataAsync(string pageName, string? culture, CancellationToken cancellationToken = default)
     {
         var cacheKey = GetCacheKey(pageName, culture);
 
-        if (_titleCache.TryGetValue(cacheKey, out var cachedTitle))
+        if (_metadataCache.TryGetValue(cacheKey, out var cachedMetadata))
         {
-            return cachedTitle;
+            return cachedMetadata;
         }
 
         var repository = GetRepository();
@@ -39,8 +39,7 @@ public class WikiPageTitleCache : IWikiPageTitleCache
         {
             var content = await repository.ReadFileAsync(filePath, _options.BranchName, cancellationToken);
             var contentText = Encoding.UTF8.GetString(content);
-            var title = ExtractAndCacheTitle(pageName, culture, contentText);
-            return title;
+            return ExtractAndCacheMetadata(pageName, culture, contentText);
         }
         catch (FileNotFoundException)
         {
@@ -50,23 +49,22 @@ public class WikiPageTitleCache : IWikiPageTitleCache
 
     public void ClearCache()
     {
-        _titleCache.Clear();
+        _metadataCache.Clear();
     }
 
-    public string ExtractAndCacheTitle(string pageName, string? culture, string content)
+    public WikiPageMetadata ExtractAndCacheMetadata(string pageName, string? culture, string content)
     {
-        var title = MarkdownTitleExtractor.ExtractFirstTitle(content, pageName);
-        var cacheKey = GetCacheKey(pageName, culture);
-        _titleCache[cacheKey] = title;
-        return title;
+        var parsed = WikiPageContentParser.Parse(content);
+        return ExtractAndCacheMetadata(pageName, culture, parsed);
     }
 
-    public string ExtractAndCacheTitle(string pageName, string? culture, WikiPageContent content)
+    public WikiPageMetadata ExtractAndCacheMetadata(string pageName, string? culture, WikiPageContent content)
     {
         var title = MarkdownTitleExtractor.ExtractFirstTitle(content, pageName);
+        var metadata = new WikiPageMetadata(title, content.FrontMatter);
         var cacheKey = GetCacheKey(pageName, culture);
-        _titleCache[cacheKey] = title;
-        return title;
+        _metadataCache[cacheKey] = metadata;
+        return metadata;
     }
 
     private string GetCacheKey(string pageName, string? culture)
