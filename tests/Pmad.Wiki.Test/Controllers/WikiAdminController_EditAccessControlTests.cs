@@ -7,7 +7,7 @@ using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki.Test.Controllers;
 
-public class WikiController_EditAccessControlTests : WikiControllerTestBase
+public class WikiAdminController_EditAccessControlTests : WikiAdminControllerTestBase
 {
     #region GET EditAccessControl Tests
 

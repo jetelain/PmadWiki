@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Pmad.Git.HttpServer;
 
 namespace Pmad.Wiki
@@ -56,6 +54,16 @@ namespace Pmad.Wiki
                 name: "wiki-create-page",
                 pattern: $"{pattern}/createpage/{{**id}}",
                 defaults: new { controller = "Wiki", action = "CreatePage" });
+
+            endpoints.MapControllerRoute(
+                name: "wiki-admin-access-control",
+                pattern: $"{pattern}/admin/access-control",
+                defaults: new { controller = "WikiAdmin", action = "AccessControl" });
+
+            endpoints.MapControllerRoute(
+                name: "wiki-admin-edit-access-control",
+                pattern: $"{pattern}/admin/access-control/edit",
+                defaults: new { controller = "WikiAdmin", action = "EditAccessControl" });
 
             return endpoints;
         }

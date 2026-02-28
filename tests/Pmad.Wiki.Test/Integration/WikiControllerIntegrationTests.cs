@@ -73,7 +73,6 @@ public class WikiControllerIntegrationTests : IDisposable
         // Note: A controller MUST NOT be reused across tests due to its internal state (e.g. TempData, ControllerContext)
 
         var pageService = _serviceProvider.GetRequiredService<IWikiPageService>();
-        var accessControlService = _serviceProvider.GetRequiredService<IPageAccessControlService>();
         var markdownRenderService = _serviceProvider.GetRequiredService<IMarkdownRenderService>();
         var wikiPageEditService = _serviceProvider.GetRequiredService<IWikiPageEditService>();
         var tempMediaStorage = _serviceProvider.GetRequiredService<ITemporaryMediaStorageService>();
@@ -86,7 +85,6 @@ public class WikiControllerIntegrationTests : IDisposable
         var _controller = new WikiController(
             pageService,
             _mockUserService.Object,
-            accessControlService,
             markdownRenderService,
             tempMediaStorage,
             wikiPageEditService,

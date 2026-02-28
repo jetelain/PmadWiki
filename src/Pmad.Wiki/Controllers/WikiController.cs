@@ -18,7 +18,6 @@ namespace Pmad.Wiki.Controllers
 
         private readonly IWikiPageService _pageService;
         private readonly IWikiUserService _userService;
-        private readonly IPageAccessControlService _accessControlService;
         private readonly IMarkdownRenderService _markdownRenderService;
         private readonly ITemporaryMediaStorageService _temporaryMediaStorage;
         private readonly IWikiPageEditService _wikiPageEditService;
@@ -31,7 +30,6 @@ namespace Pmad.Wiki.Controllers
         public WikiController(
             IWikiPageService pageService,
             IWikiUserService userService,
-            IPageAccessControlService accessControlService,
             IMarkdownRenderService markdownRenderService,
             ITemporaryMediaStorageService temporaryMediaStorage,
             IWikiPageEditService wikiPageEditService,
@@ -43,7 +41,6 @@ namespace Pmad.Wiki.Controllers
         {
             _pageService = pageService;
             _userService = userService;
-            _accessControlService = accessControlService;
             _markdownRenderService = markdownRenderService;
             _temporaryMediaStorage = temporaryMediaStorage;
             _wikiPageEditService = wikiPageEditService;
@@ -684,93 +681,6 @@ namespace Pmad.Wiki.Controllers
             }
 
             return File(fileContent, "application/octet-stream");
-        }
-
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> AccessControl(CancellationToken cancellationToken)
-        {
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
-            if (wikiUser == null || !wikiUser.CanAdmin)
-            {
-                return Forbid();
-            }
-
-            var rules = await _accessControlService.GetRulesAsync(cancellationToken);
-
-            var viewModel = new WikiAccessControlViewModel
-            {
-                Rules = rules.Select(r => new WikiAccessControlRuleViewModel
-                {
-                    Pattern = r.Pattern,
-                    ReadGroups = string.Join(", ", r.ReadGroups),
-                    WriteGroups = string.Join(", ", r.WriteGroups),
-                    Order = r.Order
-                }).ToList(),
-                IsEnabled = _options.UsePageLevelPermissions
-            };
-
-            return View(viewModel);
-        }
-
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> EditAccessControl(CancellationToken cancellationToken)
-        {
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
-            if (wikiUser == null || !wikiUser.CanAdmin)
-            {
-                return Forbid();
-            }
-
-            if (!_options.UsePageLevelPermissions)
-            {
-                return BadRequest("Page-level permissions are not enabled.");
-            }
-
-            var rules = await _accessControlService.GetRulesAsync(cancellationToken);
-            var content = AccessControlRuleSerializer.SerializeRules(rules, includeExamples: true);
-
-            var viewModel = new WikiAccessControlEditViewModel
-            {
-                Content = content
-            };
-
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditAccessControl(WikiAccessControlEditViewModel model, CancellationToken cancellationToken)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            var wikiUser = await _userService.GetWikiUser(User, true, cancellationToken);
-            if (wikiUser == null || !wikiUser.CanAdmin)
-            {
-                return Forbid();
-            }
-
-            if (!_options.UsePageLevelPermissions)
-            {
-                return BadRequest("Page-level permissions are not enabled.");
-            }
-
-            try
-            {
-                var rules = AccessControlRuleSerializer.ParseRules(model.Content);
-                await _accessControlService.SaveRulesAsync(rules, model.CommitMessage, wikiUser.User, cancellationToken);
-                return RedirectToAction(nameof(AccessControl));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, _localizer["Error saving rules: {0}", ex.Message]);
-                return View(model);
-            }
         }
 
         [HttpGet]

@@ -13,7 +13,7 @@
                 </a>
                 @if (Model.CanAdmin)
                 {
-                    <a asp-action="AccessControl" class="btn btn-outline-secondary">
+                    <a asp-controller="WikiAdmin" asp-action="AccessControl" class="btn btn-outline-secondary">
                         <i class="bi bi-shield-lock"></i> @Localizer["Access Control"]
                     </a>
                 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Pmad.Git.HttpServer;
 using Pmad.Wiki.Services;
@@ -24,6 +25,11 @@ public static class WikiServiceCollectionExtensions
 
         services.AddMemoryCache();
         services.AddGitRepositoryService();
+
+        services.Configure<RazorViewEngineOptions>(options =>
+        {
+            options.ViewLocationExpanders.Add(new WikiViewLocationExpander());
+        });
 
         return services;
     }
