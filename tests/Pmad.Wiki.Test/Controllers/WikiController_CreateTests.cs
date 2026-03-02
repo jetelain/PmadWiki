@@ -349,7 +349,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync(template);
 
         _mockTemplateService
-            .Setup(x => x.ResolvePlaceHolders("Report-{date}"))
+            .Setup(x => x.ResolvePlaceholders("Report-{date}"))
             .Returns("Report-2024-01-15");
 
         SetupUserContext("testuser");
@@ -364,7 +364,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         Assert.Equal("Report-2024-01-15", model.PageName);
         
         _mockTemplateService.Verify(
-            x => x.ResolvePlaceHolders("Report-{date}"),
+            x => x.ResolvePlaceholders("Report-{date}"),
             Times.Once);
     }
 
@@ -392,7 +392,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync(template);
 
         _mockTemplateService
-            .Setup(x => x.ResolvePlaceHolders("projects/{year}"))
+            .Setup(x => x.ResolvePlaceholders("projects/{year}"))
             .Returns("projects/2024");
 
         SetupUserContext("testuser");
@@ -407,7 +407,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         Assert.Equal("projects/2024", model.Location);
         
         _mockTemplateService.Verify(
-            x => x.ResolvePlaceHolders("projects/{year}"),
+            x => x.ResolvePlaceholders("projects/{year}"),
             Times.Once);
     }
 
@@ -459,7 +459,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync(template);
 
         _mockTemplateService
-            .Setup(x => x.ResolvePlaceHolders("blog/posts"))
+            .Setup(x => x.ResolvePlaceholders("blog/posts"))
             .Returns("blog/posts");
 
         SetupUserContext("testuser");
@@ -567,7 +567,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         Assert.Equal("NewPage", model.PageName);
         
         _mockTemplateService.Verify(
-            x => x.ResolvePlaceHolders(It.IsAny<string>()),
+            x => x.ResolvePlaceholders(It.IsAny<string>()),
             Times.Never);
     }
 

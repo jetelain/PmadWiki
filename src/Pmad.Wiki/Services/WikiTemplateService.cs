@@ -67,7 +67,7 @@ public sealed class WikiTemplateService : IWikiTemplateService
         return await LoadTemplateFromPageAsync(templateId, cancellationToken);
     }
 
-    public string ResolvePlaceHolders(string pattern)
+    public string ResolvePlaceholders(string pattern)
     {
         if (string.IsNullOrWhiteSpace(pattern))
         {

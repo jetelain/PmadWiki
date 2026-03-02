@@ -418,7 +418,7 @@ namespace Pmad.Wiki.Controllers
                     if (!string.IsNullOrEmpty(templateId))
                     {
                         var template = await _templateService.GetTemplateAsync(wikiUser!, templateId, cancellationToken);
-                        content = _templateService.ResolvePlaceHolders(template?.Content ?? string.Empty);
+                        content = _templateService.ResolvePlaceholders(template?.Content ?? string.Empty);
                     }
                     else
                     {
@@ -730,13 +730,13 @@ namespace Pmad.Wiki.Controllers
                 // Generate suggested name from pattern if available
                 if (!string.IsNullOrEmpty(template.NamePattern))
                 {
-                    suggestedName = _templateService.ResolvePlaceHolders(template.NamePattern);
+                    suggestedName = _templateService.ResolvePlaceholders(template.NamePattern);
                 }
 
                 // Generate default location from template if available
                 if (!string.IsNullOrEmpty(template.DefaultLocation))
                 {
-                    defaultLocation = _templateService.ResolvePlaceHolders(template.DefaultLocation);
+                    defaultLocation = _templateService.ResolvePlaceholders(template.DefaultLocation);
                 }
             }
 

@@ -30,5 +30,5 @@ public interface IWikiTemplateService
     /// </summary>
     /// <param name="pattern">The pattern string containing placeholders.</param>
     /// <returns>The pattern with all placeholders replaced.</returns>
-    string ResolvePlaceHolders(string pattern);
+    string ResolvePlaceholders(string pattern);
 }
