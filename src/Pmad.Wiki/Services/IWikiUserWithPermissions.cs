@@ -1,5 +1,9 @@
 ﻿namespace Pmad.Wiki.Services;
 
+/// <summary>
+/// Represents an authenticated wiki user together with their resolved permissions.
+/// Returned by <see cref="IWikiUserService.GetWikiUser"/>.
+/// </summary>
 public interface IWikiUserWithPermissions
 {
     /// <summary>
