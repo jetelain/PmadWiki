@@ -2,8 +2,8 @@ using System.Security.Claims;
 using AspNet.Security.OpenId.Steam;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
-using Pmad.Git.HttpServer;
 using Pmad.Wiki.Demo.Entities;
 using Pmad.Wiki.Demo.Services;
 using Pmad.Wiki.Services;
@@ -73,6 +73,13 @@ namespace Pmad.Wiki.Demo
 
             app.MapWiki();
 
+            //app.UseRequestLocalization(option => {
+            //    var supportedCultures = new[] { "fr", "en" };
+            //    option.DefaultRequestCulture = new RequestCulture(supportedCultures[0]);
+            //    option.AddSupportedCultures(supportedCultures);
+            //    option.AddSupportedUICultures(supportedCultures);
+            //});
+
             app.UseCookiePolicy(new CookiePolicyOptions()
             {
                 HttpOnly = HttpOnlyPolicy.Always,
@@ -95,7 +102,7 @@ namespace Pmad.Wiki.Demo
                 dbContext.Database.Migrate();
 
                 var wiki = scope.ServiceProvider.GetRequiredService<IWikiPageService>();
-                wiki.EnsureRepositoryCreated().GetAwaiter().GetResult();
+                wiki.EnsureRepositoryCreatedAsync().GetAwaiter().GetResult();
             }
         }
     }
