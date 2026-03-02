@@ -65,6 +65,36 @@ public static class WikiEndpointRouteBuilderExtensions
             defaults: new { controller = "Wiki", action = "CreatePage" });
 
         endpoints.MapControllerRoute(
+            name: "wiki-create-page-confirm",
+            pattern: $"{pattern}/createpageconfirm",
+            defaults: new { controller = "Wiki", action = "CreatePageConfirm" });
+
+        endpoints.MapControllerRoute(
+            name: "wiki-upload-media",
+            pattern: $"{pattern}/uploadmedia",
+            defaults: new { controller = "Wiki", action = "UploadMedia" });
+
+        endpoints.MapControllerRoute(
+            name: "wiki-temp-media",
+            pattern: $"{pattern}/tempmedia/{{**id}}",
+            defaults: new { controller = "Wiki", action = "TempMedia" });
+
+        endpoints.MapControllerRoute(
+            name: "wiki-preview-markdown",
+            pattern: $"{pattern}/previewmarkdown",
+            defaults: new { controller = "Wiki", action = "PreviewMarkdown" });
+
+        endpoints.MapControllerRoute(
+            name: "wiki-get-accessible-pages",
+            pattern: $"{pattern}/getaccessiblepages",
+            defaults: new { controller = "Wiki", action = "GetAccessiblePages" });
+
+        endpoints.MapControllerRoute(
+            name: "wiki-get-media-gallery",
+            pattern: $"{pattern}/getmediagallery",
+            defaults: new { controller = "Wiki", action = "GetMediaGallery" });
+
+        endpoints.MapControllerRoute(
             name: "wiki-admin-access-control",
             pattern: $"{pattern}/admin/access-control",
             defaults: new { controller = "WikiAdmin", action = "AccessControl" });
