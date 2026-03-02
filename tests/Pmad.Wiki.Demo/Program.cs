@@ -73,12 +73,13 @@ namespace Pmad.Wiki.Demo
 
             app.MapWiki();
 
-            //app.UseRequestLocalization(option => {
-            //    var supportedCultures = new[] { "fr", "en" };
-            //    option.DefaultRequestCulture = new RequestCulture(supportedCultures[0]);
-            //    option.AddSupportedCultures(supportedCultures);
-            //    option.AddSupportedUICultures(supportedCultures);
-            //});
+            app.UseRequestLocalization(option =>
+            {
+                var supportedCultures = new[] { "en", "fr" };
+                option.DefaultRequestCulture = new RequestCulture(supportedCultures[0]);
+                option.AddSupportedCultures(supportedCultures);
+                option.AddSupportedUICultures(supportedCultures);
+            });
 
             app.UseCookiePolicy(new CookiePolicyOptions()
             {
