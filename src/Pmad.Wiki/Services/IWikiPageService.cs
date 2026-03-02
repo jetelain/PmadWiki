@@ -8,7 +8,7 @@ public interface IWikiPageService
     /// <summary>
     /// Ensures the underlying Git repository exists, creating it if necessary.
     /// </summary>
-    Task EnsureRepositoryCreated();
+    Task EnsureRepositoryCreatedAsync();
 
     /// <summary>
     /// Gets the latest version of a page.

@@ -18,7 +18,7 @@ public class WikiController_GetMediaGalleryTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allMedia = new List<MediaFileInfo>
@@ -73,7 +73,7 @@ public class WikiController_GetMediaGalleryTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allMedia = new List<MediaFileInfo>
@@ -122,7 +122,7 @@ public class WikiController_GetMediaGalleryTests : WikiControllerTestBase
     {
         // Arrange
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync((IWikiUserWithPermissions?)null);
 
         // Act
@@ -140,7 +140,7 @@ public class WikiController_GetMediaGalleryTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(false);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         SetupUserContext("testuser");

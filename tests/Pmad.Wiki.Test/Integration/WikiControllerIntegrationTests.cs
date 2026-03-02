@@ -254,7 +254,7 @@ public class WikiControllerIntegrationTests : IDisposable
         mockWikiUser.Setup(x => x.User).Returns(mockUser.Object);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockWikiUser.Object);
     }
 

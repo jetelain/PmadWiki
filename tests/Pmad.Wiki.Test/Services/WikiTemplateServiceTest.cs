@@ -29,7 +29,7 @@ public class WikiTemplateServiceTest
         var mockUser = CreateMockUser();
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<WikiPageInfo>());
 
         // Act
@@ -52,7 +52,7 @@ public class WikiTemplateServiceTest
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         // Act
@@ -74,7 +74,7 @@ public class WikiTemplateServiceTest
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = @"---
@@ -127,7 +127,7 @@ Content here";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_templates/article", "Article Template", "# Article");
@@ -161,7 +161,7 @@ Content here";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_templates/simple", "Simple Template", "# Simple");
@@ -186,7 +186,7 @@ Content here";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_template", "Root Template", "# Root");
@@ -211,7 +211,7 @@ Content here";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("docs/_template", "Docs Template", "# Docs");
@@ -239,7 +239,7 @@ Content here";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_templates/article", "Article", "# Article");
@@ -270,7 +270,7 @@ Content here";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = @"---
@@ -321,7 +321,7 @@ This is the template content.";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = @"# Simple Template
@@ -368,7 +368,7 @@ This is a simple template without front matter.";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = @"---
@@ -413,7 +413,7 @@ description: Has only some fields
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = @"---
@@ -458,7 +458,7 @@ description: Template without title in front matter
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = "# Content without front matter";
@@ -505,7 +505,7 @@ description: Template without title in front matter
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_templates/zebra", "Zebra Template", "# Zebra");
@@ -536,7 +536,7 @@ description: Template without title in front matter
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePageWithoutTitle("_templates/z-template", "# Z");
@@ -571,7 +571,7 @@ description: Template without title in front matter
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_templates/good", "Good Template", "# Good");
@@ -608,7 +608,7 @@ description: Template without title in front matter
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, cancellationToken))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, cancellationToken))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_templates/test", "Test Template", "# Test");
@@ -618,7 +618,7 @@ description: Template without title in front matter
 
         // Assert
         _mockPermissionHelper.Verify(
-            x => x.GetAllAccessiblePages(mockUser, cancellationToken),
+            x => x.GetAllAccessiblePagesAsync(mockUser, cancellationToken),
             Times.Once);
 
         _mockPageService.Verify(
@@ -1171,7 +1171,7 @@ description: Template for articles
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = @"---

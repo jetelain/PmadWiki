@@ -18,7 +18,7 @@ public class WikiController_PreviewMarkdownTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var request = new PreviewMarkdownRequest
@@ -56,7 +56,7 @@ public class WikiController_PreviewMarkdownTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var request = new PreviewMarkdownRequest
@@ -94,7 +94,7 @@ public class WikiController_PreviewMarkdownTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var request = new PreviewMarkdownRequest
@@ -126,7 +126,7 @@ public class WikiController_PreviewMarkdownTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var request = new PreviewMarkdownRequest
@@ -158,7 +158,7 @@ public class WikiController_PreviewMarkdownTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         SetupUserContext("testuser");
@@ -180,7 +180,7 @@ public class WikiController_PreviewMarkdownTests : WikiControllerTestBase
     {
         // Arrange
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync((IWikiUserWithPermissions?)null);
 
         var request = new PreviewMarkdownRequest
@@ -209,7 +209,7 @@ public class WikiController_PreviewMarkdownTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(false);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var request = new PreviewMarkdownRequest
@@ -240,7 +240,7 @@ public class WikiController_PreviewMarkdownTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var markdown = @"# Heading 1
@@ -290,7 +290,7 @@ var code = ""example"";
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var request = new PreviewMarkdownRequest
@@ -328,7 +328,7 @@ var code = ""example"";
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var request = new PreviewMarkdownRequest
@@ -362,7 +362,7 @@ var code = ""example"";
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var markdown = "[Internal Link](./OtherPage.md)\n\n[External Link](https://example.com)";
@@ -397,7 +397,7 @@ var code = ""example"";
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var markdown = "![Alt text](medias/image.png)";
@@ -432,7 +432,7 @@ var code = ""example"";
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var request = new PreviewMarkdownRequest

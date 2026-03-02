@@ -19,7 +19,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var rules = new List<PageAccessRule>
@@ -58,7 +58,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
     {
         // Arrange
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync((IWikiUserWithPermissions?)null);
 
         // Act
@@ -78,7 +78,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanView).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         SetupUserContext("user");
@@ -98,7 +98,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         _mockAccessControlService
@@ -127,7 +127,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         _mockAccessControlService
@@ -156,7 +156,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         _mockAccessControlService
@@ -183,7 +183,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var rules = new List<PageAccessRule>
@@ -217,7 +217,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var rules = new List<PageAccessRule>
@@ -251,7 +251,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var rules = new List<PageAccessRule>
@@ -290,7 +290,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var rules = new List<PageAccessRule>
@@ -327,7 +327,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var rules = new List<PageAccessRule>
@@ -361,7 +361,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         _mockAccessControlService
@@ -387,7 +387,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         _mockAccessControlService
@@ -401,7 +401,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
 
         // Assert
         _mockUserService.Verify(
-            x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()),
+            x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -414,7 +414,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         SetupUserContext("editor");
@@ -435,7 +435,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanView).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         SetupUserContext("viewer");
@@ -455,7 +455,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var rules = new List<PageAccessRule>();
@@ -493,7 +493,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var rules = new List<PageAccessRule>
@@ -527,7 +527,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var rules = new List<PageAccessRule>
@@ -561,7 +561,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var rules = new List<PageAccessRule>
@@ -592,7 +592,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
     {
         // Arrange
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync((IWikiUserWithPermissions?)null);
 
         SetupUserContext("user");
@@ -612,7 +612,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         _mockAccessControlService
@@ -636,7 +636,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var longPattern = "very/deeply/nested/path/to/some/specific/directory/**";
@@ -670,7 +670,7 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         mockUser.Setup(x => x.CanAdmin).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var rules = new List<PageAccessRule>

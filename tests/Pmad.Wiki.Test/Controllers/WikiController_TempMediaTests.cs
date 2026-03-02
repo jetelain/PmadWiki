@@ -24,7 +24,7 @@ public class WikiController_TempMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.User).Returns(mockWikiUser);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         _mockTemporaryMediaStorage
@@ -64,7 +64,7 @@ public class WikiController_TempMediaTests : WikiControllerTestBase
         var tempId = "abc123";
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync((IWikiUserWithPermissions?)null);
 
         // Act
@@ -84,7 +84,7 @@ public class WikiController_TempMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(false);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         SetupUserContext("testuser");
@@ -106,7 +106,7 @@ public class WikiController_TempMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         SetupUserContext("testuser");
@@ -131,7 +131,7 @@ public class WikiController_TempMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.User).Returns(mockWikiUser);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         _mockTemporaryMediaStorage
@@ -160,7 +160,7 @@ public class WikiController_TempMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.User).Returns(mockWikiUser);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         _mockTemporaryMediaStorage
@@ -200,7 +200,7 @@ public class WikiController_TempMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.User).Returns(mockWikiUser);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         _mockTemporaryMediaStorage
@@ -244,7 +244,7 @@ public class WikiController_TempMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "testuser") }, "TestAuth"));
@@ -271,7 +271,7 @@ public class WikiController_TempMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.User).Returns(mockWikiUser);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         _mockTemporaryMediaStorage

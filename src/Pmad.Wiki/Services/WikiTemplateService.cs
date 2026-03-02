@@ -21,7 +21,7 @@ public sealed class WikiTemplateService : IWikiTemplateService
         var templates = new List<WikiTemplate>();
 
         // Get all pages from the wiki
-        var allPages = await _pagePermissionHelper.GetAllAccessiblePages(wikiUser, cancellationToken);
+        var allPages = await _pagePermissionHelper.GetAllAccessiblePagesAsync(wikiUser, cancellationToken);
 
         // Filter pages that are templates
         // Templates are stored in _templates/ directory or named _template

@@ -19,7 +19,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.User).Returns(Mock.Of<IWikiUser>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var fileContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
@@ -51,7 +51,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
     {
         // Arrange
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync((IWikiUserWithPermissions?)null);
 
         var formFile = CreateFormFile("test.png", new byte[] { 0x89, 0x50, 0x4E, 0x47 });
@@ -71,7 +71,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(false);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var formFile = CreateFormFile("test.png", new byte[] { 0x89, 0x50, 0x4E, 0x47 });
@@ -93,7 +93,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         SetupUserContext("testuser");
@@ -115,7 +115,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var formFile = CreateFormFile("test.png", Array.Empty<byte>());
@@ -139,7 +139,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var formFile = CreateFormFile("malicious.exe", new byte[] { 0x4D, 0x5A });
@@ -163,7 +163,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         // Create a file larger than 10MB
@@ -194,7 +194,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.User).Returns(Mock.Of<IWikiUser>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var fileContent = new byte[] { 0x01, 0x02, 0x03 };
@@ -224,7 +224,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.User).Returns(Mock.Of<IWikiUser>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var fileContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
@@ -254,7 +254,7 @@ public class WikiController_UploadMediaTests : WikiControllerTestBase
         mockUser.Setup(x => x.User).Returns(mockWikiUser);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var fileContent = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A };
