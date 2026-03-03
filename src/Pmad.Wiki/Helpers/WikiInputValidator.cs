@@ -53,8 +53,12 @@ public static partial class WikiInputValidator
     internal static partial Regex MediaPathMarkdownRegex();
 
     /// <summary>
-    /// Template parameter names: alphanumeric and underscores only.
+    /// Template parameter names: alphanumeric, dash and underscores only.
     /// </summary>
+    /// <remarks>
+    /// Needs to be valid as html input names and query string parameters. 
+    /// Despite dash is not a valid html name, all browsers supports it and it's widely used in practice, so we allow it.
+    /// </remarks>
     [GeneratedRegex("^[a-zA-Z0-9_-]+$", RegexOptions.CultureInvariant)]
     private static partial Regex TemplateParameterNameRegex();
 
