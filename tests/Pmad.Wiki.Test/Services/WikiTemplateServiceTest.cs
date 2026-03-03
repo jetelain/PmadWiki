@@ -1259,6 +1259,191 @@ Date: {date}";
 
     #endregion
 
+    #region Custom Parameters Tests
+
+    [Fact]
+    public async Task GetTemplateAsync_WithCustomParameters_ParsesParametersCorrectly()
+    {
+        // Arrange
+        var mockUser = CreateMockUser();
+
+        _mockPermissionHelper
+            .Setup(x => x.CanView(mockUser, "_templates/feature", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var pageContent = @"---
+title: Feature Template
+pattern: ""{ticket-id}-{name}""
+location: ""Features/{category}""
+parameters:
+  - name: category
+    type: text
+    label: Category
+    default: core
+    required: true
+    help: Feature category
+  - name: ticket-id
+    type: text
+    label: Ticket ID
+    required: true
+  - name: name
+    type: text
+    label: Feature Name
+    required: true
+---
+
+# Feature: {name}
+
+Ticket: {ticket-id}
+Category: {category}";
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("_templates/feature", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPage
+            {
+                PageName = "_templates/feature",
+                Content = WikiPageContentParser.Parse(pageContent),
+                ContentHash = "hash",
+                Title = "Feature Template",
+                Culture = null
+            });
+
+        // Act
+        var template = await _service.GetTemplateAsync(mockUser, "_templates/feature", CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(template);
+        Assert.Equal(3, template.Parameters.Count);
+
+        var categoryParam = template.Parameters.FirstOrDefault(p => p.Name == "category");
+        Assert.NotNull(categoryParam);
+        Assert.Equal("Category", categoryParam.Label);
+        Assert.Equal("core", categoryParam.DefaultValue);
+        Assert.True(categoryParam.Required);
+        Assert.Equal("Feature category", categoryParam.HelpText);
+
+        var ticketParam = template.Parameters.FirstOrDefault(p => p.Name == "ticket-id");
+        Assert.NotNull(ticketParam);
+        Assert.True(ticketParam.Required);
+
+        var nameParam = template.Parameters.FirstOrDefault(p => p.Name == "name");
+        Assert.NotNull(nameParam);
+        Assert.Equal("Feature Name", nameParam.Label);
+    }
+
+    [Fact]
+    public void ResolvePlaceholders_WithCustomParameters_ReplacesCorrectly()
+    {
+        // Arrange
+        var pattern = "Features/{category}/{ticket-id}-{name}";
+        var parameterValues = new Dictionary<string, string>
+        {
+            ["category"] = "ui",
+            ["ticket-id"] = "JIRA-123",
+            ["name"] = "Dark-Mode"
+        };
+
+        // Act
+        var result = _service.ResolvePlaceholders(pattern, parameterValues);
+
+        // Assert
+        Assert.Equal("Features/ui/JIRA-123-Dark-Mode", result);
+    }
+
+    [Fact]
+    public void ResolvePlaceholders_WithMixedPlaceholders_ResolvesBothCustomAndBuiltin()
+    {
+        // Arrange
+        var pattern = "{category}/{year}/{month}/{name}";
+        var parameterValues = new Dictionary<string, string>
+        {
+            ["category"] = "blog",
+            ["name"] = "my-post"
+        };
+
+        // Act
+        var result = _service.ResolvePlaceholders(pattern, parameterValues);
+
+        // Assert
+        Assert.Contains("blog", result);
+        Assert.Contains("my-post", result);
+        Assert.Matches(@"^\w+/\d{4}/\d{2}/\w+-\w+$", result);
+    }
+
+    [Fact]
+    public void ResolvePlaceholders_WithCaseInsensitivePlaceholders_ReplacesCorrectly()
+    {
+        // Arrange
+        var pattern = "{CATEGORY}/{Name}/{TICKET-ID}";
+        var parameterValues = new Dictionary<string, string>
+        {
+            ["category"] = "docs",
+            ["name"] = "guide",
+            ["ticket-id"] = "DOC-001"
+        };
+
+        // Act
+        var result = _service.ResolvePlaceholders(pattern, parameterValues);
+
+        // Assert
+        Assert.Equal("docs/guide/DOC-001", result);
+    }
+
+    [Fact]
+    public async Task GetTemplateAsync_WithDifferentParameterTypes_ParsesCorrectly()
+    {
+        // Arrange
+        var mockUser = CreateMockUser();
+
+        _mockPermissionHelper
+            .Setup(x => x.CanView(mockUser, "_templates/mixed", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var pageContent = @"---
+title: Mixed Parameters
+parameters:
+  - name: text-param
+    type: text
+  - name: number-param
+    type: number
+  - name: date-param
+    type: date
+  - name: datetime-param
+    type: datetime
+---
+
+Content";
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("_templates/mixed", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPage
+            {
+                PageName = "_templates/mixed",
+                Content = WikiPageContentParser.Parse(pageContent),
+                ContentHash = "hash",
+                Title = "Mixed Parameters",
+                Culture = null
+            });
+
+        // Act
+        var template = await _service.GetTemplateAsync(mockUser, "_templates/mixed", CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(template);
+        Assert.Equal(4, template.Parameters.Count);
+
+        Assert.Equal(Models.WikiTemplateParameterType.Text, 
+            template.Parameters.First(p => p.Name == "text-param").Type);
+        Assert.Equal(Models.WikiTemplateParameterType.Number, 
+            template.Parameters.First(p => p.Name == "number-param").Type);
+        Assert.Equal(Models.WikiTemplateParameterType.Date, 
+            template.Parameters.First(p => p.Name == "date-param").Type);
+        Assert.Equal(Models.WikiTemplateParameterType.DateTime, 
+            template.Parameters.First(p => p.Name == "datetime-param").Type);
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private static IWikiUserWithPermissions CreateMockUser()

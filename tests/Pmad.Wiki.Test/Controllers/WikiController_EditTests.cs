@@ -1,4 +1,4 @@
-ï»¿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Pmad.Wiki.Controllers;
@@ -39,7 +39,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("TestPage", null, null, null, CancellationToken.None);
+        var result = await _controller.Edit("TestPage", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -72,7 +72,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("NewPage", null, null, null, CancellationToken.None);
+        var result = await _controller.Edit("NewPage", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -113,7 +113,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("TestPage", "fr", null, null, CancellationToken.None);
+        var result = await _controller.Edit("TestPage", "fr", null, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -152,7 +152,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("TestPage", null, commitId, null, CancellationToken.None);
+        var result = await _controller.Edit("TestPage", null, commitId, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -200,7 +200,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("TestPage", null, commitId, null, CancellationToken.None);
+        var result = await _controller.Edit("TestPage", null, commitId, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -218,7 +218,7 @@ public class WikiController_EditTests : WikiControllerTestBase
             .ReturnsAsync((IWikiUserWithPermissions?)null);
 
         // Act
-        var result = await _controller.Edit("TestPage", null, null, null, CancellationToken.None);
+        var result = await _controller.Edit("TestPage", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<ForbidResult>(result);
@@ -238,7 +238,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("TestPage", null, null, null, CancellationToken.None);
+        var result = await _controller.Edit("TestPage", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<ForbidResult>(result);
@@ -258,7 +258,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("", null, null, null, CancellationToken.None);
+        var result = await _controller.Edit("", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -279,7 +279,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("../../../etc/passwd", null, null, null, CancellationToken.None);
+        var result = await _controller.Edit("../../../etc/passwd", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<BadRequestObjectResult>(result);
@@ -299,7 +299,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("TestPage", "invalid-culture-code", null, null, CancellationToken.None);
+        var result = await _controller.Edit("TestPage", "invalid-culture-code", null, null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<BadRequestObjectResult>(result);
@@ -332,7 +332,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("AdminPage", null, null, null, CancellationToken.None);
+        var result = await _controller.Edit("AdminPage", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<ForbidResult>(result);
@@ -377,7 +377,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("AdminPage", null, null, null, CancellationToken.None);
+        var result = await _controller.Edit("AdminPage", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -404,7 +404,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("docs/api/reference", null, null, null, CancellationToken.None);
+        var result = await _controller.Edit("docs/api/reference", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -449,7 +449,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("docs/guide", null, null, null, CancellationToken.None);
+        var result = await _controller.Edit("docs/guide", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -489,7 +489,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("TestPage", "fr", commitId, null, CancellationToken.None);
+        var result = await _controller.Edit("TestPage", "fr", commitId, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -524,7 +524,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.Edit("NewPage", "de", null, null, CancellationToken.None);
+        var result = await _controller.Edit("NewPage", "de", null, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -596,7 +596,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         {
             PageName = "TestPage",
             Content = "# Contenu de Test",
-            CommitMessage = "CrÃ©er la page de test",
+            CommitMessage = "Créer la page de test",
             Culture = "fr",
             IsNew = true
         };
@@ -611,7 +611,7 @@ public class WikiController_EditTests : WikiControllerTestBase
         Assert.Equal("fr", redirectResult.RouteValues?["culture"]);
 
         _mockWikiPageEditService.Verify(
-            x => x.SavePageAsync("TestPage", "fr", "# Contenu de Test", "CrÃ©er la page de test", mockWikiUser, It.IsAny<CancellationToken>()),
+            x => x.SavePageAsync("TestPage", "fr", "# Contenu de Test", "Créer la page de test", mockWikiUser, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 

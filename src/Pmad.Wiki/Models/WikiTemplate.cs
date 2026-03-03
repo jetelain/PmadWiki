@@ -28,4 +28,7 @@ public class WikiTemplate
     
     /// <summary>Gets or sets the human-readable display name of the template shown in the UI, or <c>null</c> to fall back to <see cref="TemplateName"/>.</summary>
     public string? DisplayName { get; set; }
+
+    /// <summary>Gets or sets the custom parameters for this template.</summary>
+    public List<WikiTemplateParameter> Parameters { get; set; } = new List<WikiTemplateParameter>();
 }

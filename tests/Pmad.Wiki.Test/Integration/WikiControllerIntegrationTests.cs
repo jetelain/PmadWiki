@@ -1,4 +1,4 @@
-ï»¿using System.Diagnostics;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -184,7 +184,8 @@ public class WikiControllerIntegrationTests : IDisposable
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
+            StandardOutputEncoding = Encoding.UTF8
         };
 
         foreach (var arg in args)
@@ -319,7 +320,7 @@ public class WikiControllerIntegrationTests : IDisposable
         // Arrange
         InitializeGitRepository();
         CommitFile("page.md", "# English Page\n\nEnglish content.", "Add English page");
-        CommitFile("page.fr.md", "# Page FranÃ§aise\n\nContenu franÃ§ais.", "Add French page");
+        CommitFile("page.fr.md", "# Page Française\n\nContenu français.", "Add French page");
 
         // Act
         var englishResult = await CreateController().View("page", null, CancellationToken.None);
@@ -332,7 +333,7 @@ public class WikiControllerIntegrationTests : IDisposable
 
         var frenchView = Assert.IsType<ViewResult>(frenchResult);
         var frenchModel = Assert.IsType<WikiPageViewModel>(frenchView.Model);
-        Assert.Equal("Page FranÃ§aise", frenchModel.Title);
+        Assert.Equal("Page Française", frenchModel.Title);
         
         // Verify both cultures are available
         Assert.Contains("fr", frenchModel.AvailableCultures);
@@ -540,7 +541,7 @@ public class WikiControllerIntegrationTests : IDisposable
         SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
 
         // Act
-        var result = await controller.Edit("test", null, null, null, CancellationToken.None);
+        var result = await controller.Edit("test", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -560,7 +561,7 @@ public class WikiControllerIntegrationTests : IDisposable
         SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
 
         // Act
-        var result = await controller.Edit("newpage", null, null, null, CancellationToken.None);
+        var result = await controller.Edit("newpage", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -582,7 +583,7 @@ public class WikiControllerIntegrationTests : IDisposable
         SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
 
         // Act
-        var result = await controller.Edit("page", null, oldCommit, null, CancellationToken.None);
+        var result = await controller.Edit("page", null, oldCommit, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -601,7 +602,7 @@ public class WikiControllerIntegrationTests : IDisposable
         SetupAuthenticatedUser(controller, "Viewer", "viewer@example.com", canEdit: false);
 
         // Act
-        var result = await controller.Edit("test", null, null, null, CancellationToken.None);
+        var result = await controller.Edit("test", null, null, null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<ForbidResult>(result);
@@ -694,7 +695,7 @@ public class WikiControllerIntegrationTests : IDisposable
         {
             PageName = "page",
             Culture = "fr",
-            Content = "# Page FranÃ§aise",
+            Content = "# Page Française",
             CommitMessage = "Add French page",
             IsNew = true
         };
@@ -704,7 +705,7 @@ public class WikiControllerIntegrationTests : IDisposable
 
         // Assert - Verify with git CLI
         var gitContent = GetGitFileContent("page.fr.md");
-        Assert.Equal("# Page FranÃ§aise", gitContent);
+        Assert.Equal("# Page Française", gitContent);
     }
 
     [Fact]
@@ -1007,7 +1008,7 @@ public class WikiControllerIntegrationTests : IDisposable
     {
         // Arrange
         InitializeGitRepository();
-        var content = "# Unicode Test\n\nÃ„Ã–ÃœÃ¤Ã¶Ã¼ÃŸ ä¸­æ–‡ æ—¥æœ¬èªž í•œê¸€ ðŸ˜€ðŸŽ‰";
+        var content = "# Unicode Test\n\nÄÖÜäöüß ?? ??? ?? ????";
         CommitFile("unicode.md", content, "Add unicode content");
 
         // Act
@@ -1117,7 +1118,7 @@ public class WikiControllerIntegrationTests : IDisposable
         SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
 
         // Act
-        var result = await controller.CreatePage("_templates/DailyReport", null, null, CancellationToken.None);
+        var result = await controller.CreatePage("_templates/DailyReport", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -1144,7 +1145,7 @@ public class WikiControllerIntegrationTests : IDisposable
         SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
 
         // Act
-        var result = await controller.CreatePage(null, "docs/guide", "es", CancellationToken.None);
+        var result = await controller.CreatePage(null, "docs/guide", "es", null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -1166,7 +1167,7 @@ public class WikiControllerIntegrationTests : IDisposable
         SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
 
         // Act
-        var result = await controller.CreatePage("_templates/NonExistent", null, null, CancellationToken.None);
+        var result = await controller.CreatePage("_templates/NonExistent", null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<NotFoundResult>(result);
@@ -1245,7 +1246,7 @@ public class WikiControllerIntegrationTests : IDisposable
         // Step 2: Load template with CreatePage action
         var createPageController = CreateController();
         SetupAuthenticatedUser(createPageController, "Editor", "editor@example.com", canEdit: true);
-        var createPageResult = await createPageController.CreatePage(template.TemplateName, null, null, CancellationToken.None);
+        var createPageResult = await createPageController.CreatePage(template.TemplateName, null, null, null, CancellationToken.None);
         var createPageView = Assert.IsType<ViewResult>(createPageResult);
         var createPageModel = Assert.IsType<WikiCreatePageViewModel>(createPageView.Model);
         Assert.Equal(template.TemplateName, createPageModel.TemplateId);
@@ -1270,7 +1271,7 @@ public class WikiControllerIntegrationTests : IDisposable
         // Step 4: Edit the page (simulating what happens after redirect)
         var editController = CreateController();
         SetupAuthenticatedUser(editController, "Editor", "editor@example.com", canEdit: true);
-        var editGetResult = await editController.Edit("projects/MyProject", null, null, template.TemplateName, CancellationToken.None);
+        var editGetResult = await editController.Edit("projects/MyProject", null, null, template.TemplateName, null, null, CancellationToken.None);
         var editView = Assert.IsType<ViewResult>(editGetResult);
         var editModel = Assert.IsType<WikiPageEditViewModel>(editView.Model);
         Assert.Equal("projects/MyProject", editModel.PageName);
@@ -1334,7 +1335,7 @@ public class WikiControllerIntegrationTests : IDisposable
         SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
 
         // Act
-        var result = await controller.CreatePage("_templates/TimestampedReport", null, null, CancellationToken.None);
+        var result = await controller.CreatePage("_templates/TimestampedReport", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);

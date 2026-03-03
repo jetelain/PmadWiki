@@ -28,6 +28,11 @@ public class WikiTemplateFrontMatter
     /// Example: "blog/{year}/{month}/{day}"
     /// </summary>
     public string? Pattern { get; set; }
+
+    /// <summary>
+    /// Gets or sets the custom parameters for this template.
+    /// </summary>
+    public List<WikiTemplateParameter>? Parameters { get; set; }
 }
 
 

@@ -214,7 +214,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage(null, null, null, CancellationToken.None);
+        var result = await _controller.CreatePage(null, null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<ForbidResult>(result);
@@ -229,7 +229,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync((IWikiUserWithPermissions?)null);
 
         // Act
-        var result = await _controller.CreatePage(null, null, null, CancellationToken.None);
+        var result = await _controller.CreatePage(null, null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<ForbidResult>(result);
@@ -249,7 +249,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage(null, null, null, CancellationToken.None);
+        var result = await _controller.CreatePage(null, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -281,7 +281,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("invalid-template", null, null, CancellationToken.None);
+        var result = await _controller.CreatePage("invalid-template", null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<NotFoundResult>(result);
@@ -313,7 +313,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("meeting-notes", null, null, CancellationToken.None);
+        var result = await _controller.CreatePage("meeting-notes", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -349,13 +349,13 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync(template);
 
         _mockTemplateService
-            .Setup(x => x.ResolvePlaceholders("Report-{date}"))
+            .Setup(x => x.ResolvePlaceholders("Report-{date}", It.IsAny<Dictionary<string, string>>(), null))
             .Returns("Report-2024-01-15");
 
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("daily-report", null, null, CancellationToken.None);
+        var result = await _controller.CreatePage("daily-report", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -364,7 +364,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         Assert.Equal("Report-2024-01-15", model.PageName);
         
         _mockTemplateService.Verify(
-            x => x.ResolvePlaceholders("Report-{date}"),
+            x => x.ResolvePlaceholders("Report-{date}", It.IsAny<Dictionary<string, string>>(), null),
             Times.Once);
     }
 
@@ -392,13 +392,13 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync(template);
 
         _mockTemplateService
-            .Setup(x => x.ResolvePlaceholders("projects/{year}"))
+            .Setup(x => x.ResolvePlaceholders("projects/{year}", It.IsAny<Dictionary<string, string>>(), null))
             .Returns("projects/2024");
 
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("project-doc", null, null, CancellationToken.None);
+        var result = await _controller.CreatePage("project-doc", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -407,7 +407,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         Assert.Equal("projects/2024", model.Location);
         
         _mockTemplateService.Verify(
-            x => x.ResolvePlaceholders("projects/{year}"),
+            x => x.ResolvePlaceholders("projects/{year}", It.IsAny<Dictionary<string, string>>(), null),
             Times.Once);
     }
 
@@ -425,7 +425,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage(null, "docs/api/reference", null, CancellationToken.None);
+        var result = await _controller.CreatePage(null, "docs/api/reference", null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -459,13 +459,13 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync(template);
 
         _mockTemplateService
-            .Setup(x => x.ResolvePlaceholders("blog/posts"))
+            .Setup(x => x.ResolvePlaceholders("blog/posts", It.IsAny<Dictionary<string,string>>(), null))
             .Returns("blog/posts");
 
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("blog-post", "docs/guide", null, CancellationToken.None);
+        var result = await _controller.CreatePage("blog-post", "docs/guide", null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -489,7 +489,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage(null, null, "es", CancellationToken.None);
+        var result = await _controller.CreatePage(null, null, "es", null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -523,7 +523,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("simple-template", null, null, CancellationToken.None);
+        var result = await _controller.CreatePage("simple-template", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -558,7 +558,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("basic-template", null, null, CancellationToken.None);
+        var result = await _controller.CreatePage("basic-template", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -567,7 +567,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         Assert.Equal("NewPage", model.PageName);
         
         _mockTemplateService.Verify(
-            x => x.ResolvePlaceholders(It.IsAny<string>()),
+            x => x.ResolvePlaceholders(It.IsAny<string>(), null, null),
             Times.Never);
     }
 
@@ -585,7 +585,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage(null, "Home", null, CancellationToken.None);
+        var result = await _controller.CreatePage(null, "Home", null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);

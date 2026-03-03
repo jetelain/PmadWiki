@@ -74,8 +74,105 @@ pattern: "{date}-Meeting"
 | `description` | Help text describing the template's purpose | `Template for weekly team meetings` |
 | `location` | Default folder for new pages (supports placeholders) | `"Meetings/{year}"` |
 | `pattern` | Naming pattern for new pages (supports placeholders) | `"{date}-Meeting"` |
+| `parameters` | Custom parameters for the template (see below) | See Custom Parameters section |
 
 Warning: When using special characters like curly braces `{}` or square brackets `[]` in YAML Front Matter, you must wrap the entire value in quotes. Failing to do so will cause a parsing error.
+
+### Custom Parameters
+
+Templates can define custom parameters that users fill in when creating a page. These parameters can be used as placeholders in location, pattern, and content.
+
+#### Defining Parameters
+
+Add a `parameters` array in the front matter:
+
+```yaml
+---
+title: Blog Post Template
+location: "blog/{year}/{category}"
+pattern: "{date}-{title}"
+parameters:
+  - name: category
+    type: text
+    label: Category
+    default: general
+    required: true
+    help: The blog post category (e.g., tech, news, tutorial)
+  - name: title
+    type: text
+    label: Post Title
+    required: true
+    help: The title of your blog post
+---
+```
+
+#### Parameter Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `name` | string | Yes | Parameter identifier used in placeholders (e.g., `{category}`) |
+| `type` | string | No | Input type: `text` (default), `number`, `date`, `datetime` |
+| `label` | string | No | Display label for the input field (defaults to name) |
+| `default` | string | No | Default value for the parameter |
+| `required` | boolean | No | Whether the parameter is required (default: false) |
+| `help` | string | No | Help text shown below the input field |
+
+#### Supported Parameter Types
+
+- **text**: Regular text input (sanitized for page names)
+- **number**: Numeric input
+- **date**: Date picker (YYYY-MM-DD format)
+- **datetime**: Date and time picker
+
+#### Using Parameters as Placeholders
+
+Parameters can be used anywhere built-in placeholders are supported:
+
+```yaml
+---
+location: "Projects/{project-name}/{year}"
+pattern: "{ticket-id}-{feature-name}"
+parameters:
+  - name: project-name
+    type: text
+    label: Project Name
+    required: true
+  - name: ticket-id
+    type: text
+    label: Ticket ID
+    required: true
+  - name: feature-name
+    type: text
+    label: Feature Name
+    required: true
+---
+
+# Feature: {feature-name}
+
+**Ticket:** {ticket-id}  
+**Project:** {project-name}  
+**Date:** {date}
+
+## Description
+
+[Describe the feature]
+
+## Implementation Notes
+
+[Implementation details]
+```
+
+When a user creates a page from this template:
+1. They fill in the parameter values (Project Name, Ticket ID, Feature Name)
+2. Values are automatically sanitized (spaces → hyphens, special chars removed)
+3. Location and page name are updated in real-time
+4. Parameters are replaced in the template content
+
+Example result:
+- **Input**: Project="My App", Ticket="JIRA-123", Feature="User Login"
+- **Location**: `Projects/My-App/2024`
+- **Page Name**: `JIRA-123-User-Login`
+- **Final Path**: `Projects/My-App/2024/JIRA-123-User-Login`
 
 ### Supported Placeholders
 
@@ -88,6 +185,7 @@ Placeholders are automatically replaced when creating a page:
 | `{year}` | Current year | `2024` |
 | `{month}` | Current month (2 digits) | `01` |
 | `{day}` | Current day (2 digits) | `15` |
+| `{parameter-name}` | Custom parameter value (sanitized) | Varies based on user input |
 
 ## Using Templates
 
@@ -227,6 +325,121 @@ When using this template:
 - Location will be pre-filled with: `Meetings/2024` (current year)
 - Page name will be suggested as: `2024-01-15-Meeting` (current date)
 - Final page path: `Meetings/2024/2024-01-15-Meeting`
+
+### Example 3: Project Documentation with Custom Parameters
+
+**File**: `_templates/Feature-Documentation.md`
+
+```markdown
+---
+title: Feature Documentation
+description: Template for documenting new features with ticket tracking
+location: "Projects/{project}/Features"
+pattern: "{ticket-id}-{feature-name}"
+parameters:
+  - name: project
+    type: text
+    label: Project Name
+    default: MyProject
+    required: true
+    help: The name of the project this feature belongs to
+  - name: ticket-id
+    type: text
+    label: Ticket ID
+    required: true
+    help: Jira/GitHub ticket identifier (e.g., PROJ-123)
+  - name: feature-name
+    type: text
+    label: Feature Name
+    required: true
+    help: Short name for the feature
+  - name: author
+    type: text
+    label: Author Name
+    required: true
+  - name: target-date
+    type: date
+    label: Target Release Date
+---
+
+# Feature: {feature-name}
+
+**Ticket:** {ticket-id}  
+**Author:** {author}  
+**Date:** {date}  
+**Target Release:** {target-date}  
+**Project:** {project}
+
+## Overview
+
+Brief description of the feature.
+
+## Requirements
+
+### Functional Requirements
+
+1. Requirement 1
+2. Requirement 2
+
+### Non-Functional Requirements
+
+1. Performance
+2. Security
+3. Usability
+
+## Design
+
+### Architecture
+
+
+
+### User Interface
+
+
+
+## Implementation Plan
+
+1. Phase 1
+2. Phase 2
+3. Phase 3
+
+## Testing Strategy
+
+
+
+## Documentation Updates
+
+
+
+## Risks and Mitigations
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+|      |        |            |
+
+## References
+
+- Ticket: {ticket-id}
+- Related Features:
+```
+
+When using this template:
+1. User fills in:
+   - Project Name: "My App"
+   - Ticket ID: "JIRA-456"
+   - Feature Name: "User Authentication"
+   - Author: "John Doe"
+   - Target Date: "2024-03-15"
+
+2. Values are automatically sanitized:
+   - "My App" → "My-App"
+   - "User Authentication" → "User-Authentication"
+
+3. Resulting page:
+   - Location: `Projects/My-App/Features`
+   - Page name: `JIRA-456-User-Authentication`
+   - Final path: `Projects/My-App/Features/JIRA-456-User-Authentication`
+   - Content has all placeholders replaced with actual values
 
 ## Template Management
 
@@ -383,8 +596,14 @@ A: Templates are stored in the Git repository and can be copied or merged betwee
 **Q: Do changes to templates affect existing pages?**  
 A: No, templates are only applied when creating a new page. Existing pages are independent.
 
-**Q: Can I use variables other than the predefined placeholders?**  
-A: No, only the predefined placeholders are supported. Custom variables would need to be manually replaced by users.
+**Q: Can I use custom variables in templates?**  
+A: Yes! Define custom parameters in the template front matter. Users will fill in these parameters when creating a page, and the values will be automatically sanitized and used as placeholders in the page name, location, and content.
+
+**Q: What types of parameters are supported?**  
+A: Templates support four parameter types: `text` (default), `number`, `date`, and `datetime`. All values are automatically sanitized for safe use in page names and paths.
+
+**Q: How are parameter values sanitized?**  
+A: Values are normalized to ASCII, spaces are converted to hyphens, special characters are removed, and only letters, numbers, hyphens, and underscores are kept. This ensures generated page names are always valid.
 
 ---
 

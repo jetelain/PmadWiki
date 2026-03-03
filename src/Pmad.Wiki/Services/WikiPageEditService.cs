@@ -50,7 +50,7 @@ internal class WikiPageEditService : IWikiPageEditService
                     {
                         var extension = Path.GetExtension(mediaInfo.OriginalFileName);
                         var originalFileNameWithoutExtension = Path.GetFileNameWithoutExtension(mediaInfo.OriginalFileName);
-                        var sanitizedFileName = WikiFilePathHelper.SanitizeFileName(originalFileNameWithoutExtension);
+                        var sanitizedFileName = WikiInputSanitizer.SanitizeMediaFileName(originalFileNameWithoutExtension);
                         var finalFileName = $"{sanitizedFileName}_{tempId}{extension}";
                         var markdownRelativePath = $"medias/{finalFileName}";
                         var mediaPath =  string.IsNullOrEmpty(pageDirectory) ? markdownRelativePath : $"{pageDirectory}/{markdownRelativePath}";

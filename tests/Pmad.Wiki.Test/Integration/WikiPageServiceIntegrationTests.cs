@@ -138,7 +138,8 @@ public class WikiPageServiceIntegrationTests : IDisposable
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
+            StandardOutputEncoding = Encoding.UTF8
         };
 
         startInfo.ArgumentList.Add("cat-file");
@@ -183,7 +184,8 @@ public class WikiPageServiceIntegrationTests : IDisposable
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
+            StandardOutputEncoding = Encoding.UTF8
         };
 
         foreach (var arg in args)

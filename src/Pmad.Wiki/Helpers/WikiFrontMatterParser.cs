@@ -11,6 +11,7 @@ internal static partial class WikiFrontMatterParser
 
     private static readonly IDeserializer YamlDeserializer = new DeserializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
+        .WithTypeConverter(new WikiTemplateParameterTypeConverter())
         .IgnoreUnmatchedProperties()
         .Build();
 
