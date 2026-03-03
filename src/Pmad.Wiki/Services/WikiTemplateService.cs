@@ -77,6 +77,15 @@ public sealed class WikiTemplateService : IWikiTemplateService
         var now = timestamp ?? DateTimeOffset.UtcNow;
         var result = pattern;
 
+        // Replace custom parameters
+        if (parameterValues != null)
+        {
+            foreach (var param in parameterValues)
+            {
+                result = result.Replace($"{{{param.Key}}}", param.Value, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
         // Replace {date} with current date in ISO format
         result = result.Replace("{date}", now.ToString("yyyy-MM-dd"), StringComparison.OrdinalIgnoreCase);
 
@@ -87,15 +96,6 @@ public sealed class WikiTemplateService : IWikiTemplateService
         result = result.Replace("{year}", now.Year.ToString(), StringComparison.OrdinalIgnoreCase);
         result = result.Replace("{month}", now.Month.ToString("D2"), StringComparison.OrdinalIgnoreCase);
         result = result.Replace("{day}", now.Day.ToString("D2"), StringComparison.OrdinalIgnoreCase);
-
-        // Replace custom parameters
-        if (parameterValues != null)
-        {
-            foreach (var param in parameterValues)
-            {
-                result = result.Replace($"{{{param.Key}}}", param.Value, StringComparison.OrdinalIgnoreCase);
-            }
-        }
 
         return result;
     }
@@ -119,6 +119,7 @@ public sealed class WikiTemplateService : IWikiTemplateService
             displayName = await _pageService.GetPageTitleAsync(pageName, null, cancellationToken);
         }
 
+        var allParameters = frontMatter.Parameters ?? new List<WikiTemplateParameter>();
         return new WikiTemplate
         {
             TemplateName = pageName, // Store the full page name for retrieval
@@ -127,7 +128,13 @@ public sealed class WikiTemplateService : IWikiTemplateService
             NamePattern = frontMatter.Pattern,
             Description = frontMatter.Description,
             DisplayName = displayName ?? pageName, // Use page name as final fallback
-            Parameters = frontMatter.Parameters ?? new List<WikiTemplateParameter>()
+            Parameters = allParameters
+                .Where(p => WikiInputValidator.IsValidTemplateParameterName(p.Name))
+                .ToList(),
+            InvalidParameterNames = allParameters
+                .Where(p => !WikiInputValidator.IsValidTemplateParameterName(p.Name))
+                .Select(p => p.Name)
+                .ToList()
         };
     }
 }

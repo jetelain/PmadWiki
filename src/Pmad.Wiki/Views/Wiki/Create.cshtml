@@ -100,10 +100,15 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const browserTimestamp = new Date().toISOString();
+            const now = new Date();
+            const offset = -now.getTimezoneOffset();
+            const sign = offset >= 0 ? '+' : '-';
+            const absOffset = Math.abs(offset);
+            const pad = n => String(n).padStart(2, '0');
+            const localIso = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}${sign}${pad(Math.floor(absOffset / 60))}:${pad(absOffset % 60)}`;
             document.querySelectorAll('#template-cards a').forEach(function (link) {
                 const url = new URL(link.href);
-                url.searchParams.set('browserTimestamp', browserTimestamp);
+                url.searchParams.set('browserTimestamp', localIso);
                 link.href = url.toString();
             });
         });

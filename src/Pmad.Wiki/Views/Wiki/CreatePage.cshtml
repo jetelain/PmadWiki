@@ -45,6 +45,14 @@
 
         <div asp-validation-summary="ModelOnly" class="alert alert-warning" role="alert"></div>
 
+        @if (Model.InvalidParameterNames.Any())
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                @Localizer["The template definition contains parameters with invalid names that cannot be displayed: <strong>{0}</strong>. Parameter names must contain only letters, digits, and underscores.", string.Join(", ", Model.InvalidParameterNames)]
+            </div>
+        }
+
         @if (Model.Parameters.Any())
         {
             <div class="mb-4">

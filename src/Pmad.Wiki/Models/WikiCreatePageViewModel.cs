@@ -49,5 +49,11 @@ public class WikiCreatePageViewModel
     /// The raw page name pattern from the template (with placeholders).
     /// </summary>
     public string? PageNamePattern { get; set; }
+
+    /// <summary>
+    /// Names of template parameters that were rejected because their name is not safe.
+    /// Non-empty only when the template definition contains invalid parameter names.
+    /// </summary>
+    public List<string> InvalidParameterNames { get; set; } = new List<string>();
 }
 

@@ -31,4 +31,10 @@ public class WikiTemplate
 
     /// <summary>Gets or sets the custom parameters for this template.</summary>
     public List<WikiTemplateParameter> Parameters { get; set; } = new List<WikiTemplateParameter>();
+
+    /// <summary>
+    /// Gets or sets the names of parameters that were rejected because their name is not safe.
+    /// Non-empty only when the template definition contains invalid parameter names.
+    /// </summary>
+    public List<string> InvalidParameterNames { get; set; } = new List<string>();
 }

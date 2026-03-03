@@ -657,6 +657,84 @@ public class WikiInputValidatorTest
     }
 
     #endregion
+
+    #region IsValidTemplateParameterName Tests
+
+    [Theory]
+    [InlineData("name")]
+    [InlineData("Name")]
+    [InlineData("NAME")]
+    [InlineData("param1")]
+    [InlineData("my_param")]
+    [InlineData("_hidden")]
+    [InlineData("a")]
+    [InlineData("A")]
+    [InlineData("_")]
+    [InlineData("abc123")]
+    [InlineData("CamelCase")]
+    [InlineData("snake_case_param")]
+    public void IsValidTemplateParameterName_WithValidName_ReturnsTrue(string name)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidTemplateParameterName(name);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsValidTemplateParameterName_WithNull_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidTemplateParameterName(null!);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsValidTemplateParameterName_WithEmptyString_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidTemplateParameterName("");
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsValidTemplateParameterName_WithWhitespace_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidTemplateParameterName("   ");
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Theory]
+    [InlineData("my-param")]       // hyphen
+    [InlineData("my param")]       // space
+    [InlineData("my.param")]       // dot
+    [InlineData("my/param")]       // slash
+    [InlineData("my\\param")]      // backslash
+    [InlineData("my@param")]       // at sign
+    [InlineData("my#param")]       // hash
+    [InlineData("my{param}")]      // braces
+    [InlineData("my[param]")]      // brackets
+    [InlineData("../etc/passwd")]  // path traversal
+    [InlineData("'; DROP TABLE")]  // SQL injection attempt
+    [InlineData(".*+?^${}()|[]")]  // regex special characters
+    public void IsValidTemplateParameterName_WithInvalidName_ReturnsFalse(string name)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidTemplateParameterName(name);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    #endregion
 }
 
 

@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Sanitize the value for use in page names/locations
             if (input.type === 'date' || input.type === 'datetime-local') {
                 // For dates, keep the format as-is but remove separators for page names
-                value = value.replace(/[:\s]/g, '-');
+                value = value.replace(/[T:\s]/g, '-');
             }
 
             values[paramName] = sanitizeValue(value);
@@ -73,10 +73,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Date placeholders resolved using the browser timestamp captured when the page was loaded
-        result = result.replace(/\{date\}/gi, browserTimestamp.toISOString().split('T')[0]);
-        result = result.replace(/\{year\}/gi, browserTimestamp.getFullYear().toString());
-        result = result.replace(/\{month\}/gi, (browserTimestamp.getMonth() + 1).toString().padStart(2, '0'));
-        result = result.replace(/\{day\}/gi, browserTimestamp.getDate().toString().padStart(2, '0'));
+        const tsYear  = browserTimestamp.getFullYear().toString();
+        const tsMonth = (browserTimestamp.getMonth() + 1).toString().padStart(2, '0');
+        const tsDay   = browserTimestamp.getDate().toString().padStart(2, '0');
+        const tsHours = browserTimestamp.getHours().toString().padStart(2, '0');
+        const tsMins  = browserTimestamp.getMinutes().toString().padStart(2, '0');
+        const tsSecs  = browserTimestamp.getSeconds().toString().padStart(2, '0');
+        result = result.replace(/\{date\}/gi, `${tsYear}-${tsMonth}-${tsDay}`);
+        result = result.replace(/\{datetime\}/gi, `${tsYear}-${tsMonth}-${tsDay}-${tsHours}${tsMins}${tsSecs}`);
+        result = result.replace(/\{year\}/gi, tsYear);
+        result = result.replace(/\{month\}/gi, tsMonth);
+        result = result.replace(/\{day\}/gi, tsDay);
 
         return result;
     }

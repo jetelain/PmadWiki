@@ -1273,7 +1273,7 @@ Date: {date}";
 
         var pageContent = @"---
 title: Feature Template
-pattern: ""{ticket-id}-{name}""
+pattern: ""{ticket_id}-{name}""
 location: ""Features/{category}""
 parameters:
   - name: category
@@ -1282,7 +1282,7 @@ parameters:
     default: core
     required: true
     help: Feature category
-  - name: ticket-id
+  - name: ticket_id
     type: text
     label: Ticket ID
     required: true
@@ -1294,7 +1294,7 @@ parameters:
 
 # Feature: {name}
 
-Ticket: {ticket-id}
+Ticket: {ticket_id}
 Category: {category}";
 
         _mockPageService
@@ -1314,6 +1314,7 @@ Category: {category}";
         // Assert
         Assert.NotNull(template);
         Assert.Equal(3, template.Parameters.Count);
+        Assert.Empty(template.InvalidParameterNames);
 
         var categoryParam = template.Parameters.FirstOrDefault(p => p.Name == "category");
         Assert.NotNull(categoryParam);
@@ -1322,7 +1323,7 @@ Category: {category}";
         Assert.True(categoryParam.Required);
         Assert.Equal("Feature category", categoryParam.HelpText);
 
-        var ticketParam = template.Parameters.FirstOrDefault(p => p.Name == "ticket-id");
+        var ticketParam = template.Parameters.FirstOrDefault(p => p.Name == "ticket_id");
         Assert.NotNull(ticketParam);
         Assert.True(ticketParam.Required);
 
@@ -1402,13 +1403,13 @@ Category: {category}";
         var pageContent = @"---
 title: Mixed Parameters
 parameters:
-  - name: text-param
+  - name: text_param
     type: text
-  - name: number-param
+  - name: number_param
     type: number
-  - name: date-param
+  - name: date_param
     type: date
-  - name: datetime-param
+  - name: datetime_param
     type: datetime
 ---
 
@@ -1431,15 +1432,16 @@ Content";
         // Assert
         Assert.NotNull(template);
         Assert.Equal(4, template.Parameters.Count);
+        Assert.Empty(template.InvalidParameterNames);
 
         Assert.Equal(Models.WikiTemplateParameterType.Text, 
-            template.Parameters.First(p => p.Name == "text-param").Type);
+            template.Parameters.First(p => p.Name == "text_param").Type);
         Assert.Equal(Models.WikiTemplateParameterType.Number, 
-            template.Parameters.First(p => p.Name == "number-param").Type);
+            template.Parameters.First(p => p.Name == "number_param").Type);
         Assert.Equal(Models.WikiTemplateParameterType.Date, 
-            template.Parameters.First(p => p.Name == "date-param").Type);
+            template.Parameters.First(p => p.Name == "date_param").Type);
         Assert.Equal(Models.WikiTemplateParameterType.DateTime, 
-            template.Parameters.First(p => p.Name == "datetime-param").Type);
+            template.Parameters.First(p => p.Name == "datetime_param").Type);
     }
 
     #endregion
@@ -1491,6 +1493,198 @@ title: {title}
         _mockPageService
             .Setup(x => x.GetPageTitleAsync(pageName, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync((string?)null);
+    }
+
+    #endregion
+
+    #region Unsafe Parameter Filtering Tests
+
+    [Fact]
+    public async Task GetTemplateAsync_WithUnsafeParameterName_FiltersItOut()
+    {
+        // Arrange
+        var mockUser = CreateMockUser();
+
+        _mockPermissionHelper
+            .Setup(x => x.CanView(mockUser, "_templates/unsafe", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var pageContent = @"---
+title: Unsafe Template
+parameters:
+  - name: valid_param
+    type: text
+  - name: ../etc/passwd
+    type: text
+---
+
+Content";
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("_templates/unsafe", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPage
+            {
+                PageName = "_templates/unsafe",
+                Content = WikiPageContentParser.Parse(pageContent),
+                ContentHash = "hash",
+                Title = "Unsafe Template",
+                Culture = null
+            });
+
+        // Act
+        var template = await _service.GetTemplateAsync(mockUser, "_templates/unsafe", CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(template);
+        Assert.Single(template.Parameters);
+        Assert.Equal("valid_param", template.Parameters[0].Name);
+        Assert.Single(template.InvalidParameterNames);
+        Assert.Contains("../etc/passwd", template.InvalidParameterNames);
+    }
+
+    [Fact]
+    public async Task GetTemplateAsync_WithAllUnsafeParameterNames_ReturnsEmptyParameterList()
+    {
+        // Arrange
+        var mockUser = CreateMockUser();
+
+        _mockPermissionHelper
+            .Setup(x => x.CanView(mockUser, "_templates/all-unsafe", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var pageContent = @"---
+title: All Unsafe Template
+parameters:
+  - name: my-param
+    type: text
+  - name: my param
+    type: text
+  - name: my.param
+    type: text
+---
+
+Content";
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("_templates/all-unsafe", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPage
+            {
+                PageName = "_templates/all-unsafe",
+                Content = WikiPageContentParser.Parse(pageContent),
+                ContentHash = "hash",
+                Title = "All Unsafe Template",
+                Culture = null
+            });
+
+        // Act
+        var template = await _service.GetTemplateAsync(mockUser, "_templates/all-unsafe", CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(template);
+        Assert.Empty(template.Parameters);
+        Assert.Equal(3, template.InvalidParameterNames.Count);
+        Assert.Contains("my-param", template.InvalidParameterNames);
+        Assert.Contains("my param", template.InvalidParameterNames);
+        Assert.Contains("my.param", template.InvalidParameterNames);
+    }
+
+    [Fact]
+    public async Task GetTemplateAsync_WithAllSafeParameterNames_ReturnsAllParameters()
+    {
+        // Arrange
+        var mockUser = CreateMockUser();
+
+        _mockPermissionHelper
+            .Setup(x => x.CanView(mockUser, "_templates/all-safe", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var pageContent = @"---
+title: All Safe Template
+parameters:
+  - name: alpha
+    type: text
+  - name: Beta2
+    type: text
+  - name: gamma_3
+    type: text
+---
+
+Content";
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("_templates/all-safe", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPage
+            {
+                PageName = "_templates/all-safe",
+                Content = WikiPageContentParser.Parse(pageContent),
+                ContentHash = "hash",
+                Title = "All Safe Template",
+                Culture = null
+            });
+
+        // Act
+        var template = await _service.GetTemplateAsync(mockUser, "_templates/all-safe", CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(template);
+        Assert.Equal(3, template.Parameters.Count);
+        Assert.Contains(template.Parameters, p => p.Name == "alpha");
+        Assert.Contains(template.Parameters, p => p.Name == "Beta2");
+        Assert.Contains(template.Parameters, p => p.Name == "gamma_3");
+        Assert.Empty(template.InvalidParameterNames);
+    }
+
+    [Fact]
+    public async Task GetAllTemplatesAsync_WithUnsafeParameterName_FiltersItOut()
+    {
+        // Arrange
+        var mockUser = CreateMockUser();
+
+        var allPages = new List<WikiPageInfo>
+        {
+            new WikiPageInfo { PageName = "_templates/mixed-params", Title = "Mixed", Culture = null }
+        };
+
+        _mockPermissionHelper
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(allPages);
+
+        var pageContent = @"---
+title: Mixed Params Template
+parameters:
+  - name: safe_param
+    type: text
+  - name: unsafe-param
+    type: text
+  - name: also_safe
+    type: text
+---
+
+Content";
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("_templates/mixed-params", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiPage
+            {
+                PageName = "_templates/mixed-params",
+                Content = WikiPageContentParser.Parse(pageContent),
+                ContentHash = "hash",
+                Title = "Mixed Params Template",
+                Culture = null
+            });
+
+        // Act
+        var templates = await _service.GetAllTemplatesAsync(mockUser, CancellationToken.None);
+
+        // Assert
+        Assert.Single(templates);
+        var template = templates[0];
+        Assert.Equal(2, template.Parameters.Count);
+        Assert.Contains(template.Parameters, p => p.Name == "safe_param");
+        Assert.Contains(template.Parameters, p => p.Name == "also_safe");
+        Assert.DoesNotContain(template.Parameters, p => p.Name == "unsafe-param");
+        Assert.Single(template.InvalidParameterNames);
+        Assert.Contains("unsafe-param", template.InvalidParameterNames);
     }
 
     #endregion

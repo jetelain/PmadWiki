@@ -53,6 +53,12 @@ public static partial class WikiInputValidator
     internal static partial Regex MediaPathMarkdownRegex();
 
     /// <summary>
+    /// Template parameter names: alphanumeric and underscores only.
+    /// </summary>
+    [GeneratedRegex("^[a-zA-Z0-9_]+$", RegexOptions.CultureInvariant)]
+    private static partial Regex TemplateParameterNameRegex();
+
+    /// <summary>
     /// Temporary media identifiers, which are a lowercase GUID without dashes, like "a3f1e2b4c5d67890e1f2a3b4c5d67890"
     /// </summary>
     /// <returns></returns>
@@ -133,6 +139,15 @@ public static partial class WikiInputValidator
             return false;
         }
         return true;
+    }
+
+    public static bool IsValidTemplateParameterName(string parameterName)
+    {
+        if (string.IsNullOrWhiteSpace(parameterName))
+        {
+            return false;
+        }
+        return TemplateParameterNameRegex().IsMatch(parameterName);
     }
 
     public static void ValidatePageName(string pageName)

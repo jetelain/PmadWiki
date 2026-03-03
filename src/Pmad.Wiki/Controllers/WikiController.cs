@@ -778,7 +778,8 @@ namespace Pmad.Wiki.Controllers
                 Parameters = parameters,
                 ParameterValues = parameterValues,
                 LocationPattern = locationPattern,
-                PageNamePattern = namePattern
+                PageNamePattern = namePattern,
+                InvalidParameterNames = template?.InvalidParameterNames ?? new List<string>()
             };
 
             return View(viewModel);
