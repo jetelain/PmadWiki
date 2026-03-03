@@ -606,13 +606,13 @@ A: Templates are stored in the Git repository and can be copied or merged betwee
 A: No, templates are only applied when creating a new page. Existing pages are independent.
 
 **Q: Can I use custom variables in templates?**  
-A: Yes! Define custom parameters in the template front matter. Users will fill in these parameters when creating a page, and the values will be automatically sanitized and used as placeholders in the page name, location, and content.
+A: Yes! Define custom parameters in the template front matter. Users will fill in these parameters when creating a page. The raw values are inserted into the template content as-is, while sanitized versions of those values are used when generating the page name and location.
 
 **Q: What types of parameters are supported?**  
-A: Templates support four parameter types: `text` (default), `number`, `date`, and `datetime`. All values are automatically sanitized for safe use in page names and paths.
+A: Templates support five parameter types: `text` (default), `number`, `date`, `datetime`, and `enum`. All values are automatically sanitized when used for page names and paths, but the template content uses the original, unsanitized values so you can keep spaces and punctuation.
 
 **Q: How are parameter values sanitized?**  
-A: Values are normalized to ASCII, spaces are converted to hyphens, special characters are removed, and only letters, numbers, hyphens, and underscores are kept. This ensures generated page names are always valid.
+A: When generating the suggested page name and location, parameter values are normalized to ASCII, spaces are converted to hyphens, special characters are removed, and only letters, numbers, hyphens, and underscores are kept. This sanitization is only applied to names and paths and is not applied to content placeholders.
 
 ---
 

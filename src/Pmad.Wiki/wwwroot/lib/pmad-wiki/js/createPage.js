@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const parameterInputs = document.querySelectorAll('.template-parameter');
     const locationPattern = document.querySelector('input[name="LocationPattern"]')?.value || '';
     const pageNamePattern = document.querySelector('input[name="PageNamePattern"]')?.value || '';
+    const browserTimestampValue = document.querySelector('input[name="BrowserTimestamp"]')?.value;
+    const browserTimestamp = browserTimestampValue ? new Date(browserTimestampValue) : new Date();
 
     // Track if user has manually edited location or page name
     let locationManuallyEdited = false;
@@ -65,16 +67,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Replace parameter placeholders
         for (const [key, value] of Object.entries(paramValues)) {
-            const placeholder = new RegExp(`\\{${key}\\}`, 'gi');
+            const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const placeholder = new RegExp(`\\{${escapedKey}\\}`, 'gi');
             result = result.replace(placeholder, value);
         }
 
-        // Date placeholders (already resolved on server, but kept for reference)
-        const now = new Date();
-        result = result.replace(/\{date\}/gi, now.toISOString().split('T')[0]);
-        result = result.replace(/\{year\}/gi, now.getFullYear().toString());
-        result = result.replace(/\{month\}/gi, (now.getMonth() + 1).toString().padStart(2, '0'));
-        result = result.replace(/\{day\}/gi, now.getDate().toString().padStart(2, '0'));
+        // Date placeholders resolved using the browser timestamp captured when the page was loaded
+        result = result.replace(/\{date\}/gi, browserTimestamp.toISOString().split('T')[0]);
+        result = result.replace(/\{year\}/gi, browserTimestamp.getFullYear().toString());
+        result = result.replace(/\{month\}/gi, (browserTimestamp.getMonth() + 1).toString().padStart(2, '0'));
+        result = result.replace(/\{day\}/gi, browserTimestamp.getDate().toString().padStart(2, '0'));
 
         return result;
     }
