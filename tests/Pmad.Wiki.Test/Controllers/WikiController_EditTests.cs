@@ -536,6 +536,247 @@ public class WikiController_EditTests : WikiControllerTestBase
         Assert.True(model.IsNew);
     }
 
+    [Fact]
+    public async Task Edit_Get_NewPageWithTemplateId_LoadsAndResolvesTemplateContent()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("NewPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        var template = new WikiTemplate
+        {
+            TemplateName = "_templates/MyTemplate",
+            Content = "# New Page\n\nDate: {date}"
+        };
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "_templates/MyTemplate", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(template);
+
+        _mockTemplateService
+            .Setup(x => x.ResolvePlaceholders("# New Page\n\nDate: {date}", null, null))
+            .Returns("# New Page\n\nDate: 2024-01-15");
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("NewPage", null, null, "_templates/MyTemplate", null, null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
+
+        Assert.Equal("# New Page\n\nDate: 2024-01-15", model.Content);
+        Assert.True(model.IsNew);
+
+        _mockTemplateService.Verify(
+            x => x.GetTemplateAsync(mockUser.Object, "_templates/MyTemplate", It.IsAny<CancellationToken>()),
+            Times.Once);
+        _mockTemplateService.Verify(
+            x => x.ResolvePlaceholders("# New Page\n\nDate: {date}", null, null),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Edit_Get_NewPageWithTemplateIdAndParameters_PassesParametersToResolvePlaceholders()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("NewPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        var template = new WikiTemplate
+        {
+            TemplateName = "_templates/Report",
+            Content = "# Report: {title}\n\nAuthor: {author}"
+        };
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "_templates/Report", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(template);
+
+        _mockTemplateService
+            .Setup(x => x.ResolvePlaceholders(
+                "# Report: {title}\n\nAuthor: {author}",
+                It.Is<Dictionary<string, string>?>(d => d != null && d["title"] == "Q1 Summary" && d["author"] == "Alice"),
+                null))
+            .Returns("# Report: Q1 Summary\n\nAuthor: Alice");
+
+        var templateParameters = new Dictionary<string, string>
+        {
+            ["title"] = "Q1 Summary",
+            ["author"] = "Alice"
+        };
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("NewPage", null, null, "_templates/Report", null, templateParameters, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
+
+        Assert.Equal("# Report: Q1 Summary\n\nAuthor: Alice", model.Content);
+
+        _mockTemplateService.Verify(
+            x => x.ResolvePlaceholders(
+                "# Report: {title}\n\nAuthor: {author}",
+                It.Is<Dictionary<string, string>?>(d => d != null && d["title"] == "Q1 Summary" && d["author"] == "Alice"),
+                null),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Edit_Get_NewPageWithTemplateIdAndBrowserTimestamp_PassesTimestampToResolvePlaceholders()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("NewPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        var template = new WikiTemplate
+        {
+            TemplateName = "_templates/Dated",
+            Content = "# Page {date}"
+        };
+
+        var timestamp = new DateTimeOffset(2024, 6, 15, 10, 30, 0, TimeSpan.Zero);
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "_templates/Dated", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(template);
+
+        _mockTemplateService
+            .Setup(x => x.ResolvePlaceholders("# Page {date}", null, timestamp))
+            .Returns("# Page 2024-06-15");
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("NewPage", null, null, "_templates/Dated", timestamp, null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
+
+        Assert.Equal("# Page 2024-06-15", model.Content);
+
+        _mockTemplateService.Verify(
+            x => x.ResolvePlaceholders("# Page {date}", null, timestamp),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Edit_Get_NewPageWithTemplateIdWhenTemplateNotFound_UsesEmptyContent()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("NewPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "_templates/Missing", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiTemplate?)null);
+
+        _mockTemplateService
+            .Setup(x => x.ResolvePlaceholders(string.Empty, null, null))
+            .Returns(string.Empty);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("NewPage", null, null, "_templates/Missing", null, null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
+
+        Assert.Equal(string.Empty, model.Content);
+        Assert.True(model.IsNew);
+
+        _mockTemplateService.Verify(
+            x => x.ResolvePlaceholders(string.Empty, null, null),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Edit_Get_ExistingPageWithTemplateId_IgnoresTemplateAndUsesExistingContent()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var page = new WikiPage
+        {
+            PageName = "ExistingPage",
+            Content = WikiPageContentParser.Parse("# Existing Content"),
+            ContentHash = "hash123",
+            Title = "Existing Page"
+        };
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("ExistingPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(page);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("ExistingPage", null, null, "_templates/SomeTemplate", null, null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiPageEditViewModel>(viewResult.Model);
+
+        Assert.Equal("# Existing Content", model.Content);
+        Assert.False(model.IsNew);
+
+        _mockTemplateService.Verify(
+            x => x.GetTemplateAsync(It.IsAny<IWikiUserWithPermissions>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        _mockTemplateService.Verify(
+            x => x.ResolvePlaceholders(It.IsAny<string>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<DateTimeOffset?>()),
+            Times.Never);
+    }
+
     #endregion
 
     #region Edit POST Action Tests
