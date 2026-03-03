@@ -1555,7 +1555,7 @@ Content";
         var pageContent = @"---
 title: All Unsafe Template
 parameters:
-  - name: my-param
+  - name: my$param
     type: text
   - name: my param
     type: text
@@ -1583,7 +1583,7 @@ Content";
         Assert.NotNull(template);
         Assert.Empty(template.Parameters);
         Assert.Equal(3, template.InvalidParameterNames.Count);
-        Assert.Contains("my-param", template.InvalidParameterNames);
+        Assert.Contains("my$param", template.InvalidParameterNames);
         Assert.Contains("my param", template.InvalidParameterNames);
         Assert.Contains("my.param", template.InvalidParameterNames);
     }
@@ -1654,7 +1654,7 @@ title: Mixed Params Template
 parameters:
   - name: safe_param
     type: text
-  - name: unsafe-param
+  - name: unsafe$param
     type: text
   - name: also_safe
     type: text
@@ -1682,9 +1682,9 @@ Content";
         Assert.Equal(2, template.Parameters.Count);
         Assert.Contains(template.Parameters, p => p.Name == "safe_param");
         Assert.Contains(template.Parameters, p => p.Name == "also_safe");
-        Assert.DoesNotContain(template.Parameters, p => p.Name == "unsafe-param");
+        Assert.DoesNotContain(template.Parameters, p => p.Name == "unsafe$param");
         Assert.Single(template.InvalidParameterNames);
-        Assert.Contains("unsafe-param", template.InvalidParameterNames);
+        Assert.Contains("unsafe$param", template.InvalidParameterNames);
     }
 
     #endregion

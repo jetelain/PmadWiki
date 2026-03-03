@@ -661,6 +661,7 @@ public class WikiInputValidatorTest
     #region IsValidTemplateParameterName Tests
 
     [Theory]
+    [InlineData("my-param")]       // hyphen
     [InlineData("name")]
     [InlineData("Name")]
     [InlineData("NAME")]
@@ -713,7 +714,6 @@ public class WikiInputValidatorTest
     }
 
     [Theory]
-    [InlineData("my-param")]       // hyphen
     [InlineData("my param")]       // space
     [InlineData("my.param")]       // dot
     [InlineData("my/param")]       // slash
