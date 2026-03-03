@@ -9,6 +9,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pmad.Wiki.Test", "tests\Pma
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pmad.Wiki.Demo", "tests\Pmad.Wiki.Demo\Pmad.Wiki.Demo.csproj", "{3D7648D4-8E0E-4F09-B020-1AEAAE6002DD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github", "Github", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\dotnet-linux-pr.yml = .github\workflows\dotnet-linux-pr.yml
+		.github\workflows\dotnet-linux-pub.yml = .github\workflows\dotnet-linux-pub.yml
+		.github\workflows\dotnet-linux.yml = .github\workflows\dotnet-linux.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
