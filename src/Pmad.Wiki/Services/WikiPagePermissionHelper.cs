@@ -56,14 +56,14 @@ public sealed class WikiPagePermissionHelper : IWikiPagePermissionHelper
         return true;
     }
 
-    public async Task<List<WikiPageInfo>> GetAccessibleSubPages(IWikiUserWithPermissions? wikiUser, string pageName, bool recursive = true, CancellationToken cancellationToken = default)
+    public async Task<List<WikiPageInfo>> GetAccessibleSubPagesAsync(IWikiUserWithPermissions? wikiUser, string pageName, bool recursive = true, CancellationToken cancellationToken = default)
     {
         var subPages = await _pageService.GetSubPagesAsync(pageName, recursive, cancellationToken);
 
         return await FilterAccessiblePages(wikiUser, subPages, cancellationToken);
     }
 
-    public async Task<List<WikiPageInfo>> GetAllAccessiblePages(IWikiUserWithPermissions? wikiUser, CancellationToken cancellationToken = default)
+    public async Task<List<WikiPageInfo>> GetAllAccessiblePagesAsync(IWikiUserWithPermissions? wikiUser, CancellationToken cancellationToken = default)
     {
         var allPages = await _pageService.GetAllPagesAsync(cancellationToken);
 

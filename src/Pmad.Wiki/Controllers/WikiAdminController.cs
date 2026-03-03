@@ -36,7 +36,7 @@ namespace Pmad.Wiki.Controllers
         [Authorize]
         public async Task<IActionResult> AccessControl(CancellationToken cancellationToken)
         {
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
             if (wikiUser == null || !wikiUser.CanAdmin)
             {
                 return Forbid();
@@ -63,7 +63,7 @@ namespace Pmad.Wiki.Controllers
         [Authorize]
         public async Task<IActionResult> EditAccessControl(CancellationToken cancellationToken)
         {
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
             if (wikiUser == null || !wikiUser.CanAdmin)
             {
                 return Forbid();
@@ -95,7 +95,7 @@ namespace Pmad.Wiki.Controllers
                 return View(model);
             }
 
-            var wikiUser = await _userService.GetWikiUser(User, true, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, true, cancellationToken);
             if (wikiUser == null || !wikiUser.CanAdmin)
             {
                 return Forbid();

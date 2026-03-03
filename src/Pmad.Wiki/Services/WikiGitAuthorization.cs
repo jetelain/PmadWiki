@@ -17,7 +17,7 @@ internal class WikiGitAuthorization : IWikiGitAuthorization
 
     public async ValueTask<bool> AuthorizeGitHttpAsync(HttpContext context, GitOperation operation, CancellationToken cancellationToken)
     {
-        var user = await _wikiUserService.GetWikiUser(context.User, false, cancellationToken);
+        var user = await _wikiUserService.GetWikiUserAsync(context.User, false, cancellationToken);
         if (user is null)
         {
             if (_wikiOptions.AllowAnonymousViewing && !_wikiOptions.UsePageLevelPermissions && operation == GitOperation.Read)

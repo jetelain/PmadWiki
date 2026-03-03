@@ -240,15 +240,15 @@ public class WikiPageServiceTest
             .Returns(AsyncEnumerable(commit1, commit2, commit3));
 
         _mockWikiUserService
-            .Setup(x => x.GetWikiUserFromGitEmail("user1@example.com", It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserFromGitEmailAsync("user1@example.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync(wikiUser1);
 
         _mockWikiUserService
-            .Setup(x => x.GetWikiUserFromGitEmail("user2@example.com", It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserFromGitEmailAsync("user2@example.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync(wikiUser2);
 
         _mockWikiUserService
-            .Setup(x => x.GetWikiUserFromGitEmail("user3@example.com", It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserFromGitEmailAsync("user3@example.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync((IWikiUser?)null);
 
         // Act
@@ -300,7 +300,7 @@ public class WikiPageServiceTest
             .Returns(AsyncEnumerable(commit1, commit2, commit3));
 
         _mockWikiUserService
-            .Setup(x => x.GetWikiUserFromGitEmail("same@example.com", It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserFromGitEmailAsync("same@example.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync(wikiUser);
 
         // Act
@@ -312,7 +312,7 @@ public class WikiPageServiceTest
         
         // Should only call GetWikiUserFromGitEmail once due to caching
         _mockWikiUserService.Verify(
-            x => x.GetWikiUserFromGitEmail("same@example.com", It.IsAny<CancellationToken>()),
+            x => x.GetWikiUserFromGitEmailAsync("same@example.com", It.IsAny<CancellationToken>()),
             Times.Once);
     }
 

@@ -6,8 +6,17 @@ using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki;
 
+/// <summary>
+/// Extension methods for <see cref="IServiceCollection"/> to register wiki services.
+/// </summary>
 public static class WikiServiceCollectionExtensions
 {
+    /// <summary>
+    /// Registers all core wiki services into the dependency injection container.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="options">A delegate to configure <see cref="WikiOptions"/>.</param>
+    /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddWiki(this IServiceCollection services, Action<WikiOptions> options)
     {
         services.Configure<WikiOptions>(options);
@@ -34,12 +43,22 @@ public static class WikiServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Registers a background service that periodically cleans up abandoned temporary media files.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddWikiTemporaryMediaCleanup(this IServiceCollection services)
     {
         services.AddHostedService<TemporaryMediaCleanupService>();
         return services;
     }
 
+    /// <summary>
+    /// Registers services required to expose the wiki repository over the Git Smart HTTP protocol.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddWikiGitHttpServer(this IServiceCollection services)
     {
         services.AddOptions<GitSmartHttpOptions>()

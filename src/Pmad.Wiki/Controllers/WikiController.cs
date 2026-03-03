@@ -69,7 +69,7 @@ namespace Pmad.Wiki.Controllers
                 return BadRequest("Invalid culture identifier.");
             }
 
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
 
             if (!await _pagePermissionHelper.CanView(wikiUser, id, cancellationToken))
             {
@@ -109,7 +109,7 @@ namespace Pmad.Wiki.Controllers
 
             if (page.FrontMatter.ShowSubPages)
             {
-                var subPages = await _pagePermissionHelper.GetAccessibleSubPages(wikiUser, id, page.FrontMatter.SubPagesRecursive, cancellationToken);
+                var subPages = await _pagePermissionHelper.GetAccessibleSubPagesAsync(wikiUser, id, page.FrontMatter.SubPagesRecursive, cancellationToken);
 
                 viewModel.SubPages = WikiSiteMapNodeHelper.BuildSubPages(subPages, culture ?? _options.NeutralMarkdownPageCulture, id);
             }
@@ -164,7 +164,7 @@ namespace Pmad.Wiki.Controllers
                 return Challenge();
             }
 
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
 
             if (!await _pagePermissionHelper.CanView(wikiUser, id, cancellationToken))
             {
@@ -221,7 +221,7 @@ namespace Pmad.Wiki.Controllers
                 return Challenge();
             }
 
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
 
             if (!await _pagePermissionHelper.CanView(wikiUser, id, cancellationToken))
             {
@@ -293,7 +293,7 @@ namespace Pmad.Wiki.Controllers
                 return Challenge();
             }
 
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
 
             if (!await _pagePermissionHelper.CanView(wikiUser, id, cancellationToken))
             {
@@ -349,14 +349,14 @@ namespace Pmad.Wiki.Controllers
             IWikiUserWithPermissions? wikiUser = null;
             if (User.Identity?.IsAuthenticated == true)
             {
-                wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+                wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
                 if (wikiUser != null && !wikiUser.CanView && !_options.AllowAnonymousViewing)
                 {
                     return Forbid();
                 }
             }
 
-            var allPages = await _pagePermissionHelper.GetAllAccessiblePages(wikiUser, cancellationToken);
+            var allPages = await _pagePermissionHelper.GetAllAccessiblePagesAsync(wikiUser, cancellationToken);
 
             var rootNodes = WikiSiteMapNodeHelper.Build(allPages, culture ?? _options.NeutralMarkdownPageCulture);
 
@@ -390,7 +390,7 @@ namespace Pmad.Wiki.Controllers
                 return BadRequest("Invalid culture identifier.");
             }
 
-            var wikiUser = await _userService.GetWikiUser(User, true, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, true, cancellationToken);
             if (!await _pagePermissionHelper.CanEdit(wikiUser, id, cancellationToken))
             {
                 return Forbid();
@@ -418,7 +418,7 @@ namespace Pmad.Wiki.Controllers
                     if (!string.IsNullOrEmpty(templateId))
                     {
                         var template = await _templateService.GetTemplateAsync(wikiUser!, templateId, cancellationToken);
-                        content = _templateService.ResolvePlaceHolders(template?.Content ?? string.Empty);
+                        content = _templateService.ResolvePlaceholders(template?.Content ?? string.Empty);
                     }
                     else
                     {
@@ -451,7 +451,7 @@ namespace Pmad.Wiki.Controllers
         [Authorize]
         public async Task<IActionResult> GetAccessiblePages(string currentPageName, CancellationToken cancellationToken)
         {
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
             if (wikiUser == null || !wikiUser.CanEdit)
             {
                 return Forbid();
@@ -462,7 +462,7 @@ namespace Pmad.Wiki.Controllers
                 return BadRequest("Invalid page name.");
             }
 
-            var pages = (await _pagePermissionHelper.GetAllAccessiblePages(wikiUser, cancellationToken))
+            var pages = (await _pagePermissionHelper.GetAllAccessiblePagesAsync(wikiUser, cancellationToken))
                 .Select(p => new WikiPageLinkInfo
                 {
                     PageName = p.PageName,
@@ -479,7 +479,7 @@ namespace Pmad.Wiki.Controllers
         [Authorize]
         public async Task<IActionResult> GetMediaGallery(string currentPageName, CancellationToken cancellationToken)
         {
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
             if (wikiUser == null || !wikiUser.CanEdit)
             {
                 return Forbid();
@@ -511,7 +511,7 @@ namespace Pmad.Wiki.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PreviewMarkdown([FromBody] PreviewMarkdownRequest request, CancellationToken cancellationToken)
         {
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
             if (wikiUser == null || !wikiUser.CanEdit)
             {
                 return Forbid();
@@ -547,7 +547,7 @@ namespace Pmad.Wiki.Controllers
                 return View(model);
             }
 
-            var wikiUser = await _userService.GetWikiUser(User, true, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, true, cancellationToken);
             if (!await _pagePermissionHelper.CanEdit(wikiUser, model.PageName, cancellationToken))
             {
                 return Forbid();
@@ -614,7 +614,7 @@ namespace Pmad.Wiki.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadMedia(IFormFile file, CancellationToken cancellationToken)
         {
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
             if (wikiUser == null || !wikiUser.CanEdit)
             {
                 return Forbid();
@@ -662,7 +662,7 @@ namespace Pmad.Wiki.Controllers
                 return BadRequest("Invalid temporary media ID.");
             }
 
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
             if (wikiUser == null || !wikiUser.CanEdit)
             {
                 return Forbid();
@@ -687,7 +687,7 @@ namespace Pmad.Wiki.Controllers
         [Authorize]
         public async Task<IActionResult> Create(string? fromPage, string? culture, CancellationToken cancellationToken)
         {
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
             if (wikiUser == null || !wikiUser.CanEdit)
             {
                 return Forbid();
@@ -709,7 +709,7 @@ namespace Pmad.Wiki.Controllers
         [Authorize]
         public async Task<IActionResult> CreatePage(string? templateId, string? fromPage, string? culture, CancellationToken cancellationToken)
         {
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
             if (wikiUser == null || !wikiUser.CanEdit)
             {
                 return Forbid();
@@ -730,13 +730,13 @@ namespace Pmad.Wiki.Controllers
                 // Generate suggested name from pattern if available
                 if (!string.IsNullOrEmpty(template.NamePattern))
                 {
-                    suggestedName = _templateService.ResolvePlaceHolders(template.NamePattern);
+                    suggestedName = _templateService.ResolvePlaceholders(template.NamePattern);
                 }
 
                 // Generate default location from template if available
                 if (!string.IsNullOrEmpty(template.DefaultLocation))
                 {
-                    defaultLocation = _templateService.ResolvePlaceHolders(template.DefaultLocation);
+                    defaultLocation = _templateService.ResolvePlaceholders(template.DefaultLocation);
                 }
             }
 
@@ -778,7 +778,7 @@ namespace Pmad.Wiki.Controllers
                 return View("CreatePage", model);
             }
 
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
 
             if (!await _pagePermissionHelper.CanEdit(wikiUser, pageName, cancellationToken))
             {
@@ -821,7 +821,7 @@ namespace Pmad.Wiki.Controllers
                 return Challenge();
             }
 
-            var wikiUser = await _userService.GetWikiUser(User, false, cancellationToken);
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
 
             if (!await _pagePermissionHelper.CanView(wikiUser, id, cancellationToken))
             {

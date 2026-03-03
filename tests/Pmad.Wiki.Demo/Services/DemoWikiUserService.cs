@@ -18,7 +18,7 @@ public class DemoWikiUserService : IWikiUserService
         _authorizationService = authorizationService;
     }
 
-    public async Task<IWikiUserWithPermissions?> GetWikiUser(ClaimsPrincipal principal, bool shouldCreate, CancellationToken cancellationToken)
+    public async Task<IWikiUserWithPermissions?> GetWikiUserAsync(ClaimsPrincipal principal, bool shouldCreate, CancellationToken cancellationToken)
     {
         var steamId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
         if (steamId == null || !steamId.StartsWith("https://steamcommunity.com/openid/id/", StringComparison.Ordinal))
@@ -49,7 +49,7 @@ public class DemoWikiUserService : IWikiUserService
         return new DemoWikiUserWithPermissions(user, isAdmin);
     }
 
-    public async Task<IWikiUser?> GetWikiUserFromGitEmail(string gitEmail, CancellationToken cancellationToken)
+    public async Task<IWikiUser?> GetWikiUserFromGitEmailAsync(string gitEmail, CancellationToken cancellationToken)
     {
         return await _demoContext.Users.FirstOrDefaultAsync(u => u.GitEmail == gitEmail, cancellationToken);
     }

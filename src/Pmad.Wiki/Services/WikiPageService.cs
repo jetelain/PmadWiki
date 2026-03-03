@@ -25,7 +25,7 @@ public sealed class WikiPageService : IWikiPageService
         _options = options.Value;
     }
 
-    public async Task EnsureRepositoryCreated()
+    public async Task EnsureRepositoryCreatedAsync()
     {
         var repositoryPath = GetRepositoryPath();
         if (Directory.Exists(repositoryPath))
@@ -91,7 +91,7 @@ public sealed class WikiPageService : IWikiPageService
             {
                 if (!userCache.TryGetValue(commit.Metadata.AuthorEmail, out var user))
                 {
-                    user = await _wikiUserService.GetWikiUserFromGitEmail(commit.Metadata.AuthorEmail, cancellationToken);
+                    user = await _wikiUserService.GetWikiUserFromGitEmailAsync(commit.Metadata.AuthorEmail, cancellationToken);
                     if (user != null)
                     {
                         userCache[commit.Metadata.AuthorEmail] = user;

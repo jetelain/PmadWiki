@@ -541,7 +541,7 @@ public class WikiPagePermissionHelperTest
         var mockUser = CreateMockUser(canView: true, canEdit: false, groups: new[] { "viewers" });
 
         // Act
-        var result = await _helper.GetAllAccessiblePages(mockUser, CancellationToken.None);
+        var result = await _helper.GetAllAccessiblePagesAsync(mockUser, CancellationToken.None);
 
         // Assert
         Assert.Equal(3, result.Count);
@@ -564,7 +564,7 @@ public class WikiPagePermissionHelperTest
         var mockUser = CreateMockUser(canView: true, canEdit: false, groups: new[] { "viewers" });
 
         // Act
-        var result = await _helper.GetAllAccessiblePages(mockUser, CancellationToken.None);
+        var result = await _helper.GetAllAccessiblePagesAsync(mockUser, CancellationToken.None);
 
         // Assert
         Assert.Empty(result);
@@ -586,7 +586,7 @@ public class WikiPagePermissionHelperTest
             .ReturnsAsync(allPages);
 
         // Act
-        var result = await _helper.GetAllAccessiblePages(null, CancellationToken.None);
+        var result = await _helper.GetAllAccessiblePagesAsync(null, CancellationToken.None);
 
         // Assert
         Assert.Single(result);
@@ -628,7 +628,7 @@ public class WikiPagePermissionHelperTest
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = false });
 
         // Act
-        var result = await _helper.GetAllAccessiblePages(mockUser, CancellationToken.None);
+        var result = await _helper.GetAllAccessiblePagesAsync(mockUser, CancellationToken.None);
 
         // Assert
         Assert.Equal(2, result.Count);
@@ -662,7 +662,7 @@ public class WikiPagePermissionHelperTest
             .ReturnsAsync(new PageAccessPermissions { CanRead = false, CanEdit = false });
 
         // Act
-        var result = await _helper.GetAllAccessiblePages(null, CancellationToken.None);
+        var result = await _helper.GetAllAccessiblePagesAsync(null, CancellationToken.None);
 
         // Assert
         Assert.Single(result);
@@ -693,7 +693,7 @@ public class WikiPagePermissionHelperTest
             .ReturnsAsync(new PageAccessPermissions { CanRead = false, CanEdit = false });
 
         // Act
-        var result = await _helper.GetAllAccessiblePages(mockUser, CancellationToken.None);
+        var result = await _helper.GetAllAccessiblePagesAsync(mockUser, CancellationToken.None);
 
         // Assert
         Assert.Empty(result);
@@ -723,7 +723,7 @@ public class WikiPagePermissionHelperTest
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = true });
 
         // Act
-        var result = await _helper.GetAllAccessiblePages(mockUser, CancellationToken.None);
+        var result = await _helper.GetAllAccessiblePagesAsync(mockUser, CancellationToken.None);
 
         // Assert
         Assert.Equal(3, result.Count);
@@ -756,7 +756,7 @@ public class WikiPagePermissionHelperTest
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = false });
 
         // Act
-        var result = await _helper.GetAllAccessiblePages(mockUser, CancellationToken.None);
+        var result = await _helper.GetAllAccessiblePagesAsync(mockUser, CancellationToken.None);
 
         // Assert
         Assert.Equal(2, result.Count);
@@ -800,7 +800,7 @@ public class WikiPagePermissionHelperTest
             .ReturnsAsync(new PageAccessPermissions { CanRead = false, CanEdit = false });
 
         // Act
-        var result = await _helper.GetAllAccessiblePages(mockUser, CancellationToken.None);
+        var result = await _helper.GetAllAccessiblePagesAsync(mockUser, CancellationToken.None);
 
         // Assert
         Assert.Single(result);
@@ -835,7 +835,7 @@ public class WikiPagePermissionHelperTest
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = false });
 
         // Act
-        var result = await _helper.GetAllAccessiblePages(mockUser, CancellationToken.None);
+        var result = await _helper.GetAllAccessiblePagesAsync(mockUser, CancellationToken.None);
 
         // Assert
         Assert.Equal(3, result.Count);
@@ -917,7 +917,7 @@ public class WikiPagePermissionHelperTest
             .ReturnsAsync(new PageAccessPermissions { CanRead = true, CanEdit = false });
 
         // Act
-        await _helper.GetAllAccessiblePages(mockUser, cancellationToken);
+        await _helper.GetAllAccessiblePagesAsync(mockUser, cancellationToken);
 
         // Assert
         _mockPageService.Verify(
@@ -970,7 +970,7 @@ public class WikiPagePermissionHelperTest
         Assert.False(canEditAdmin);
 
         // Act & Assert - GetAllAccessiblePages
-        var accessiblePages = await _helper.GetAllAccessiblePages(null, CancellationToken.None);
+        var accessiblePages = await _helper.GetAllAccessiblePagesAsync(null, CancellationToken.None);
         Assert.Single(accessiblePages);
         Assert.Contains(accessiblePages, p => p.PageName == "Public");
     }
@@ -1015,7 +1015,7 @@ public class WikiPagePermissionHelperTest
         Assert.False(canEditAdmin);
 
         // Act & Assert - GetAllAccessiblePages
-        var accessiblePages = await _helper.GetAllAccessiblePages(mockUser, CancellationToken.None);
+        var accessiblePages = await _helper.GetAllAccessiblePagesAsync(mockUser, CancellationToken.None);
         Assert.Equal(2, accessiblePages.Count);
     }
 

@@ -1,5 +1,9 @@
 ﻿namespace Pmad.Wiki.Services;
 
+/// <summary>
+/// Represents a wiki user, providing the information needed for Git commits and UI display.
+/// Must be implemented by the host application.
+/// </summary>
 public interface IWikiUser
 {
     /// <summary>

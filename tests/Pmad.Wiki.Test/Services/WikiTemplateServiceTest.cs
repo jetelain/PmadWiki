@@ -29,7 +29,7 @@ public class WikiTemplateServiceTest
         var mockUser = CreateMockUser();
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<WikiPageInfo>());
 
         // Act
@@ -52,7 +52,7 @@ public class WikiTemplateServiceTest
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         // Act
@@ -74,7 +74,7 @@ public class WikiTemplateServiceTest
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = @"---
@@ -127,7 +127,7 @@ Content here";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_templates/article", "Article Template", "# Article");
@@ -161,7 +161,7 @@ Content here";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_templates/simple", "Simple Template", "# Simple");
@@ -186,7 +186,7 @@ Content here";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_template", "Root Template", "# Root");
@@ -211,7 +211,7 @@ Content here";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("docs/_template", "Docs Template", "# Docs");
@@ -239,7 +239,7 @@ Content here";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_templates/article", "Article", "# Article");
@@ -270,7 +270,7 @@ Content here";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = @"---
@@ -321,7 +321,7 @@ This is the template content.";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = @"# Simple Template
@@ -368,7 +368,7 @@ This is a simple template without front matter.";
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = @"---
@@ -413,7 +413,7 @@ description: Has only some fields
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = @"---
@@ -458,7 +458,7 @@ description: Template without title in front matter
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = "# Content without front matter";
@@ -505,7 +505,7 @@ description: Template without title in front matter
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_templates/zebra", "Zebra Template", "# Zebra");
@@ -536,7 +536,7 @@ description: Template without title in front matter
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePageWithoutTitle("_templates/z-template", "# Z");
@@ -571,7 +571,7 @@ description: Template without title in front matter
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_templates/good", "Good Template", "# Good");
@@ -608,7 +608,7 @@ description: Template without title in front matter
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, cancellationToken))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, cancellationToken))
             .ReturnsAsync(allPages);
 
         SetupTemplatePage("_templates/test", "Test Template", "# Test");
@@ -618,7 +618,7 @@ description: Template without title in front matter
 
         // Assert
         _mockPermissionHelper.Verify(
-            x => x.GetAllAccessiblePages(mockUser, cancellationToken),
+            x => x.GetAllAccessiblePagesAsync(mockUser, cancellationToken),
             Times.Once);
 
         _mockPageService.Verify(
@@ -890,7 +890,7 @@ description: Template for articles
         var expectedDate = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd");
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal($"article-{expectedDate}", result);
@@ -904,7 +904,7 @@ description: Template for articles
         var expectedDateTime = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd-HHmmss");
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.StartsWith("log-", result);
@@ -919,7 +919,7 @@ description: Template for articles
         var expectedYear = DateTimeOffset.UtcNow.Year.ToString();
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal($"report-{expectedYear}", result);
@@ -933,7 +933,7 @@ description: Template for articles
         var expectedMonth = DateTimeOffset.UtcNow.Month.ToString("D2");
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal($"monthly-{expectedMonth}", result);
@@ -947,7 +947,7 @@ description: Template for articles
         var expectedDay = DateTimeOffset.UtcNow.Day.ToString("D2");
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal($"daily-{expectedDay}", result);
@@ -964,7 +964,7 @@ description: Template for articles
         var expectedDay = now.Day.ToString("D2");
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal($"article-{expectedYear}-{expectedMonth}-{expectedDay}", result);
@@ -982,7 +982,7 @@ description: Template for articles
         var expectedDay = now.Day.ToString("D2");
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal($"{expectedYear}/{expectedMonth}/report-{expectedDate}-{expectedDay}", result);
@@ -1000,7 +1000,7 @@ description: Template for articles
         var expectedDate = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd");
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal($"article-{expectedDate}", result);
@@ -1014,7 +1014,7 @@ description: Template for articles
         var expectedDate = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd");
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal($"article-{expectedDate}", result);
@@ -1031,7 +1031,7 @@ description: Template for articles
         var expectedDay = now.Day.ToString("D2");
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal($"{expectedYear}/{expectedMonth}/{expectedDay}", result);
@@ -1045,7 +1045,7 @@ description: Template for articles
     public void ResolvePlaceHolders_WithNullPattern_ReturnsEmptyString()
     {
         // Act
-        var result = _service.ResolvePlaceHolders(null!);
+        var result = _service.ResolvePlaceholders(null!);
 
         // Assert
         Assert.Equal(string.Empty, result);
@@ -1055,7 +1055,7 @@ description: Template for articles
     public void ResolvePlaceHolders_WithEmptyPattern_ReturnsEmptyString()
     {
         // Act
-        var result = _service.ResolvePlaceHolders("");
+        var result = _service.ResolvePlaceholders("");
 
         // Assert
         Assert.Equal(string.Empty, result);
@@ -1065,7 +1065,7 @@ description: Template for articles
     public void ResolvePlaceHolders_WithWhitespacePattern_ReturnsEmptyString()
     {
         // Act
-        var result = _service.ResolvePlaceHolders("   ");
+        var result = _service.ResolvePlaceholders("   ");
 
         // Assert
         Assert.Equal(string.Empty, result);
@@ -1078,7 +1078,7 @@ description: Template for articles
         var pattern = "article-without-placeholders";
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal(pattern, result);
@@ -1091,7 +1091,7 @@ description: Template for articles
         var pattern = "article-{unknown}";
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal("article-{unknown}", result);
@@ -1104,7 +1104,7 @@ description: Template for articles
         var pattern = "article-{dates}"; // Note the 's'
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal("article-{dates}", result);
@@ -1118,7 +1118,7 @@ description: Template for articles
         var expectedDate = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd");
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal($"prefix{expectedDate}suffix", result);
@@ -1132,7 +1132,7 @@ description: Template for articles
         var expectedDate = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd");
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal($"{expectedDate}-{expectedDate}", result);
@@ -1149,7 +1149,7 @@ description: Template for articles
         var expectedDate = now.ToString("yyyy-MM-dd");
 
         // Act
-        var result = _service.ResolvePlaceHolders(pattern);
+        var result = _service.ResolvePlaceholders(pattern);
 
         // Assert
         Assert.Equal($"docs/{expectedYear}/reports/{expectedMonth}/report-{expectedDate}-final", result);
@@ -1171,7 +1171,7 @@ description: Template for articles
         };
 
         _mockPermissionHelper
-            .Setup(x => x.GetAllAccessiblePages(mockUser, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAccessiblePagesAsync(mockUser, It.IsAny<CancellationToken>()))
             .ReturnsAsync(allPages);
 
         var pageContent = @"---
@@ -1195,7 +1195,7 @@ pattern: articles/{year}/{month}/article-{date}
         // Act
         var templates = await _service.GetAllTemplatesAsync(mockUser, CancellationToken.None);
         var template = templates.First();
-        var resolvedPattern = _service.ResolvePlaceHolders(template.NamePattern!);
+        var resolvedPattern = _service.ResolvePlaceholders(template.NamePattern!);
 
         // Assert
         Assert.Single(templates);
@@ -1245,8 +1245,8 @@ Date: {date}";
         var template = await _service.GetTemplateAsync(mockUser, "_templates/daily-log", CancellationToken.None);
         Assert.NotNull(template);
 
-        var resolvedPattern = _service.ResolvePlaceHolders(template.NamePattern!);
-        var resolvedContent = _service.ResolvePlaceHolders(template.Content);
+        var resolvedPattern = _service.ResolvePlaceholders(template.NamePattern!);
+        var resolvedContent = _service.ResolvePlaceholders(template.Content);
 
         // Assert
         Assert.NotNull(template.NamePattern);

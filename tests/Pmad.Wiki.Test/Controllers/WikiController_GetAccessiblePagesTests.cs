@@ -18,7 +18,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -69,7 +69,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -109,7 +109,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -153,7 +153,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -187,7 +187,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
     {
         // Arrange
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync((IWikiUserWithPermissions?)null);
 
         // Act
@@ -205,7 +205,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(false);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         SetupUserContext("testuser");
@@ -225,7 +225,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.CanEdit).Returns(true);
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         SetupUserContext("testuser");
@@ -248,7 +248,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(new[] { "users" });
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -301,7 +301,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(new[] { "users" });
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -346,7 +346,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -389,7 +389,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         _mockPageService
@@ -419,7 +419,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(new[] { "users", "editors", "admins" });
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -461,7 +461,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -499,7 +499,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -541,7 +541,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -583,7 +583,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -621,7 +621,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(new[] { "editors" });
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
@@ -674,7 +674,7 @@ public class WikiController_GetAccessiblePagesTests : WikiControllerTestBase
         mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
 
         _mockUserService
-            .Setup(x => x.GetWikiUser(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockUser.Object);
 
         var allPages = new List<WikiPageInfo>
