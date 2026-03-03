@@ -1,4 +1,4 @@
-using System.Diagnostics;
+ï»¿using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -320,7 +320,7 @@ public class WikiControllerIntegrationTests : IDisposable
         // Arrange
         InitializeGitRepository();
         CommitFile("page.md", "# English Page\n\nEnglish content.", "Add English page");
-        CommitFile("page.fr.md", "# Page Française\n\nContenu français.", "Add French page");
+        CommitFile("page.fr.md", "# Page FranÃ§aise\n\nContenu franÃ§ais.", "Add French page");
 
         // Act
         var englishResult = await CreateController().View("page", null, CancellationToken.None);
@@ -333,7 +333,7 @@ public class WikiControllerIntegrationTests : IDisposable
 
         var frenchView = Assert.IsType<ViewResult>(frenchResult);
         var frenchModel = Assert.IsType<WikiPageViewModel>(frenchView.Model);
-        Assert.Equal("Page Française", frenchModel.Title);
+        Assert.Equal("Page FranÃ§aise", frenchModel.Title);
         
         // Verify both cultures are available
         Assert.Contains("fr", frenchModel.AvailableCultures);
@@ -695,7 +695,7 @@ public class WikiControllerIntegrationTests : IDisposable
         {
             PageName = "page",
             Culture = "fr",
-            Content = "# Page Française",
+            Content = "# Page FranÃ§aise",
             CommitMessage = "Add French page",
             IsNew = true
         };
@@ -705,7 +705,7 @@ public class WikiControllerIntegrationTests : IDisposable
 
         // Assert - Verify with git CLI
         var gitContent = GetGitFileContent("page.fr.md");
-        Assert.Equal("# Page Française", gitContent);
+        Assert.Equal("# Page FranÃ§aise", gitContent);
     }
 
     [Fact]
@@ -1008,7 +1008,7 @@ public class WikiControllerIntegrationTests : IDisposable
     {
         // Arrange
         InitializeGitRepository();
-        var content = "# Unicode Test\n\nÄÖÜäöüß ?? ??? ?? ????";
+        var content = "# Unicode Test\n\nÃ„Ã–ÃœÃ¤Ã¶Ã¼ÃŸ ä¸­æ–‡ æ—¥æœ¬èªž í•œê¸€ ðŸ˜€ðŸŽ‰";
         CommitFile("unicode.md", content, "Add unicode content");
 
         // Act
