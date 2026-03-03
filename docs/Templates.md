@@ -136,27 +136,27 @@ Parameters can be used anywhere built-in placeholders are supported:
 
 ```yaml
 ---
-location: "Projects/{project-name}/{year}"
-pattern: "{ticket-id}-{feature-name}"
+location: "Projects/{project_name}/{year}"
+pattern: "{ticket_id}-{feature_name}"
 parameters:
-  - name: project-name
+  - name: project_name
     type: text
     label: Project Name
     required: true
-  - name: ticket-id
+  - name: ticket_id
     type: text
     label: Ticket ID
     required: true
-  - name: feature-name
+  - name: feature_name
     type: text
     label: Feature Name
     required: true
 ---
 
-# Feature: {feature-name}
+# Feature: {feature_name}
 
-**Ticket:** {ticket-id}  
-**Project:** {project-name}  
+**Ticket:** {ticket_id}  
+**Project:** {project_name}  
 **Date:** {date}
 
 ## Description
@@ -191,7 +191,7 @@ Placeholders are automatically replaced when creating a page:
 | `{year}` | Current year | `2024` |
 | `{month}` | Current month (2 digits) | `01` |
 | `{day}` | Current day (2 digits) | `15` |
-| `{parameter-name}` | Custom parameter value (sanitized) | Varies based on user input |
+| `{parameter_name}` | Custom parameter value (sanitized) | Varies based on user input |
 
 ## Using Templates
 
