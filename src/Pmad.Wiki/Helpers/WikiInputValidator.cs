@@ -56,8 +56,8 @@ public static partial class WikiInputValidator
     /// Template parameter names: alphanumeric, dash and underscores only.
     /// </summary>
     /// <remarks>
-    /// Needs to be valid as html input names and query string parameters. 
-    /// Despite dash is not a valid html name, all browsers supports it and it's widely used in practice, so we allow it.
+    /// Needs to be safe to use as HTML input names, query string parameters, and in template placeholder syntax.
+    /// Hyphens are valid and widely supported in HTML attribute values (including the <c>name</c> attribute); the restricted character set here is chosen to avoid special characters that may cause issues in URLs, model binding, or template processing.
     /// </remarks>
     [GeneratedRegex("^[a-zA-Z0-9_-]+$", RegexOptions.CultureInvariant)]
     private static partial Regex TemplateParameterNameRegex();
