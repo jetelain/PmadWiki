@@ -77,15 +77,6 @@ public sealed class WikiTemplateService : IWikiTemplateService
         var now = timestamp ?? DateTimeOffset.UtcNow;
         var result = pattern;
 
-        // Replace custom parameters
-        if (parameterValues != null)
-        {
-            foreach (var param in parameterValues)
-            {
-                result = result.Replace($"{{{param.Key}}}", param.Value, StringComparison.OrdinalIgnoreCase);
-            }
-        }
-
         // Replace {date} with current date in ISO format
         result = result.Replace("{date}", now.ToString("yyyy-MM-dd"), StringComparison.OrdinalIgnoreCase);
 
@@ -96,6 +87,15 @@ public sealed class WikiTemplateService : IWikiTemplateService
         result = result.Replace("{year}", now.Year.ToString(), StringComparison.OrdinalIgnoreCase);
         result = result.Replace("{month}", now.Month.ToString("D2"), StringComparison.OrdinalIgnoreCase);
         result = result.Replace("{day}", now.Day.ToString("D2"), StringComparison.OrdinalIgnoreCase);
+
+        // Replace custom parameters
+        if (parameterValues != null)
+        {
+            foreach (var param in parameterValues)
+            {
+                result = result.Replace($"{{{param.Key}}}", param.Value, StringComparison.OrdinalIgnoreCase);
+            }
+        }
 
         return result;
     }

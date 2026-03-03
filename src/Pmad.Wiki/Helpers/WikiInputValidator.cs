@@ -55,7 +55,7 @@ public static partial class WikiInputValidator
     /// <summary>
     /// Template parameter names: alphanumeric and underscores only.
     /// </summary>
-    [GeneratedRegex("^[a-zA-Z0-9_]+$", RegexOptions.CultureInvariant)]
+    [GeneratedRegex("^[a-zA-Z0-9_-]+$", RegexOptions.CultureInvariant)]
     private static partial Regex TemplateParameterNameRegex();
 
     /// <summary>

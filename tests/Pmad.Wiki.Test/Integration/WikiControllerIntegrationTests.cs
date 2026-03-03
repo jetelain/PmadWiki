@@ -1180,6 +1180,7 @@ public class WikiControllerIntegrationTests : IDisposable
         var controller = CreateController();
         InitializeGitRepository();
         CommitFile(".gitkeep", "", "Initialize repository");
+        CommitFile("_templates/Standard.md", "---\ntitle: Standard\n---\n# Standard", "Add standard template");
         SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
 
         var model = new WikiCreatePageViewModel

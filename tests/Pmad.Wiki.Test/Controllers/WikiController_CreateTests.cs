@@ -1094,6 +1094,10 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .Setup(x => x.PageExistsAsync("TestPage", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "meeting-notes", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiTemplate { TemplateName = "meeting-notes", Content = string.Empty });
+
         var model = new WikiCreatePageViewModel
         {
             PageName = "TestPage",
@@ -1415,6 +1419,10 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .Setup(x => x.PageExistsAsync("docs/MyPage", "pt", It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "standard-doc", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiTemplate { TemplateName = "standard-doc", Content = string.Empty });
+
         var model = new WikiCreatePageViewModel
         {
             PageName = "MyPage",
@@ -1482,10 +1490,24 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .Setup(x => x.PageExistsAsync("reports/MyReport", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "report-template", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiTemplate
+            {
+                TemplateName = "report-template",
+                Content = string.Empty,
+                Parameters = new List<WikiTemplateParameter>
+                {
+                    new() { Name = "title" },
+                    new() { Name = "author" }
+                }
+            });
+
         var model = new WikiCreatePageViewModel
         {
             PageName = "MyReport",
             Location = "reports",
+            TemplateId = "report-template",
             ParameterValues = new Dictionary<string, string>
             {
                 ["title"] = "Q1 Summary",
@@ -1558,9 +1580,24 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .Setup(x => x.PageExistsAsync("TestPage", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "template-with-params", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiTemplate
+            {
+                TemplateName = "template-with-params",
+                Content = string.Empty,
+                Parameters = new List<WikiTemplateParameter>
+                {
+                    new() { Name = "title" },
+                    new() { Name = "subtitle" },
+                    new() { Name = "author" }
+                }
+            });
+
         var model = new WikiCreatePageViewModel
         {
             PageName = "TestPage",
+            TemplateId = "template-with-params",
             ParameterValues = new Dictionary<string, string>
             {
                 ["title"] = "My Title",

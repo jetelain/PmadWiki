@@ -65,13 +65,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let result = pattern;
 
-        // Replace parameter placeholders
-        for (const [key, value] of Object.entries(paramValues)) {
-            const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const placeholder = new RegExp(`\\{${escapedKey}\\}`, 'gi');
-            result = result.replace(placeholder, value);
-        }
-
         // Date placeholders resolved using the browser timestamp captured when the page was loaded
         const tsYear  = browserTimestamp.getFullYear().toString();
         const tsMonth = (browserTimestamp.getMonth() + 1).toString().padStart(2, '0');
@@ -84,6 +77,13 @@ document.addEventListener('DOMContentLoaded', function () {
         result = result.replace(/\{year\}/gi, tsYear);
         result = result.replace(/\{month\}/gi, tsMonth);
         result = result.replace(/\{day\}/gi, tsDay);
+
+        // Replace parameter placeholders
+        for (const [key, value] of Object.entries(paramValues)) {
+            const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const placeholder = new RegExp(`\\{${escapedKey}\\}`, 'gi');
+            result = result.replace(placeholder, value);
+        }
 
         return result;
     }

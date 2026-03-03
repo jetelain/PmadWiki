@@ -805,16 +805,28 @@ namespace Pmad.Wiki.Controllers
                 ModelState.AddModelError(nameof(model.Culture), _localizer["Invalid culture identifier."]);
             }
 
-            if (!ModelState.IsValid)
-            {
-                return View("CreatePage", model);
-            }
-
             var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
 
             if (!await _pagePermissionHelper.CanEdit(wikiUser, pageName, cancellationToken))
             {
                 return Forbid();
+            }
+
+            WikiTemplate? template = null;
+            if (!string.IsNullOrEmpty(model.TemplateId))
+            {
+                template = await _templateService.GetTemplateAsync(wikiUser!, model.TemplateId, cancellationToken);
+                if (template == null)
+                {
+                    return NotFound();
+                }
+                model.InvalidParameterNames = template.InvalidParameterNames;
+                model.Parameters = template.Parameters;
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View("CreatePage", model);
             }
 
             // Check if page already exists
@@ -835,11 +847,11 @@ namespace Pmad.Wiki.Controllers
             };
 
             // Add parameter values as individual query parameters
-            if (model.ParameterValues != null)
+            if (model.ParameterValues != null && template != null && template.Parameters != null)
             {
                 foreach (var kvp in model.ParameterValues)
                 {
-                    if (!string.IsNullOrEmpty(kvp.Value))
+                    if (!string.IsNullOrEmpty(kvp.Value) && template.Parameters.Any(p => p.Name == kvp.Key))
                     {
                         routeValues[$"{TemplateParametersModelBinder.ParameterPrefix}{kvp.Key}"] = kvp.Value;
                     }
