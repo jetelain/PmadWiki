@@ -214,7 +214,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage(null, null, null, CancellationToken.None);
+        var result = await _controller.CreatePage(null, null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<ForbidResult>(result);
@@ -229,7 +229,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync((IWikiUserWithPermissions?)null);
 
         // Act
-        var result = await _controller.CreatePage(null, null, null, CancellationToken.None);
+        var result = await _controller.CreatePage(null, null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<ForbidResult>(result);
@@ -249,7 +249,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage(null, null, null, CancellationToken.None);
+        var result = await _controller.CreatePage(null, null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -281,7 +281,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("invalid-template", null, null, CancellationToken.None);
+        var result = await _controller.CreatePage("invalid-template", null, null, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<NotFoundResult>(result);
@@ -313,7 +313,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("meeting-notes", null, null, CancellationToken.None);
+        var result = await _controller.CreatePage("meeting-notes", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -349,13 +349,13 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync(template);
 
         _mockTemplateService
-            .Setup(x => x.ResolvePlaceholders("Report-{date}"))
+            .Setup(x => x.ResolvePlaceholders("Report-{date}", It.IsAny<Dictionary<string, string>>(), null))
             .Returns("Report-2024-01-15");
 
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("daily-report", null, null, CancellationToken.None);
+        var result = await _controller.CreatePage("daily-report", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -364,7 +364,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         Assert.Equal("Report-2024-01-15", model.PageName);
         
         _mockTemplateService.Verify(
-            x => x.ResolvePlaceholders("Report-{date}"),
+            x => x.ResolvePlaceholders("Report-{date}", It.IsAny<Dictionary<string, string>>(), null),
             Times.Once);
     }
 
@@ -392,13 +392,13 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync(template);
 
         _mockTemplateService
-            .Setup(x => x.ResolvePlaceholders("projects/{year}"))
+            .Setup(x => x.ResolvePlaceholders("projects/{year}", It.IsAny<Dictionary<string, string>>(), null))
             .Returns("projects/2024");
 
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("project-doc", null, null, CancellationToken.None);
+        var result = await _controller.CreatePage("project-doc", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -407,7 +407,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         Assert.Equal("projects/2024", model.Location);
         
         _mockTemplateService.Verify(
-            x => x.ResolvePlaceholders("projects/{year}"),
+            x => x.ResolvePlaceholders("projects/{year}", It.IsAny<Dictionary<string, string>>(), null),
             Times.Once);
     }
 
@@ -425,7 +425,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage(null, "docs/api/reference", null, CancellationToken.None);
+        var result = await _controller.CreatePage(null, "docs/api/reference", null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -459,13 +459,13 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .ReturnsAsync(template);
 
         _mockTemplateService
-            .Setup(x => x.ResolvePlaceholders("blog/posts"))
+            .Setup(x => x.ResolvePlaceholders("blog/posts", It.IsAny<Dictionary<string,string>>(), null))
             .Returns("blog/posts");
 
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("blog-post", "docs/guide", null, CancellationToken.None);
+        var result = await _controller.CreatePage("blog-post", "docs/guide", null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -489,7 +489,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage(null, null, "es", CancellationToken.None);
+        var result = await _controller.CreatePage(null, null, "es", null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -523,7 +523,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("simple-template", null, null, CancellationToken.None);
+        var result = await _controller.CreatePage("simple-template", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -558,7 +558,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage("basic-template", null, null, CancellationToken.None);
+        var result = await _controller.CreatePage("basic-template", null, null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -567,7 +567,7 @@ public class WikiController_CreateTests : WikiControllerTestBase
         Assert.Equal("NewPage", model.PageName);
         
         _mockTemplateService.Verify(
-            x => x.ResolvePlaceholders(It.IsAny<string>()),
+            x => x.ResolvePlaceholders(It.IsAny<string>(), null, null),
             Times.Never);
     }
 
@@ -585,14 +585,280 @@ public class WikiController_CreateTests : WikiControllerTestBase
         SetupUserContext("testuser");
 
         // Act
-        var result = await _controller.CreatePage(null, "Home", null, CancellationToken.None);
+        var result = await _controller.CreatePage(null, "Home", null, null, CancellationToken.None);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<WikiCreatePageViewModel>(viewResult.Model);
-        
+
         Assert.Equal("Home", model.FromPage);
         Assert.Equal(string.Empty, model.Location);
+    }
+
+    [Fact]
+    public async Task CreatePage_WithTemplateHavingParameters_PopulatesParametersInModel()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var parameters = new List<WikiTemplateParameter>
+        {
+            new() { Name = "title", Type = WikiTemplateParameterType.Text, Label = "Title", Required = true },
+            new() { Name = "author", Type = WikiTemplateParameterType.Text, Label = "Author" },
+            new() { Name = "date", Type = WikiTemplateParameterType.Date, Label = "Date" }
+        };
+
+        var template = new WikiTemplate
+        {
+            TemplateName = "_templates/article",
+            Content = "# {title}\n\nAuthor: {author}",
+            Parameters = parameters
+        };
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "_templates/article", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(template);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.CreatePage("_templates/article", null, null, null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiCreatePageViewModel>(viewResult.Model);
+
+        Assert.Equal(3, model.Parameters.Count);
+        Assert.Equal("title", model.Parameters[0].Name);
+        Assert.Equal("author", model.Parameters[1].Name);
+        Assert.Equal("date", model.Parameters[2].Name);
+    }
+
+    [Fact]
+    public async Task CreatePage_WithTemplateHavingParametersWithDefaults_InitializesParameterValues()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var parameters = new List<WikiTemplateParameter>
+        {
+            new() { Name = "category", DefaultValue = "General" },
+            new() { Name = "version", DefaultValue = "1.0" }
+        };
+
+        var template = new WikiTemplate
+        {
+            TemplateName = "_templates/doc",
+            Content = "# Doc",
+            Parameters = parameters
+        };
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "_templates/doc", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(template);
+
+        _mockTemplateService
+            .Setup(x => x.ResolvePlaceholders("General", null, null))
+            .Returns("General");
+        _mockTemplateService
+            .Setup(x => x.ResolvePlaceholders("1.0", null, null))
+            .Returns("1.0");
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.CreatePage("_templates/doc", null, null, null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiCreatePageViewModel>(viewResult.Model);
+
+        Assert.Equal("General", model.ParameterValues["category"]);
+        Assert.Equal("1.0", model.ParameterValues["version"]);
+    }
+
+    [Fact]
+    public async Task CreatePage_WithTemplateHavingParameterWithNullDefault_InitializesValueToEmptyString()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var parameters = new List<WikiTemplateParameter>
+        {
+            new() { Name = "notes", DefaultValue = null },
+            new() { Name = "tag", DefaultValue = "" }
+        };
+
+        var template = new WikiTemplate
+        {
+            TemplateName = "_templates/simple",
+            Content = "# Simple",
+            Parameters = parameters
+        };
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "_templates/simple", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(template);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.CreatePage("_templates/simple", null, null, null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiCreatePageViewModel>(viewResult.Model);
+
+        Assert.Equal(string.Empty, model.ParameterValues["notes"]);
+        Assert.Equal(string.Empty, model.ParameterValues["tag"]);
+
+        _mockTemplateService.Verify(
+            x => x.ResolvePlaceholders(It.IsAny<string>(), null, null),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task CreatePage_WithTemplateParameterDefaultContainingPlaceholder_ResolvesDefaultValue()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var parameters = new List<WikiTemplateParameter>
+        {
+            new() { Name = "reportDate", DefaultValue = "{date}" }
+        };
+
+        var template = new WikiTemplate
+        {
+            TemplateName = "_templates/report",
+            Content = "# Report",
+            Parameters = parameters
+        };
+
+        var timestamp = new DateTimeOffset(2024, 3, 20, 9, 0, 0, TimeSpan.Zero);
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "_templates/report", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(template);
+
+        _mockTemplateService
+            .Setup(x => x.ResolvePlaceholders("{date}", null, timestamp))
+            .Returns("2024-03-20");
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.CreatePage("_templates/report", null, null, timestamp, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiCreatePageViewModel>(viewResult.Model);
+
+        Assert.Equal("2024-03-20", model.ParameterValues["reportDate"]);
+
+        _mockTemplateService.Verify(
+            x => x.ResolvePlaceholders("{date}", null, timestamp),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task CreatePage_WithBrowserTimestamp_PropagatesTimestampToModel()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var template = new WikiTemplate
+        {
+            TemplateName = "_templates/dated",
+            Content = "# Dated",
+            NamePattern = "Report-{date}"
+        };
+
+        var timestamp = new DateTimeOffset(2024, 6, 1, 12, 0, 0, TimeSpan.Zero);
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "_templates/dated", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(template);
+
+        _mockTemplateService
+            .Setup(x => x.ResolvePlaceholders("Report-{date}", It.IsAny<Dictionary<string, string>>(), timestamp))
+            .Returns("Report-2024-06-01");
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.CreatePage("_templates/dated", null, null, timestamp, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiCreatePageViewModel>(viewResult.Model);
+
+        Assert.Equal(timestamp.ToString("O"), model.BrowserTimestamp);
+    }
+
+    [Fact]
+    public async Task CreatePage_WithTemplate_SetsLocationPatternAndPageNamePattern()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var template = new WikiTemplate
+        {
+            TemplateName = "_templates/weekly",
+            Content = "# Weekly",
+            NamePattern = "Week-{date}",
+            DefaultLocation = "reports/{year}"
+        };
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "_templates/weekly", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(template);
+
+        _mockTemplateService
+            .Setup(x => x.ResolvePlaceholders(It.IsAny<string>(), It.IsAny<Dictionary<string, string>>(), null))
+            .Returns((string s, Dictionary<string, string> _, DateTimeOffset? _) => s);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.CreatePage("_templates/weekly", null, null, null, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiCreatePageViewModel>(viewResult.Model);
+
+        Assert.Equal("Week-{date}", model.PageNamePattern);
+        Assert.Equal("reports/{year}", model.LocationPattern);
     }
 
     #endregion
@@ -827,6 +1093,10 @@ public class WikiController_CreateTests : WikiControllerTestBase
         _mockPageService
             .Setup(x => x.PageExistsAsync("TestPage", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "meeting-notes", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiTemplate { TemplateName = "meeting-notes", Content = string.Empty });
 
         var model = new WikiCreatePageViewModel
         {
@@ -1149,6 +1419,10 @@ public class WikiController_CreateTests : WikiControllerTestBase
             .Setup(x => x.PageExistsAsync("docs/MyPage", "pt", It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "standard-doc", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiTemplate { TemplateName = "standard-doc", Content = string.Empty });
+
         var model = new WikiCreatePageViewModel
         {
             PageName = "MyPage",
@@ -1198,6 +1472,219 @@ public class WikiController_CreateTests : WikiControllerTestBase
         Assert.Equal("CreatePage", viewResult.ViewName);
         Assert.False(_controller.ModelState.IsValid);
         Assert.True(_controller.ModelState.ContainsKey(nameof(model.PageName)));
+    }
+
+    [Fact]
+    public async Task CreatePageConfirm_WithNonEmptyParameterValues_ForwardsAsPrefixedRouteValues()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.PageExistsAsync("reports/MyReport", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "report-template", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiTemplate
+            {
+                TemplateName = "report-template",
+                Content = string.Empty,
+                Parameters = new List<WikiTemplateParameter>
+                {
+                    new() { Name = "title" },
+                    new() { Name = "author" }
+                }
+            });
+
+        var model = new WikiCreatePageViewModel
+        {
+            PageName = "MyReport",
+            Location = "reports",
+            TemplateId = "report-template",
+            ParameterValues = new Dictionary<string, string>
+            {
+                ["title"] = "Q1 Summary",
+                ["author"] = "Alice"
+            }
+        };
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.CreatePageConfirm(model, CancellationToken.None);
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(WikiController.Edit), redirectResult.ActionName);
+        Assert.Equal("Q1 Summary", redirectResult.RouteValues?["p_title"]);
+        Assert.Equal("Alice", redirectResult.RouteValues?["p_author"]);
+    }
+
+    [Fact]
+    public async Task CreatePageConfirm_WithEmptyParameterValues_DoesNotForwardToRouteValues()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.PageExistsAsync("TestPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var model = new WikiCreatePageViewModel
+        {
+            PageName = "TestPage",
+            ParameterValues = new Dictionary<string, string>
+            {
+                ["notes"] = "",
+                ["tag"] = string.Empty
+            }
+        };
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.CreatePageConfirm(model, CancellationToken.None);
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.DoesNotContain("p_notes", redirectResult.RouteValues?.Keys ?? []);
+        Assert.DoesNotContain("p_tag", redirectResult.RouteValues?.Keys ?? []);
+    }
+
+    [Fact]
+    public async Task CreatePageConfirm_WithMixedParameterValues_OnlyForwardsNonEmpty()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.PageExistsAsync("TestPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        _mockTemplateService
+            .Setup(x => x.GetTemplateAsync(mockUser.Object, "template-with-params", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WikiTemplate
+            {
+                TemplateName = "template-with-params",
+                Content = string.Empty,
+                Parameters = new List<WikiTemplateParameter>
+                {
+                    new() { Name = "title" },
+                    new() { Name = "subtitle" },
+                    new() { Name = "author" }
+                }
+            });
+
+        var model = new WikiCreatePageViewModel
+        {
+            PageName = "TestPage",
+            TemplateId = "template-with-params",
+            ParameterValues = new Dictionary<string, string>
+            {
+                ["title"] = "My Title",
+                ["subtitle"] = "",
+                ["author"] = "Bob"
+            }
+        };
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.CreatePageConfirm(model, CancellationToken.None);
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("My Title", redirectResult.RouteValues?["p_title"]);
+        Assert.Equal("Bob", redirectResult.RouteValues?["p_author"]);
+        Assert.DoesNotContain("p_subtitle", redirectResult.RouteValues?.Keys ?? []);
+    }
+
+    [Fact]
+    public async Task CreatePageConfirm_WithBrowserTimestamp_ForwardsTimestampToEdit()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.PageExistsAsync("TestPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var timestamp = "2024-06-15T10:30:00.000Z";
+
+        var model = new WikiCreatePageViewModel
+        {
+            PageName = "TestPage",
+            BrowserTimestamp = timestamp
+        };
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.CreatePageConfirm(model, CancellationToken.None);
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(timestamp, redirectResult.RouteValues?["browserTimestamp"]);
+    }
+
+    [Fact]
+    public async Task CreatePageConfirm_WithNullParameterValues_DoesNotAddPrefixedRouteValues()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.PageExistsAsync("TestPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var model = new WikiCreatePageViewModel
+        {
+            PageName = "TestPage",
+            ParameterValues = null!
+        };
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.CreatePageConfirm(model, CancellationToken.None);
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(WikiController.Edit), redirectResult.ActionName);
+        Assert.DoesNotContain(
+            redirectResult.RouteValues?.Keys ?? [],
+            k => k.StartsWith("p_"));
     }
 
     #endregion

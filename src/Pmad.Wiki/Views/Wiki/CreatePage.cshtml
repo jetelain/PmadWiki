@@ -39,8 +39,81 @@
         <input type="hidden" asp-for="TemplateId" />
         <input type="hidden" asp-for="Culture" />
         <input type="hidden" asp-for="FromPage" />
-        
+        <input type="hidden" asp-for="BrowserTimestamp" />
+        <input type="hidden" asp-for="LocationPattern" />
+        <input type="hidden" asp-for="PageNamePattern" />
+
         <div asp-validation-summary="ModelOnly" class="alert alert-warning" role="alert"></div>
+
+        @if (Model.InvalidParameterNames.Any())
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                @Localizer["The template definition contains parameters with invalid names that cannot be displayed: <strong>{0}</strong>. Parameter names must contain only letters, digits, underscores, and hyphens.", string.Join(", ", Model.InvalidParameterNames)]
+            </div>
+        }
+
+        @if (Model.Parameters.Any())
+        {
+            <div class="mb-4">
+                <h3>@Localizer["Template Parameters"]</h3>
+                <p class="text-muted">@Localizer["Fill in the template parameters. The page name and location will update automatically."]</p>
+
+                @foreach (var parameter in Model.Parameters)
+                {
+                    var paramId = $"param_{parameter.Name}";
+
+                    <div class="mb-3">
+                        <label for="@paramId" class="form-label">
+                            @(parameter.Label ?? parameter.Name)
+                            @if (parameter.Required)
+                            {
+                                <span class="text-danger">*</span>
+                            }
+                        </label>
+                        @if (parameter.Type == Pmad.Wiki.Models.WikiTemplateParameterType.Enum)
+                        {
+                            <select class="form-select template-parameter"
+                                    id="@paramId"
+                                    name="ParameterValues[@parameter.Name]"
+                                    data-param-name="@parameter.Name"
+                                    @(parameter.Required ? "required" : "")>
+                                @if (!parameter.Required)
+                                {
+                                    <option value=""></option>
+                                }
+                                @foreach (var option in parameter.Options ?? [])
+                                {
+                                    var selected = Model.ParameterValues.GetValueOrDefault(parameter.Name) == option ? "selected" : null;
+                                    <option value="@option" selected="@selected">@option</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            var inputType = parameter.Type switch
+                            {
+                                Pmad.Wiki.Models.WikiTemplateParameterType.Number => "number",
+                                Pmad.Wiki.Models.WikiTemplateParameterType.Date => "date",
+                                Pmad.Wiki.Models.WikiTemplateParameterType.DateTime => "datetime-local",
+                                _ => "text"
+                            };
+                            <input type="@inputType"
+                                   class="form-control template-parameter"
+                                   id="@paramId"
+                                   name="ParameterValues[@parameter.Name]"
+                                   value="@Model.ParameterValues.GetValueOrDefault(parameter.Name)"
+                                   data-param-name="@parameter.Name"
+                                   @(parameter.Required ? "required" : "") />
+                        }
+                        @if (!string.IsNullOrEmpty(parameter.HelpText))
+                        {
+                            <div class="form-text">@parameter.HelpText</div>
+                        }
+                    </div>
+                }
+            </div>
+        }
 
         <div class="mb-3">
             <label asp-for="Location" class="form-label">@Localizer["Location"]</label>

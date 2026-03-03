@@ -373,7 +373,9 @@ namespace Pmad.Wiki.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Edit(string id, string? culture, string? restoreFromCommit, string? templateId, CancellationToken cancellationToken)
+        public async Task<IActionResult> Edit(string id, string? culture, string? restoreFromCommit, string? templateId, DateTimeOffset? browserTimestamp,
+            [ModelBinder(typeof(TemplateParametersModelBinder))] Dictionary<string, string>? templateParameters,
+            CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -413,12 +415,12 @@ namespace Pmad.Wiki.Controllers
                 if (page == null)
                 {
                     commitMessage = _localizer["Create page {0}", id];
-                    
+
                     // Try to load content from template if specified
                     if (!string.IsNullOrEmpty(templateId))
                     {
                         var template = await _templateService.GetTemplateAsync(wikiUser!, templateId, cancellationToken);
-                        content = _templateService.ResolvePlaceholders(template?.Content ?? string.Empty);
+                        content = _templateService.ResolvePlaceholders(template?.Content ?? string.Empty, templateParameters, browserTimestamp);
                     }
                     else
                     {
@@ -707,7 +709,7 @@ namespace Pmad.Wiki.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> CreatePage(string? templateId, string? fromPage, string? culture, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreatePage(string? templateId, string? fromPage, string? culture, DateTimeOffset? browserTimestamp, CancellationToken cancellationToken)
         {
             var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
             if (wikiUser == null || !wikiUser.CanEdit)
@@ -718,6 +720,10 @@ namespace Pmad.Wiki.Controllers
             WikiTemplate? template = null;
             string? suggestedName = null;
             string? defaultLocation = null;
+            string? locationPattern = null;
+            string? namePattern = null;
+            var parameters = new List<WikiTemplateParameter>();
+            var parameterValues = new Dictionary<string, string>();
 
             if (!string.IsNullOrEmpty(templateId))
             {
@@ -727,16 +733,36 @@ namespace Pmad.Wiki.Controllers
                     return NotFound();
                 }
 
+                parameters = template.Parameters;
+                locationPattern = template.DefaultLocation;
+                namePattern = template.NamePattern;
+
+                // Initialize default parameter values
+                foreach (var param in parameters)
+                {
+                    var defaultValue = param.DefaultValue ?? string.Empty;
+
+                    // Resolve date placeholders in default values
+                    if (!string.IsNullOrEmpty(defaultValue))
+                    {
+                        defaultValue = _templateService.ResolvePlaceholders(defaultValue, null, browserTimestamp);
+                    }
+
+                    parameterValues[param.Name] = defaultValue;
+                }
+
                 // Generate suggested name from pattern if available
                 if (!string.IsNullOrEmpty(template.NamePattern))
                 {
-                    suggestedName = _templateService.ResolvePlaceholders(template.NamePattern);
+                    suggestedName = _templateService.ResolvePlaceholders(template.NamePattern, parameterValues, browserTimestamp);
+                    suggestedName = WikiInputSanitizer.Sanitize(suggestedName);
                 }
 
                 // Generate default location from template if available
                 if (!string.IsNullOrEmpty(template.DefaultLocation))
                 {
-                    defaultLocation = _templateService.ResolvePlaceholders(template.DefaultLocation);
+                    defaultLocation = _templateService.ResolvePlaceholders(template.DefaultLocation, parameterValues, browserTimestamp);
+                    defaultLocation = WikiInputSanitizer.SanitizeLocation(defaultLocation);
                 }
             }
 
@@ -745,9 +771,15 @@ namespace Pmad.Wiki.Controllers
                 TemplateId = templateId,
                 TemplateName = template?.DisplayName ?? template?.TemplateName,
                 Culture = culture,
+                BrowserTimestamp = browserTimestamp?.ToString("O"),
                 FromPage = fromPage,
                 Location = defaultLocation ?? WikiFilePathHelper.GetDirectoryName(fromPage),
-                PageName = suggestedName ?? _localizer["NewPage"]
+                PageName = suggestedName ?? _localizer["NewPage"],
+                Parameters = parameters,
+                ParameterValues = parameterValues,
+                LocationPattern = locationPattern,
+                PageNamePattern = namePattern,
+                InvalidParameterNames = template?.InvalidParameterNames ?? new List<string>()
             };
 
             return View(viewModel);
@@ -773,16 +805,28 @@ namespace Pmad.Wiki.Controllers
                 ModelState.AddModelError(nameof(model.Culture), _localizer["Invalid culture identifier."]);
             }
 
-            if (!ModelState.IsValid)
-            {
-                return View("CreatePage", model);
-            }
-
             var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
 
             if (!await _pagePermissionHelper.CanEdit(wikiUser, pageName, cancellationToken))
             {
                 return Forbid();
+            }
+
+            WikiTemplate? template = null;
+            if (!string.IsNullOrEmpty(model.TemplateId))
+            {
+                template = await _templateService.GetTemplateAsync(wikiUser!, model.TemplateId, cancellationToken);
+                if (template == null)
+                {
+                    return NotFound();
+                }
+                model.InvalidParameterNames = template.InvalidParameterNames;
+                model.Parameters = template.Parameters;
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View("CreatePage", model);
             }
 
             // Check if page already exists
@@ -793,13 +837,29 @@ namespace Pmad.Wiki.Controllers
                 return View("CreatePage", model);
             }
 
-            // Redirect to Edit with template if specified
-            return RedirectToAction(nameof(Edit), new 
+            // Build route values with template parameters as query parameters (prefixed with "p_")
+            var routeValues = new Dictionary<string, object?>
             { 
-                id = pageName, 
-                culture = model.Culture,
-                templateId = model.TemplateId 
-            });
+                { "id", pageName }, 
+                { "culture", model.Culture },
+                { "templateId", model.TemplateId },
+                { "browserTimestamp", model.BrowserTimestamp }
+            };
+
+            // Add parameter values as individual query parameters
+            if (model.ParameterValues != null && template != null && template.Parameters != null)
+            {
+                foreach (var kvp in model.ParameterValues)
+                {
+                    if (!string.IsNullOrEmpty(kvp.Value) && template.Parameters.Any(p => p.Name == kvp.Key))
+                    {
+                        routeValues[$"{TemplateParametersModelBinder.ParameterPrefix}{kvp.Key}"] = kvp.Value;
+                    }
+                }
+            }
+
+            // Redirect to Edit with template if specified
+            return RedirectToAction(nameof(Edit), routeValues);
         }
 
         [HttpGet]

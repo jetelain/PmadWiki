@@ -53,6 +53,16 @@ public static partial class WikiInputValidator
     internal static partial Regex MediaPathMarkdownRegex();
 
     /// <summary>
+    /// Template parameter names: alphanumeric, dash and underscores only.
+    /// </summary>
+    /// <remarks>
+    /// Needs to be safe to use as HTML input names, query string parameters, and in template placeholder syntax.
+    /// Hyphens are valid and widely supported in HTML attribute values (including the <c>name</c> attribute); the restricted character set here is chosen to avoid special characters that may cause issues in URLs, model binding, or template processing.
+    /// </remarks>
+    [GeneratedRegex("^[a-zA-Z0-9_-]+$", RegexOptions.CultureInvariant)]
+    private static partial Regex TemplateParameterNameRegex();
+
+    /// <summary>
     /// Temporary media identifiers, which are a lowercase GUID without dashes, like "a3f1e2b4c5d67890e1f2a3b4c5d67890"
     /// </summary>
     /// <returns></returns>
@@ -133,6 +143,15 @@ public static partial class WikiInputValidator
             return false;
         }
         return true;
+    }
+
+    public static bool IsValidTemplateParameterName(string parameterName)
+    {
+        if (string.IsNullOrWhiteSpace(parameterName))
+        {
+            return false;
+        }
+        return TemplateParameterNameRegex().IsMatch(parameterName);
     }
 
     public static void ValidatePageName(string pageName)

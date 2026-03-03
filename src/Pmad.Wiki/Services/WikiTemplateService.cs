@@ -67,26 +67,35 @@ public sealed class WikiTemplateService : IWikiTemplateService
         return await LoadTemplateFromPageAsync(templateId, cancellationToken);
     }
 
-    public string ResolvePlaceholders(string pattern)
+    public string ResolvePlaceholders(string pattern, Dictionary<string, string>? parameterValues = null, DateTimeOffset? timestamp = null)
     {
         if (string.IsNullOrWhiteSpace(pattern))
         {
             return string.Empty;
         }
 
-        var now = DateTimeOffset.UtcNow;
+        var now = timestamp ?? DateTimeOffset.UtcNow;
         var result = pattern;
 
         // Replace {date} with current date in ISO format
         result = result.Replace("{date}", now.ToString("yyyy-MM-dd"), StringComparison.OrdinalIgnoreCase);
-        
+
         // Replace {datetime} with current date and time
         result = result.Replace("{datetime}", now.ToString("yyyy-MM-dd-HHmmss"), StringComparison.OrdinalIgnoreCase);
-        
+
         // Replace {year}, {month}, {day}
         result = result.Replace("{year}", now.Year.ToString(), StringComparison.OrdinalIgnoreCase);
         result = result.Replace("{month}", now.Month.ToString("D2"), StringComparison.OrdinalIgnoreCase);
         result = result.Replace("{day}", now.Day.ToString("D2"), StringComparison.OrdinalIgnoreCase);
+
+        // Replace custom parameters
+        if (parameterValues != null)
+        {
+            foreach (var param in parameterValues)
+            {
+                result = result.Replace($"{{{param.Key}}}", param.Value, StringComparison.OrdinalIgnoreCase);
+            }
+        }
 
         return result;
     }
@@ -110,6 +119,7 @@ public sealed class WikiTemplateService : IWikiTemplateService
             displayName = await _pageService.GetPageTitleAsync(pageName, null, cancellationToken);
         }
 
+        var allParameters = frontMatter.Parameters ?? new List<WikiTemplateParameter>();
         return new WikiTemplate
         {
             TemplateName = pageName, // Store the full page name for retrieval
@@ -117,7 +127,14 @@ public sealed class WikiTemplateService : IWikiTemplateService
             DefaultLocation = frontMatter.Location,
             NamePattern = frontMatter.Pattern,
             Description = frontMatter.Description,
-            DisplayName = displayName ?? pageName // Use page name as final fallback
+            DisplayName = displayName ?? pageName, // Use page name as final fallback
+            Parameters = allParameters
+                .Where(p => WikiInputValidator.IsValidTemplateParameterName(p.Name))
+                .ToList(),
+            InvalidParameterNames = allParameters
+                .Where(p => !WikiInputValidator.IsValidTemplateParameterName(p.Name))
+                .Select(p => p.Name)
+                .ToList()
         };
     }
 }
