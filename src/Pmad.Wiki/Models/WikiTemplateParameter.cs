@@ -38,4 +38,9 @@ public class WikiTemplateParameter
     /// Gets or sets whether this parameter is required.
     /// </summary>
     public bool Required { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of allowed values for an <see cref="WikiTemplateParameterType.Enum"/> parameter.
+    /// </summary>
+    public List<string>? Options { get; set; }
 }

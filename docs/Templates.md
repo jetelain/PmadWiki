@@ -93,11 +93,15 @@ location: "blog/{year}/{category}"
 pattern: "{date}-{title}"
 parameters:
   - name: category
-    type: text
+    type: enum
     label: Category
-    default: general
     required: true
-    help: The blog post category (e.g., tech, news, tutorial)
+    help: The blog post category
+    options:
+      - general
+      - tech
+      - news
+      - tutorial
   - name: title
     type: text
     label: Post Title
@@ -111,11 +115,12 @@ parameters:
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
 | `name` | string | Yes | Parameter identifier used in placeholders (e.g., `{category}`) |
-| `type` | string | No | Input type: `text` (default), `number`, `date`, `datetime` |
+| `type` | string | No | Input type: `text` (default), `number`, `date`, `datetime`, `enum` |
 | `label` | string | No | Display label for the input field (defaults to name) |
 | `default` | string | No | Default value for the parameter |
 | `required` | boolean | No | Whether the parameter is required (default: false) |
 | `help` | string | No | Help text shown below the input field |
+| `options` | list | No | List of allowed values for `enum` parameters (required when `type` is `enum`) |
 
 #### Supported Parameter Types
 
@@ -123,6 +128,7 @@ parameters:
 - **number**: Numeric input
 - **date**: Date picker (YYYY-MM-DD format)
 - **datetime**: Date and time picker
+- **enum**: Dropdown (select) with a fixed list of values defined in the `options` property
 
 #### Using Parameters as Placeholders
 
@@ -338,11 +344,14 @@ location: "Projects/{project}/Features"
 pattern: "{ticket-id}-{feature-name}"
 parameters:
   - name: project
-    type: text
+    type: enum
     label: Project Name
-    default: MyProject
     required: true
-    help: The name of the project this feature belongs to
+    help: The project this feature belongs to
+    options:
+      - MyApp
+      - BackendAPI
+      - MobileApp
   - name: ticket-id
     type: text
     label: Ticket ID

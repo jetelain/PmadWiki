@@ -23,5 +23,10 @@ public enum WikiTemplateParameterType
     /// <summary>
     /// A datetime input field.
     /// </summary>
-    DateTime
+    DateTime,
+
+    /// <summary>
+    /// A select (dropdown) field with a fixed list of options.
+    /// </summary>
+    Enum
 }

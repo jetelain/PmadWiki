@@ -24,6 +24,7 @@ internal sealed class WikiTemplateParameterTypeConverter : IYamlTypeConverter
                 "number" => WikiTemplateParameterType.Number,
                 "date" => WikiTemplateParameterType.Date,
                 "datetime" => WikiTemplateParameterType.DateTime,
+                "enum" => WikiTemplateParameterType.Enum,
                 _ => WikiTemplateParameterType.Text
             };
         }
@@ -41,6 +42,7 @@ internal sealed class WikiTemplateParameterTypeConverter : IYamlTypeConverter
                 WikiTemplateParameterType.Number => "number",
                 WikiTemplateParameterType.Date => "date",
                 WikiTemplateParameterType.DateTime => "datetime",
+                WikiTemplateParameterType.Enum => "enum",
                 _ => "text"
             };
             emitter.Emit(new Scalar(stringValue));
