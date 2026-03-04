@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Pmad.Git.HttpServer;
 using Pmad.Wiki.Services;
+using Pmad.Wiki.Services.Tenants;
 
 namespace Pmad.Wiki;
 
@@ -12,7 +13,7 @@ namespace Pmad.Wiki;
 public static class WikiServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers all core wiki services into the dependency injection container.
+    /// Registers all core wiki services into the dependency injection container with support for single-tenant scenarios.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="options">A delegate to configure <see cref="WikiOptions"/>.</param>
@@ -20,13 +21,42 @@ public static class WikiServiceCollectionExtensions
     public static IServiceCollection AddWiki(this IServiceCollection services, Action<WikiOptions> options)
     {
         services.Configure<WikiOptions>(options);
+        services.AddSingleton<IOptions<WikiGlobalOptions>>(sp => sp.GetRequiredService<IOptions<WikiOptions>>());
+        services.AddSingleton<IWikiTenantActivationFilter, NullWikiTenantActivationFilter>();
+        services.AddSingleton<IWikiTenantHelper, NullWikiTenantHelper>();
 
+        AddCommonServices(services);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers all core wiki services into the dependency injection container with support for multi-tenancy. 
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="options">A delegate to configure <see cref="WikiGlobalOptions"/>.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddWikiMultiTenant(this IServiceCollection services, Action<WikiGlobalOptions> options)
+    {
+        services.Configure<WikiGlobalOptions>(options);
+        services.AddScoped<MultiTenantWikiOptionsStateHolder>();
+        services.AddScoped<IOptions<WikiOptions>>(sp => sp.GetRequiredService<MultiTenantWikiOptionsStateHolder>());
+        services.AddScoped<IWikiTenantActivationFilter, MultiTenantWikiFilter>();
+        services.AddScoped<IWikiTenantHelper, MultiTenantWikiHelper>();
+
+        AddCommonServices(services);
+
+        return services;
+    }
+
+    private static void AddCommonServices(IServiceCollection services)
+    {
         services.AddLocalization();
 
-        services.AddSingleton<IMarkdownRenderService, MarkdownRenderService>();
+        services.AddScoped<IMarkdownRenderService, MarkdownRenderService>();
         services.AddScoped<IWikiPageService, WikiPageService>();
         services.AddScoped<IPageAccessControlService, PageAccessControlService>();
-        services.AddSingleton<IWikiPageMetadataCache, WikiPageMetadataCache>();
+        services.AddScoped<IWikiPageMetadataCache, WikiPageMetadataCache>();
         services.AddSingleton<ITemporaryMediaStorageService, TemporaryMediaStorageService>();
         services.AddScoped<IWikiPageEditService, WikiPageEditService>();
         services.AddScoped<IWikiTemplateService, WikiTemplateService>();
@@ -39,8 +69,6 @@ public static class WikiServiceCollectionExtensions
         {
             options.ViewLocationExpanders.Add(new WikiViewLocationExpander());
         });
-
-        return services;
     }
 
     /// <summary>
@@ -62,19 +90,21 @@ public static class WikiServiceCollectionExtensions
     public static IServiceCollection AddWikiGitHttpServer(this IServiceCollection services)
     {
         services.AddOptions<GitSmartHttpOptions>()
-            .Configure<IOptions<WikiOptions>>((gitOptions, wikiOptions) =>
+            .Configure<IOptions<WikiGlobalOptions>>((gitOptions, wikiOptions) =>
             {
                 gitOptions.RepositoryRoot = wikiOptions.Value.RepositoryRoot;
                 gitOptions.EnableUploadPack = true;
                 gitOptions.EnableReceivePack = true;
-                gitOptions.RepositoryNameNormalizer = _ => wikiOptions.Value.WikiRepositoryName;
-                gitOptions.RepositoryResolver = _ => wikiOptions.Value.WikiRepositoryName;
+                gitOptions.RepositoryResolver = (context) =>
+                    context.RequestServices.GetRequiredService<IWikiTenantHelper>().ResolveRepositoryName(context);
                 gitOptions.AuthorizeAsync = (context, _, operation, cancellationToken) =>
                     context.RequestServices.GetRequiredService<IWikiGitAuthorization>().AuthorizeGitHttpAsync(context, operation, cancellationToken);
-                gitOptions.OnReceivePackCompleted = (context, repo, result) => {
-                    context.RequestServices.GetRequiredService<IPageAccessControlService>().ClearCache();
-                    context.RequestServices.GetRequiredService<IWikiPageMetadataCache>().ClearCache();
-                    return ValueTask.CompletedTask;
+                gitOptions.OnReceivePackCompleted = async (context, repo, result) => {
+                    if (!await context.RequestServices.GetRequiredService<IWikiTenantHelper>().TryConfigureOptionsForTenantAsync(context))
+                    {
+                        context.RequestServices.GetRequiredService<IPageAccessControlService>().ClearCache();
+                        context.RequestServices.GetRequiredService<IWikiPageMetadataCache>().ClearCache();
+                    }
                 };
             });
 

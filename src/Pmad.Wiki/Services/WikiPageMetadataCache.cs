@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Pmad.Git.HttpServer;
 using Pmad.Git.LocalRepositories;
@@ -16,11 +17,18 @@ public class WikiPageMetadataCache : IWikiPageMetadataCache
 
     public WikiPageMetadataCache(
         IGitRepositoryService gitRepositoryService,
-        IOptions<WikiOptions> options)
+        IOptions<WikiOptions> options,
+        IMemoryCache memoryCache)
     {
         _gitRepositoryService = gitRepositoryService;
         _options = options.Value;
-        _metadataCache = new ConcurrentDictionary<string, WikiPageMetadata>(StringComparer.Ordinal);
+
+        _metadataCache = memoryCache.GetOrCreate(
+            $"WikiPageMetadataCache:{_options.WikiRepositoryName}", 
+            entry => {
+                entry.SetSlidingExpiration(TimeSpan.FromDays(1));
+                return new ConcurrentDictionary<string, WikiPageMetadata>(StringComparer.Ordinal); 
+            }) ?? throw new InvalidOperationException();
     }
 
     public async Task<WikiPageMetadata?> GetPageMetadataAsync(string pageName, string? culture, CancellationToken cancellationToken = default)

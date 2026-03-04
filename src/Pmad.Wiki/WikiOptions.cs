@@ -2,13 +2,14 @@
 
 namespace Pmad.Wiki;
 
-public class WikiOptions
+/// <summary>
+/// Options specific to a wiki tenant.
+/// </summary>
+/// <remarks>
+/// In a multi-tenant scenario, options from WikiGlobalOptions are copied to each tenant's WikiOptions instance. Values cannot be overriden by a tenant.
+/// </remarks>
+public class WikiOptions : WikiGlobalOptions
 {
-    /// <summary>
-    /// Gets or sets the absolute path containing all repositories. (to ensure compatibility with <see cref="Pmad.Git.HttpServer.GitSmartHttpOptions"/>).
-    /// </summary>
-    public string RepositoryRoot { get; set; } = string.Empty;
-
     /// <summary>
     /// Gets or sets the name of the repository used for wiki content.
     /// </summary>
@@ -58,8 +59,8 @@ public class WikiOptions
     /// <remarks>This property defines which file types are permitted for media content. Extensions should include the leading period (e.g., ".jpg").</remarks>
     public List<string> AllowedMediaExtensions { get; set; } = new()
     {
-        ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", 
-        ".mp4", ".webm", ".ogg", 
+        ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp",
+        ".mp4", ".webm", ".ogg",
         ".pdf"
     };
 }

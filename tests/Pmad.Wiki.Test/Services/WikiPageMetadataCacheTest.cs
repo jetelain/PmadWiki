@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Moq;
 using Pmad.Git.HttpServer;
@@ -35,7 +36,8 @@ public class WikiPageMetadataCacheTest
 
         _service = new WikiPageMetadataCache(
             _mockGitRepositoryService.Object,
-            optionsWrapper);
+            optionsWrapper, 
+            new MemoryCache(Options.Create(new MemoryCacheOptions())));
     }
 
     #region GetPageMetadataAsync Tests

@@ -4,6 +4,7 @@ using Markdig.Parsers;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Pmad.Wiki.Helpers;
 
@@ -11,14 +12,20 @@ namespace Pmad.Wiki.Services;
 
 public sealed class MarkdownRenderService : IMarkdownRenderService
 {
-    private readonly ConcurrentDictionary<string, MarkdownPipeline> _pipelineCache = new();
+    private readonly ConcurrentDictionary<string, MarkdownPipeline> _pipelineCache;
     private readonly WikiOptions _options;
     private readonly LinkGenerator _linkGenerator;
 
-    public MarkdownRenderService(IOptions<WikiOptions> options, LinkGenerator linkGenerator)
+    public MarkdownRenderService(IOptions<WikiOptions> options, LinkGenerator linkGenerator, IMemoryCache memoryCache)
     {
         _options = options.Value ?? throw new ArgumentNullException(nameof(options));
         _linkGenerator = linkGenerator ?? throw new ArgumentNullException(nameof(linkGenerator));
+        _pipelineCache = memoryCache.GetOrCreate(
+            $"MarkdownRenderService:{_options.WikiRepositoryName}",
+            entry => {
+                entry.SetSlidingExpiration(TimeSpan.FromDays(1));
+                return new ConcurrentDictionary<string, MarkdownPipeline>(StringComparer.Ordinal);
+            }) ?? throw new InvalidOperationException();
     }
 
     public string ToHtml(string markdown, string? culture = null, string? currentPageName = null)
@@ -149,7 +156,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
 
     private MarkdownPipeline GetOrCreatePipeline(string? culture)
     {
-        var cacheKey = culture ?? _options.NeutralMarkdownPageCulture;
+        var cacheKey = culture ?? "default";
         
         return _pipelineCache.GetOrAdd(cacheKey, key =>
         {

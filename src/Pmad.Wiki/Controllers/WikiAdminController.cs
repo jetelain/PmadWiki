@@ -10,6 +10,7 @@ using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki.Controllers
 {
+    [ServiceFilter(typeof(Services.Tenants.IWikiTenantActivationFilter))]
     public class WikiAdminController : Controller
     {
         private readonly IWikiUserService _userService;
