@@ -53,4 +53,13 @@ public class DemoWikiUserService : IWikiUserService
     {
         return await _demoContext.Users.FirstOrDefaultAsync(u => u.GitEmail == gitEmail, cancellationToken);
     }
+
+    public Task<IEnumerable<IWikiUserGroup>> GetAllWikiGroupsAsync(CancellationToken cancellationToken)
+    {
+        return Task.FromResult<IEnumerable<IWikiUserGroup>>(new[]
+        {
+            new DemoWikiUserGroup("admin", "Administrators", "Users with administrative permissions."),
+            new DemoWikiUserGroup("users", "Users", "Regular users with standard permissions.")
+        });
+    }
 }

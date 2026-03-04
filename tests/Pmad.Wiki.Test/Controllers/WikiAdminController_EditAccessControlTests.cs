@@ -230,6 +230,110 @@ public class WikiAdminController_EditAccessControlTests : WikiAdminControllerTes
         Assert.IsType<ViewResult>(result);
     }
 
+    [Fact]
+    public async Task EditAccessControl_Get_PopulatesGroupsFromService()
+    {
+        // Arrange
+        _options.UsePageLevelPermissions = true;
+
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanAdmin).Returns(true);
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockAccessControlService
+            .Setup(x => x.GetRulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PageAccessRule>());
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[]
+            {
+                CreateGroup("admins", "Administrators", "Admin users").Object,
+                CreateGroup("editors", "Content Editors").Object
+            });
+
+        SetupUserContext("admin");
+
+        // Act
+        var result = await _controller.EditAccessControl(CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiAccessControlEditViewModel>(viewResult.Model);
+
+        Assert.Equal(2, model.Groups.Count);
+        Assert.Equal("admins", model.Groups[0].Name);
+        Assert.Equal("Administrators", model.Groups[0].Label);
+        Assert.Equal("Admin users", model.Groups[0].Description);
+        Assert.Equal("editors", model.Groups[1].Name);
+        Assert.Equal("Content Editors", model.Groups[1].Label);
+    }
+
+    [Fact]
+    public async Task EditAccessControl_Get_WithNoGroups_ReturnsEmptyGroupList()
+    {
+        // Arrange
+        _options.UsePageLevelPermissions = true;
+
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanAdmin).Returns(true);
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockAccessControlService
+            .Setup(x => x.GetRulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PageAccessRule>());
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Enumerable.Empty<IWikiUserGroup>());
+
+        SetupUserContext("admin");
+
+        // Act
+        var result = await _controller.EditAccessControl(CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiAccessControlEditViewModel>(viewResult.Model);
+
+        Assert.Empty(model.Groups);
+    }
+
+    [Fact]
+    public async Task EditAccessControl_Get_CallsGetAllWikiGroupsAsync()
+    {
+        // Arrange
+        _options.UsePageLevelPermissions = true;
+
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanAdmin).Returns(true);
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockAccessControlService
+            .Setup(x => x.GetRulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PageAccessRule>());
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Enumerable.Empty<IWikiUserGroup>());
+
+        SetupUserContext("admin");
+
+        // Act
+        await _controller.EditAccessControl(CancellationToken.None);
+
+        // Assert
+        _mockUserService.Verify(
+            x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
     #endregion
 
     #region POST EditAccessControl Tests
@@ -747,6 +851,115 @@ admin/** | admins | admins
         _mockAccessControlService.Verify(
             x => x.SaveRulesAsync(It.IsAny<List<PageAccessRule>>(), It.IsAny<string>(), It.IsAny<IWikiUser>(), It.IsAny<CancellationToken>()),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task EditAccessControl_Post_WithInvalidModel_PopulatesGroupsFromService()
+    {
+        // Arrange
+        _options.UsePageLevelPermissions = true;
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[]
+            {
+                CreateGroup("admins", "Administrators").Object,
+                CreateGroup("editors", "Editors", "Content editors").Object
+            });
+
+        SetupUserContext("admin");
+
+        var model = new WikiAccessControlEditViewModel
+        {
+            Content = "* | admins | editors",
+            CommitMessage = "Test"
+        };
+        _controller.ModelState.AddModelError("Content", "Invalid content");
+
+        // Act
+        var result = await _controller.EditAccessControl(model, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var returnedModel = Assert.IsType<WikiAccessControlEditViewModel>(viewResult.Model);
+
+        Assert.Equal(2, returnedModel.Groups.Count);
+        Assert.Equal("Administrators", returnedModel.Groups[0].Label);
+        Assert.Equal("Editors", returnedModel.Groups[1].Label);
+        Assert.Equal("Content editors", returnedModel.Groups[1].Description);
+    }
+
+    [Fact]
+    public async Task EditAccessControl_Post_WithException_PopulatesGroupsFromService()
+    {
+        // Arrange
+        _options.UsePageLevelPermissions = true;
+
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanAdmin).Returns(true);
+        mockUser.Setup(x => x.User).Returns(new Mock<IWikiUser>().Object);
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockAccessControlService
+            .Setup(x => x.SaveRulesAsync(It.IsAny<List<PageAccessRule>>(), It.IsAny<string>(), It.IsAny<IWikiUser>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("Save failed"));
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[]
+            {
+                CreateGroup("admins", "Administrators", "Admin users").Object
+            });
+
+        SetupUserContext("admin");
+
+        var model = new WikiAccessControlEditViewModel
+        {
+            Content = "admin/** | admins | admins",
+            CommitMessage = "Test"
+        };
+
+        // Act
+        var result = await _controller.EditAccessControl(model, CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var returnedModel = Assert.IsType<WikiAccessControlEditViewModel>(viewResult.Model);
+
+        Assert.Single(returnedModel.Groups);
+        Assert.Equal("admins", returnedModel.Groups[0].Name);
+        Assert.Equal("Administrators", returnedModel.Groups[0].Label);
+        Assert.Equal("Admin users", returnedModel.Groups[0].Description);
+    }
+
+    [Fact]
+    public async Task EditAccessControl_Post_WithInvalidModel_CallsGetAllWikiGroupsAsync()
+    {
+        // Arrange
+        _options.UsePageLevelPermissions = true;
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Enumerable.Empty<IWikiUserGroup>());
+
+        SetupUserContext("admin");
+
+        var model = new WikiAccessControlEditViewModel
+        {
+            Content = "* | | ",
+            CommitMessage = "Test"
+        };
+        _controller.ModelState.AddModelError("Content", "Invalid");
+
+        // Act
+        await _controller.EditAccessControl(model, CancellationToken.None);
+
+        // Assert
+        _mockUserService.Verify(
+            x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     #endregion

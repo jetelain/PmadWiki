@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using Pmad.Git.HttpServer;
+using Pmad.Wiki.Models;
 using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki.Test.Integration;
@@ -927,9 +928,9 @@ public class WikiPageServiceIntegrationTests : IDisposable
 
         // Assert
         Assert.NotEmpty(result);
-        Assert.Contains(result, m => m.AbsolutePath == "images/logo.png" && m.MediaType == Models.MediaType.Image);
-        Assert.Contains(result, m => m.AbsolutePath == "photos/picture.jpg" && m.MediaType == Models.MediaType.Image);
-        Assert.Contains(result, m => m.AbsolutePath == "documents/guide.pdf" && m.MediaType == Models.MediaType.Document);
+        Assert.Contains(result, m => m.AbsolutePath == "images/logo.png" && m.MediaType == MediaType.Image);
+        Assert.Contains(result, m => m.AbsolutePath == "photos/picture.jpg" && m.MediaType == MediaType.Image);
+        Assert.Contains(result, m => m.AbsolutePath == "documents/guide.pdf" && m.MediaType == MediaType.Document);
     }
 
     [Fact]
@@ -976,7 +977,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
         // Assert
         Assert.Single(result);
         Assert.Equal("images/valid.png", result[0].AbsolutePath);
-        Assert.Equal(Models.MediaType.Image, result[0].MediaType);
+        Assert.Equal(MediaType.Image, result[0].MediaType);
     }
 
     #endregion
