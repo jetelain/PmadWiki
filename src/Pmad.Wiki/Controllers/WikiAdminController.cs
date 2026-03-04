@@ -43,17 +43,24 @@ namespace Pmad.Wiki.Controllers
             }
 
             var rules = await _accessControlService.GetRulesAsync(cancellationToken);
+            var groups = (await _userService.GetAllWikiGroupsAsync(cancellationToken))
+                .ToDictionary(g => g.Name, StringComparer.OrdinalIgnoreCase);
+
+            WikiGroupViewModel ResolveGroup(string name) =>
+                groups.TryGetValue(name, out var g) && !string.IsNullOrEmpty(g.Label)
+                    ? new WikiGroupViewModel(name, g.Label, g.Description)
+                    : new WikiGroupViewModel(name, name);
 
             var viewModel = new WikiAccessControlViewModel
             {
                 Rules = rules.Select(r => new WikiAccessControlRuleViewModel
                 {
                     Pattern = r.Pattern,
-                    ReadGroups = string.Join(", ", r.ReadGroups),
-                    WriteGroups = string.Join(", ", r.WriteGroups),
+                    ReadGroups = r.ReadGroups.Select(ResolveGroup).ToList(),
+                    WriteGroups = r.WriteGroups.Select(ResolveGroup).ToList(),
                     Order = r.Order
                 }).ToList(),
-                IsEnabled = _options.UsePageLevelPermissions
+                IsEnabled = _options.UsePageLevelPermissions,
             };
 
             return View(viewModel);
@@ -79,7 +86,8 @@ namespace Pmad.Wiki.Controllers
 
             var viewModel = new WikiAccessControlEditViewModel
             {
-                Content = content
+                Content = content,
+                Groups = await GetGroupViewModelsAsync(cancellationToken)
             };
 
             return View(viewModel);
@@ -92,6 +100,7 @@ namespace Pmad.Wiki.Controllers
         {
             if (!ModelState.IsValid)
             {
+                model.Groups = await GetGroupViewModelsAsync(cancellationToken);
                 return View(model);
             }
 
@@ -116,8 +125,17 @@ namespace Pmad.Wiki.Controllers
             {
                 _logger.LogError(ex, "Error saving access control rules");
                 ModelState.AddModelError(string.Empty, _localizer["Error saving rules: {0}", ex.Message]);
+                model.Groups = await GetGroupViewModelsAsync(cancellationToken);
                 return View(model);
             }
+        }
+
+        private async Task<List<WikiGroupViewModel>> GetGroupViewModelsAsync(CancellationToken cancellationToken)
+        {
+            var groups = await _userService.GetAllWikiGroupsAsync(cancellationToken);
+            return groups
+                .Select(g => new WikiGroupViewModel(g.Name, !string.IsNullOrEmpty(g.Label) ? g.Label : g.Name, g.Description))
+                .ToList();
         }
     }
 }

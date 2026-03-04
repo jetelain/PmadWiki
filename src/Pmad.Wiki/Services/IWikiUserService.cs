@@ -27,4 +27,15 @@ public interface IWikiUserService
     /// <returns>A task that represents the asynchronous operation. The task result contains the corresponding wiki user if
     /// found; otherwise, null.</returns>
     Task<IWikiUser?> GetWikiUserFromGitEmailAsync(string gitEmail, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrieves all wiki user groups defined in the system. This allows administrators to understand the available groups for permission management.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// This method is optional, it is only used for improved administrative user interface.
+    /// </remarks>
+    Task<IEnumerable<IWikiUserGroup>> GetAllWikiGroupsAsync(CancellationToken cancellationToken)
+        => Task.FromResult(Enumerable.Empty<IWikiUserGroup>());
 }

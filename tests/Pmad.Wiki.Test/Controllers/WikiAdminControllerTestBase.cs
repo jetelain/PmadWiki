@@ -82,4 +82,13 @@ public abstract class WikiAdminControllerTestBase
         var actionContext = new ActionContext(httpContext, new RouteData(), new Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor());
         _controller.ControllerContext = new ControllerContext(actionContext);
     }
+
+    protected static Mock<IWikiUserGroup> CreateGroup(string name, string? label, string? description = null)
+    {
+        var mock = new Mock<IWikiUserGroup>();
+        mock.Setup(x => x.Name).Returns(name);
+        mock.Setup(x => x.Label).Returns(label);
+        mock.Setup(x => x.Description).Returns(description);
+        return mock;
+    }
 }

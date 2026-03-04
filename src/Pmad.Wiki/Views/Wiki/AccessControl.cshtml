@@ -57,23 +57,29 @@
                                             <td>@rule.Order</td>
                                             <td><code>@rule.Pattern</code></td>
                                             <td>
-                                                @if(string.IsNullOrEmpty(rule.ReadGroups))
+                                                @if(rule.ReadGroups.Count == 0)
                                                 {
                                                     <span class="text-muted">@Localizer["All users"]</span>
                                                 }
                                                 else
                                                 {
-                                                    @rule.ReadGroups
+                                                    foreach (var g in rule.ReadGroups)
+                                                    {
+                                                        <span class="badge rounded-pill bg-secondary me-1" title="@g.Tooltip">@g.Label</span>
+                                                    }
                                                 }
                                             </td>
                                             <td>
-                                                @if (string.IsNullOrEmpty(rule.WriteGroups))
+                                                @if (rule.WriteGroups.Count == 0)
                                                 {
                                                     <span class="text-muted">@Localizer["All users"]</span>
                                                 }
                                                 else
                                                 {
-                                                    @rule.WriteGroups
+                                                    foreach (var g in rule.WriteGroups)
+                                                    {
+                                                        <span class="badge rounded-pill bg-secondary me-1" title="@g.Tooltip">@g.Label</span>
+                                                    }
                                                 }                                           
                                             </td>
                                         </tr>

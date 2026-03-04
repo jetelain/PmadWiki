@@ -22,6 +22,24 @@
                     </div>
                 </div>
 
+                @if (Model.Groups.Count > 0)
+                {
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title">@Localizer["Known Groups"]</h6>
+                            <p class="text-muted small mb-2">@Localizer["Click a group to copy its name."]</p>
+                            @foreach (var g in Model.Groups)
+                            {
+                                <span class="badge rounded-pill bg-secondary me-1 mb-1"
+                                      role="button"
+                                      data-group-name="@g.Name"
+                                      onclick="navigator.clipboard.writeText(this.dataset.groupName)"
+                                      title="@g.Tooltip">@g.Label</span>
+                            }
+                        </div>
+                    </div>
+                }
+
                 <div class="mb-3">
                     <label asp-for="CommitMessage" class="form-label">@Localizer["Commit Message"]</label>
                     <input asp-for="CommitMessage" class="form-control" />
