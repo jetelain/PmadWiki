@@ -43,13 +43,13 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         
         Assert.Equal(2, model.Rules.Count);
         Assert.Equal("admin/**", model.Rules[0].Pattern);
-        Assert.Equal("admins", model.Rules[0].ReadGroups);
-        Assert.Equal("admins", model.Rules[0].WriteGroups);
+        Assert.Equal(["admins"], model.Rules[0].ReadGroups.Select(g => g.Name));
+        Assert.Equal(["admins"], model.Rules[0].WriteGroups.Select(g => g.Name));
         Assert.Equal(0, model.Rules[0].Order);
-        
+
         Assert.Equal("*", model.Rules[1].Pattern);
-        Assert.Equal("users", model.Rules[1].ReadGroups);
-        Assert.Equal("editors", model.Rules[1].WriteGroups);
+        Assert.Equal(["users"], model.Rules[1].ReadGroups.Select(g => g.Name));
+        Assert.Equal(["editors"], model.Rules[1].WriteGroups.Select(g => g.Name));
         Assert.Equal(1, model.Rules[1].Order);
     }
 
@@ -205,8 +205,8 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         var model = Assert.IsType<WikiAccessControlViewModel>(viewResult.Model);
         
         Assert.Single(model.Rules);
-        Assert.Equal("group1, group2, group3", model.Rules[0].ReadGroups);
-        Assert.Equal("admin1, admin2", model.Rules[0].WriteGroups);
+        Assert.Equal(["group1", "group2", "group3"], model.Rules[0].ReadGroups.Select(g => g.Name));
+        Assert.Equal(["admin1", "admin2"], model.Rules[0].WriteGroups.Select(g => g.Name));
     }
 
     [Fact]
@@ -239,8 +239,8 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         var model = Assert.IsType<WikiAccessControlViewModel>(viewResult.Model);
         
         Assert.Single(model.Rules);
-        Assert.Equal("", model.Rules[0].ReadGroups);
-        Assert.Equal("", model.Rules[0].WriteGroups);
+        Assert.Empty(model.Rules[0].ReadGroups);
+        Assert.Empty(model.Rules[0].WriteGroups);
     }
 
     [Fact]
@@ -349,8 +349,8 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         var model = Assert.IsType<WikiAccessControlViewModel>(viewResult.Model);
         
         Assert.Single(model.Rules);
-        Assert.Equal("readers", model.Rules[0].ReadGroups);
-        Assert.Equal("writers", model.Rules[0].WriteGroups);
+        Assert.Equal(["readers"], model.Rules[0].ReadGroups.Select(g => g.Name));
+        Assert.Equal(["writers"], model.Rules[0].WriteGroups.Select(g => g.Name));
     }
 
     [Fact]
@@ -515,8 +515,8 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         var model = Assert.IsType<WikiAccessControlViewModel>(viewResult.Model);
         
         Assert.Single(model.Rules);
-        Assert.Equal("group-1, group_2, group.3", model.Rules[0].ReadGroups);
-        Assert.Equal("admin-users", model.Rules[0].WriteGroups);
+        Assert.Equal(["group-1", "group_2", "group.3"], model.Rules[0].ReadGroups.Select(g => g.Name));
+        Assert.Equal(["admin-users"], model.Rules[0].WriteGroups.Select(g => g.Name));
     }
 
     [Fact]
@@ -549,8 +549,8 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         var model = Assert.IsType<WikiAccessControlViewModel>(viewResult.Model);
         
         Assert.Single(model.Rules);
-        Assert.Equal("viewers", model.Rules[0].ReadGroups);
-        Assert.Equal("", model.Rules[0].WriteGroups);
+        Assert.Equal(["viewers"], model.Rules[0].ReadGroups.Select(g => g.Name));
+        Assert.Empty(model.Rules[0].WriteGroups);
     }
 
     [Fact]
@@ -583,8 +583,8 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         var model = Assert.IsType<WikiAccessControlViewModel>(viewResult.Model);
         
         Assert.Single(model.Rules);
-        Assert.Equal("", model.Rules[0].ReadGroups);
-        Assert.Equal("editors", model.Rules[0].WriteGroups);
+        Assert.Empty(model.Rules[0].ReadGroups);
+        Assert.Equal(["editors"], model.Rules[0].WriteGroups.Select(g => g.Name));
     }
 
     [Fact]
@@ -693,11 +693,185 @@ public class WikiAdminController_AccessControlTests : WikiAdminControllerTestBas
         var model = Assert.IsType<WikiAccessControlViewModel>(viewResult.Model);
         
         Assert.Equal(2, model.Rules.Count);
-        Assert.Equal("group1, group2", model.Rules[0].ReadGroups);
-        Assert.Equal("group1", model.Rules[0].WriteGroups);
-        Assert.Equal("group3", model.Rules[1].ReadGroups);
-        Assert.Equal("group3, group4", model.Rules[1].WriteGroups);
+        Assert.Equal(["group1", "group2"], model.Rules[0].ReadGroups.Select(g => g.Name));
+        Assert.Equal(["group1"], model.Rules[0].WriteGroups.Select(g => g.Name));
+        Assert.Equal(["group3"], model.Rules[1].ReadGroups.Select(g => g.Name));
+        Assert.Equal(["group3", "group4"], model.Rules[1].WriteGroups.Select(g => g.Name));
+    }
+
+    [Fact]
+    public async Task AccessControl_GroupWithLabel_UsesLabelInViewModel()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanAdmin).Returns(true);
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockAccessControlService
+            .Setup(x => x.GetRulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PageAccessRule>
+            {
+                new PageAccessRule("admin/**", new[] { "admins" }, new[] { "admins" }, 0)
+            });
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { CreateGroup("admins", "Administrators").Object });
+
+        SetupUserContext("admin");
+
+        // Act
+        var result = await _controller.AccessControl(CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiAccessControlViewModel>(viewResult.Model);
+
+        Assert.Equal("admins", model.Rules[0].ReadGroups[0].Name);
+        Assert.Equal("Administrators", model.Rules[0].ReadGroups[0].Label);
+        Assert.Equal("admins", model.Rules[0].WriteGroups[0].Name);
+        Assert.Equal("Administrators", model.Rules[0].WriteGroups[0].Label);
+    }
+
+    [Fact]
+    public async Task AccessControl_GroupWithLabelAndDescription_IncludesDescription()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanAdmin).Returns(true);
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockAccessControlService
+            .Setup(x => x.GetRulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PageAccessRule>
+            {
+                new PageAccessRule("*", new[] { "editors" }, Array.Empty<string>(), 0)
+            });
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { CreateGroup("editors", "Editors", "Users who can edit pages").Object });
+
+        SetupUserContext("admin");
+
+        // Act
+        var result = await _controller.AccessControl(CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiAccessControlViewModel>(viewResult.Model);
+
+        Assert.Equal("Users who can edit pages", model.Rules[0].ReadGroups[0].Description);
+    }
+
+    [Fact]
+    public async Task AccessControl_GroupNameMatchingIsCaseInsensitive()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanAdmin).Returns(true);
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockAccessControlService
+            .Setup(x => x.GetRulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PageAccessRule>
+            {
+                new PageAccessRule("*", new[] { "ADMINS" }, Array.Empty<string>(), 0)
+            });
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { CreateGroup("admins", "Administrators").Object });
+
+        SetupUserContext("admin");
+
+        // Act
+        var result = await _controller.AccessControl(CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiAccessControlViewModel>(viewResult.Model);
+
+        Assert.Equal("Administrators", model.Rules[0].ReadGroups[0].Label);
+    }
+
+    [Fact]
+    public async Task AccessControl_CallsGetAllWikiGroupsAsync()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanAdmin).Returns(true);
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockAccessControlService
+            .Setup(x => x.GetRulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PageAccessRule>());
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Enumerable.Empty<IWikiUserGroup>());
+
+        SetupUserContext("admin");
+
+        // Act
+        await _controller.AccessControl(CancellationToken.None);
+
+        // Assert
+        _mockUserService.Verify(
+            x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task AccessControl_MultipleRulesWithKnownAndUnknownGroups_ResolvesCorrectly()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanAdmin).Returns(true);
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockAccessControlService
+            .Setup(x => x.GetRulesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PageAccessRule>
+            {
+                new PageAccessRule("admin/**", new[] { "admins" }, new[] { "admins" }, 0),
+                new PageAccessRule("*", new[] { "unknown" }, new[] { "editors" }, 1)
+            });
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[]
+            {
+                CreateGroup("admins", "Administrators", "Admin users").Object,
+                CreateGroup("editors", "Content Editors").Object
+            });
+
+        SetupUserContext("admin");
+
+        // Act
+        var result = await _controller.AccessControl(CancellationToken.None);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<WikiAccessControlViewModel>(viewResult.Model);
+
+        Assert.Equal("Administrators", model.Rules[0].ReadGroups[0].Label);
+        Assert.Equal("Admin users", model.Rules[0].ReadGroups[0].Description);
+        Assert.Null(model.Rules[1].ReadGroups[0].Label);
+        Assert.Null(model.Rules[1].ReadGroups[0].Description);
+        Assert.Equal("Content Editors", model.Rules[1].WriteGroups[0].Label);
     }
 
     #endregion
+
 }

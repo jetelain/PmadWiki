@@ -9,4 +9,6 @@ public class WikiAccessControlEditViewModel
 
     [Required]
     public string CommitMessage { get; set; } = "Update access control rules";
+
+    public List<WikiGroupViewModel> Groups { get; set; } = [];
 }
