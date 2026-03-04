@@ -31,4 +31,23 @@ public interface IWikiMultiTenantUserService
     /// <returns>A task that represents the asynchronous operation. The task result contains the corresponding wiki user if
     /// found; otherwise, null.</returns>
     Task<IWikiUser?> GetWikiUserFromGitEmailAsync(string repository, string gitEmail, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrieves all user groups defined in the system.
+    /// </summary>
+    /// <param name="repository">The repository name to look up the user in. Cannot be null or empty.</param>
+    /// <param name="cancellationToken">Token used to cancel the async operation.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains the collection of all
+    /// user groups available in the system. Each group exposes a <see cref="IWikiUserGroup.Name"/>,
+    /// an optional <see cref="IWikiUserGroup.Label"/> for display purposes, and an optional
+    /// <see cref="IWikiUserGroup.Description"/>. Returns an empty collection if no groups are defined.
+    /// </returns>
+    /// <remarks>
+    /// Implementing this method is optional. It is only used to enrich the access control administration
+    /// UI by resolving group names to human-readable labels and descriptions. The default implementation
+    /// returns an empty collection, which causes group names to be displayed as-is.
+    /// </remarks>
+    Task<IEnumerable<IWikiUserGroup>> GetAllWikiGroupsAsync(string repository, CancellationToken cancellationToken)
+        => Task.FromResult(Enumerable.Empty<IWikiUserGroup>());
 }

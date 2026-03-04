@@ -22,4 +22,9 @@ internal sealed class MultiTenantUserServiceAdapter : IWikiUserService
     {
         return _wikiMultiTenantUserService.GetWikiUserFromGitEmailAsync(_options.WikiRepositoryName, gitEmail, cancellationToken);
     }
+
+    public Task<IEnumerable<IWikiUserGroup>> GetAllWikiGroupsAsync(CancellationToken cancellationToken)
+    {
+        return _wikiMultiTenantUserService.GetAllWikiGroupsAsync(_options.WikiRepositoryName, cancellationToken);
+    }
 }
