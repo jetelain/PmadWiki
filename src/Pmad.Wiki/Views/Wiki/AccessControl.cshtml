@@ -65,7 +65,7 @@
                                                 {
                                                     foreach (var g in rule.ReadGroups)
                                                     {
-                                                        <span class="badge rounded-pill bg-secondary me-1" title="@g.Tooltip">@g.Label</span>
+                                                        <span class="badge rounded-pill bg-secondary me-1" title="@g.Tooltip">@g.ActualLabel</span>
                                                     }
                                                 }
                                             </td>
@@ -78,7 +78,7 @@
                                                 {
                                                     foreach (var g in rule.WriteGroups)
                                                     {
-                                                        <span class="badge rounded-pill bg-secondary me-1" title="@g.Tooltip">@g.Label</span>
+                                                        <span class="badge rounded-pill bg-secondary me-1" title="@g.Tooltip">@g.ActualLabel</span>
                                                     }
                                                 }                                           
                                             </td>

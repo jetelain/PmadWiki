@@ -567,4 +567,10 @@
   <data name="Sub-pages" xml:space="preserve">
     <value>Sous-pages</value>
   </data>
+  <data name="Known Groups" xml:space="preserve">
+    <value>Groupes connus</value>
+  </data>
+  <data name="Click a group to copy its name." xml:space="preserve">
+    <value>Cliquez sur un groupe pour copier son nom.</value>
+  </data>
 </root>

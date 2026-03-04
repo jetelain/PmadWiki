@@ -14,6 +14,7 @@ public class WikiGroupViewModelTest
         Assert.Equal("admins", vm.Name);
         Assert.Null(vm.Label);
         Assert.Null(vm.Description);
+        Assert.Equal("admins", vm.ActualLabel);
     }
 
     [Fact]
@@ -24,6 +25,7 @@ public class WikiGroupViewModelTest
         Assert.Equal("admins", vm.Name);
         Assert.Equal("Administrators", vm.Label);
         Assert.Null(vm.Description);
+        Assert.Equal("Administrators", vm.ActualLabel);
     }
 
     [Fact]
@@ -34,6 +36,7 @@ public class WikiGroupViewModelTest
         Assert.Equal("admins", vm.Name);
         Assert.Equal("Administrators", vm.Label);
         Assert.Equal("Users with admin rights", vm.Description);
+        Assert.Equal("Administrators", vm.ActualLabel);
     }
 
     [Fact]
@@ -44,6 +47,7 @@ public class WikiGroupViewModelTest
         Assert.Equal("editors", vm.Name);
         Assert.Null(vm.Label);
         Assert.Null(vm.Description);
+        Assert.Equal("editors", vm.ActualLabel);
     }
 
     #endregion

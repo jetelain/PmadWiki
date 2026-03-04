@@ -34,7 +34,9 @@
                                         class="badge rounded-pill bg-secondary me-1 mb-1"
                                         data-group-name="@g.Name"
                                         onclick="navigator.clipboard.writeText(this.dataset.groupName)"
-                                        title="@g.Tooltip">@g.Label</button>
+                                        title="@g.Tooltip">
+                                    @g.ActualLabel
+                                </button>
                             }
                         </div>
                     </div>

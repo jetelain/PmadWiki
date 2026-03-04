@@ -17,4 +17,6 @@ public record WikiGroupViewModel(string Name, string? Label = null, string? Desc
             return Description;
         }
     }
+
+    public string ActualLabel => !string.IsNullOrEmpty(Label) ? Label : Name;
 }
