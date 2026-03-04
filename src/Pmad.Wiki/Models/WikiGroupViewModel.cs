@@ -1,9 +1,20 @@
 namespace Pmad.Wiki.Models;
 
-public record WikiGroupViewModel(string Name, string Label, string? Description = null)
+public record WikiGroupViewModel(string Name, string? Label = null, string? Description = null)
 {
-    public string? Tooltip =>
-        Name != Label ? 
-        string.IsNullOrEmpty(Description) ? Name : $"{Name}: {Description}"
-        : Description;
+    public string? Tooltip 
+    {
+        get 
+        {
+            if (!string.IsNullOrEmpty(Name))
+            {
+                if (!string.IsNullOrEmpty(Description))
+                {
+                    return $"{Name}: {Description}";
+                }
+                return Name;
+            }
+            return Description;
+        }
+    }
 }

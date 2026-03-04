@@ -47,9 +47,9 @@ namespace Pmad.Wiki.Controllers
                 .ToDictionary(g => g.Name, StringComparer.OrdinalIgnoreCase);
 
             WikiGroupViewModel ResolveGroup(string name) =>
-                groups.TryGetValue(name, out var g) && !string.IsNullOrEmpty(g.Label)
+                groups.TryGetValue(name, out var g)
                     ? new WikiGroupViewModel(name, g.Label, g.Description)
-                    : new WikiGroupViewModel(name, name);
+                    : new WikiGroupViewModel(name);
 
             var viewModel = new WikiAccessControlViewModel
             {
@@ -134,7 +134,7 @@ namespace Pmad.Wiki.Controllers
         {
             var groups = await _userService.GetAllWikiGroupsAsync(cancellationToken);
             return groups
-                .Select(g => new WikiGroupViewModel(g.Name, !string.IsNullOrEmpty(g.Label) ? g.Label : g.Name, g.Description))
+                .Select(g => new WikiGroupViewModel(g.Name, g.Label, g.Description))
                 .ToList();
         }
     }
