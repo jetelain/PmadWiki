@@ -43,6 +43,7 @@ public static class WikiServiceCollectionExtensions
         services.AddScoped<IOptions<WikiOptions>>(sp => sp.GetRequiredService<MultiTenantWikiOptionsStateHolder>());
         services.AddScoped<IWikiTenantActivationFilter, MultiTenantWikiFilter>();
         services.AddScoped<IWikiTenantHelper, MultiTenantWikiHelper>();
+        services.AddScoped<IWikiUserService, MultiTenantUserServiceAdapter>();
 
         AddCommonServices(services);
 
