@@ -2,15 +2,15 @@
 
 namespace Pmad.Wiki.Services.Tenants;
 
-internal class MultiTenantUserServiceAdapter : IWikiUserService
+internal sealed class MultiTenantUserServiceAdapter : IWikiUserService
 {
     private readonly IWikiMultiTenantUserService _wikiMultiTenantUserService;
     private readonly WikiOptions _options;
 
-    public MultiTenantUserServiceAdapter(IWikiMultiTenantUserService wikiMultiTenantUserService, WikiOptions options)
+    public MultiTenantUserServiceAdapter(IWikiMultiTenantUserService wikiMultiTenantUserService, MultiTenantWikiOptionsStateHolder optionsHolder)
     {
         _wikiMultiTenantUserService = wikiMultiTenantUserService;
-        _options = options;
+        _options = optionsHolder.Value;
     }
 
     public Task<IWikiUserWithPermissions?> GetWikiUserAsync(ClaimsPrincipal principal, bool shouldCreate, CancellationToken cancellationToken)
