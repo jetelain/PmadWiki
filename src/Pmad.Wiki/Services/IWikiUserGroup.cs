@@ -12,7 +12,7 @@ public interface IWikiUserGroup
     string Name { get; }
 
     /// <summary>
-    /// Gets the label associated of the user group, which may be null if no label is set.
+    /// Gets the label associated with the user group, which may be null if no label is set.
     /// </summary>
     string? Label { get; }
 

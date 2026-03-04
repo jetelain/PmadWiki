@@ -30,11 +30,11 @@
                             <p class="text-muted small mb-2">@Localizer["Click a group to copy its name."]</p>
                             @foreach (var g in Model.Groups)
                             {
-                                <span class="badge rounded-pill bg-secondary me-1 mb-1"
-                                      role="button"
-                                      data-group-name="@g.Name"
-                                      onclick="navigator.clipboard.writeText(this.dataset.groupName)"
-                                      title="@g.Tooltip">@g.Label</span>
+                                <button type="button"
+                                        class="badge rounded-pill bg-secondary me-1 mb-1"
+                                        data-group-name="@g.Name"
+                                        onclick="navigator.clipboard.writeText(this.dataset.groupName)"
+                                        title="@g.Tooltip">@g.Label</button>
                             }
                         </div>
                     </div>
