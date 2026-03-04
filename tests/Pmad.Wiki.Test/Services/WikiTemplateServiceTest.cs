@@ -1,5 +1,6 @@
 ﻿using Moq;
 using Pmad.Wiki.Helpers;
+using Pmad.Wiki.Models;
 using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki.Test.Services;
@@ -1434,13 +1435,13 @@ Content";
         Assert.Equal(4, template.Parameters.Count);
         Assert.Empty(template.InvalidParameterNames);
 
-        Assert.Equal(Models.WikiTemplateParameterType.Text, 
+        Assert.Equal(WikiTemplateParameterType.Text, 
             template.Parameters.First(p => p.Name == "text_param").Type);
-        Assert.Equal(Models.WikiTemplateParameterType.Number, 
+        Assert.Equal(WikiTemplateParameterType.Number, 
             template.Parameters.First(p => p.Name == "number_param").Type);
-        Assert.Equal(Models.WikiTemplateParameterType.Date, 
+        Assert.Equal(WikiTemplateParameterType.Date, 
             template.Parameters.First(p => p.Name == "date_param").Type);
-        Assert.Equal(Models.WikiTemplateParameterType.DateTime, 
+        Assert.Equal(WikiTemplateParameterType.DateTime, 
             template.Parameters.First(p => p.Name == "datetime_param").Type);
     }
 
