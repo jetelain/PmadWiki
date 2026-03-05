@@ -31,7 +31,7 @@
                             @foreach (var g in Model.Groups)
                             {
                                 <button type="button"
-                                        class="btn btn-sm btn-@g.ClassSuffix rounded-pill me-1 mb-1"
+                                        class="badge btn btn-sm btn-@g.ClassSuffix rounded-pill me-1 mb-1"
                                         data-group-name="@g.Name"
                                         onclick="navigator.clipboard.writeText(this.dataset.groupName)"
                                         title="@g.Tooltip">
