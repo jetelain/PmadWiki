@@ -1,4 +1,6 @@
-﻿namespace Pmad.Wiki.Services;
+﻿using Pmad.Wiki.Models;
+
+namespace Pmad.Wiki.Services;
 
 /// <summary>
 /// Defines the contract for a user group within a wiki, providing access to the group's name, display label, and
@@ -24,4 +26,9 @@ public interface IWikiUserGroup
     /// administrators when managing groups and assigning permissions.
     /// </remarks>
     string? Description { get; }
+
+    /// <summary>
+    /// Color associated with the user group, which can be used for visual differentiation in the user interface. The color is typically defined
+    /// </summary>
+    WikiColor Color => WikiColor.Secondary;
 }
