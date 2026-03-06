@@ -717,10 +717,31 @@ document.addEventListener('DOMContentLoaded', function () {
     function getYamlFieldValue(yamlText, key) {
         const match = new RegExp(`^${key}:\\s*(.*)$`, 'm').exec(yamlText);
         if (!match) return null;
-        const val = match[1].trim();
-        if (val === 'true') return true;
-        if (val === 'false') return false;
-        return val.replace(/^['"](.*)['"]$/, '$1') || null;
+        const rawVal = match[1].trim();
+        if (rawVal === 'true') return true;
+        if (rawVal === 'false') return false;
+
+        // Handle quoted scalars: strip quotes and unescape content
+        if (
+            rawVal.length >= 2 &&
+            ((rawVal.startsWith('"') && rawVal.endsWith('"')) ||
+             (rawVal.startsWith("'") && rawVal.endsWith("'")))
+        ) {
+            const quoteChar = rawVal[0];
+            let inner = rawVal.slice(1, -1);
+
+            if (quoteChar === '"') {
+                // Inverse of yamlEscapeString: "\\" -> "\", and \" -> "
+                inner = inner.replace(/\\\\/g, '\\').replace(/\\"/g, '"');
+            } else if (quoteChar === "'") {
+                // YAML single-quoted style: '' represents a single '
+                inner = inner.replace(/''/g, "'");
+            }
+
+            return inner || null;
+        }
+
+        return rawVal || null;
     }
 
     function yamlEscapeString(str) {
