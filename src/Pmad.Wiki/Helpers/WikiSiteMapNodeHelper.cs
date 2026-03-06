@@ -61,7 +61,8 @@ internal static class WikiSiteMapNodeHelper
                             Culture = pageInfo?.Culture,
                             LastModified = pageInfo?.LastModified,
                             LastModifiedBy = pageInfo?.LastModifiedBy,
-                            Level = i
+                            Level = i,
+                            SortOrder = pageInfo?.SortOrder ?? 0
                         };
                     }
                     else
@@ -91,6 +92,20 @@ internal static class WikiSiteMapNodeHelper
             }
         }
 
+        SortNodes(rootNodes);
         return rootNodes;
+    }
+
+    private static void SortNodes(List<WikiSiteMapNode> nodes)
+    {
+        nodes.Sort((a, b) =>
+        {
+            var cmp = a.SortOrder.CompareTo(b.SortOrder);
+            return cmp != 0 ? cmp : string.Compare(a.DisplayName, b.DisplayName, StringComparison.OrdinalIgnoreCase);
+        });
+        foreach (var node in nodes)
+        {
+            SortNodes(node.Children);
+        }
     }
 }

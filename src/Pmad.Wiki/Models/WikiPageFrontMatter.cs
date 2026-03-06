@@ -22,4 +22,10 @@ public record class WikiPageFrontMatter
     /// Has no effect when <see cref="ShowSubPages"/> is <c>false</c>.
     /// </summary>
     public bool SubPagesRecursive { get; set; }
+
+    /// <summary>
+    /// Gets or sets the sort order of this page among its siblings in the site map.
+    /// Pages are sorted by ascending sort order, then alphabetically. Defaults to <c>0</c>.
+    /// </summary>
+    public int SortOrder { get; set; }
 }

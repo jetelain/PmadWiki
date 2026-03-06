@@ -235,7 +235,8 @@ public sealed class WikiPageService : IWikiPageService
                         Title = pageMetadata?.Title,
                         Culture = culture,
                         LastModified = file.Commit.Metadata.AuthorDate,
-                        LastModifiedBy = file.Commit.Metadata.AuthorName
+                        LastModifiedBy = file.Commit.Metadata.AuthorName,
+                        SortOrder = pageMetadata?.FrontMatter.SortOrder ?? 0
                     };
                 }
             }

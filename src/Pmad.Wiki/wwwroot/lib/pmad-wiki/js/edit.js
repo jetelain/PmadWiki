@@ -702,4 +702,108 @@ document.addEventListener('DOMContentLoaded', function () {
         const newPosition = start + cursorOffset;
         textarea.setSelectionRange(newPosition, newPosition);
     }
+
+    // Front matter modal
+    const frontMatterModal = document.getElementById('frontMatterModal');
+    const saveFrontMatterBtn = document.getElementById('saveFrontMatter');
+
+    function extractFrontMatter(content) {
+        const match = /^\uFEFF?\s*---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n/.exec(content);
+        if (!match) return { yamlText: '', body: content };
+        const yamlText = match[1].replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        return { yamlText, body: content.slice(match[0].length) };
+    }
+
+    function getYamlFieldValue(yamlText, key) {
+        const match = new RegExp(`^${key}:\\s*(.*)$`, 'm').exec(yamlText);
+        if (!match) return null;
+        const val = match[1].trim();
+        if (val === 'true') return true;
+        if (val === 'false') return false;
+        return val.replace(/^['"](.*)['"]$/, '$1') || null;
+    }
+
+    function yamlEscapeString(str) {
+        if (/[:#{}\[\]]/.test(str) || str !== str.trim()) {
+            return '"' + str.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+        }
+        return str;
+    }
+
+    function setYamlField(yamlText, key, value) {
+        const lineRegex = new RegExp(`^${key}:.*$`, 'm');
+        if (value === null || value === '' || value === false || value === undefined) {
+            return yamlText.replace(lineRegex, '').replace(/\n{3,}/g, '\n').replace(/^\n+|\n+$/g, '');
+        }
+        const yamlValue = typeof value === 'boolean' || typeof value === 'number' ? `${value}` : yamlEscapeString(value);
+        const newLine = `${key}: ${yamlValue}`;
+        if (lineRegex.test(yamlText)) {
+            return yamlText.replace(lineRegex, newLine);
+        }
+        return (yamlText ? yamlText + '\n' : '') + newLine;
+    }
+
+    function buildContent(yamlText, body) {
+        const trimmedYaml = yamlText.trim();
+        if (!trimmedYaml) return body;
+        return `---\n${trimmedYaml}\n---\n${body}`;
+    }
+
+    if (frontMatterModal) {
+        // Wire up dependency relationships declared via data-fm-depends-on
+        document.querySelectorAll('[data-fm-depends-on]').forEach(input => {
+            const dependsOnKey = input.dataset.fmDependsOn;
+            if (!dependsOnKey) return;
+            const parentInput = document.querySelector(`[data-fm-key="${dependsOnKey}"]`);
+            if (!parentInput) return;
+            parentInput.addEventListener('change', function () {
+                input.disabled = !this.checked;
+                if (!this.checked) input.checked = false;
+            });
+        });
+
+        frontMatterModal.addEventListener('show.bs.modal', function () {
+            const { yamlText } = extractFrontMatter(textarea.value);
+            document.querySelectorAll('[data-fm-key]').forEach(input => {
+                const value = getYamlFieldValue(yamlText, input.dataset.fmKey);
+                if (input.dataset.fmType === 'checkbox') {
+                    input.checked = value === true;
+                    const dependsOnKey = input.dataset.fmDependsOn;
+                    if (dependsOnKey) {
+                        const parent = document.querySelector(`[data-fm-key="${dependsOnKey}"]`);
+                        input.disabled = parent ? !parent.checked : false;
+                    }
+                } else if (input.dataset.fmType === 'number') {
+                    input.value = value ? String(value) : '';
+                } else {
+                    input.value = value || '';
+                }
+            });
+        });
+
+        if (saveFrontMatterBtn) {
+            saveFrontMatterBtn.addEventListener('click', function () {
+                const { yamlText, body } = extractFrontMatter(textarea.value);
+                let newYaml = yamlText;
+                document.querySelectorAll('[data-fm-key]').forEach(input => {
+                    let value;
+                    if (input.dataset.fmType === 'checkbox') {
+                        value = input.checked;
+                    } else if (input.dataset.fmType === 'number') {
+                        const num = parseInt(input.value, 10);
+                        value = !isNaN(num) && num !== 0 ? num : null;
+                    } else {
+                        value = input.value.trim();
+                    }
+                    newYaml = setYamlField(newYaml, input.dataset.fmKey, value);
+                });
+                const newContent = buildContent(newYaml, body);
+                frontMatterModal.addEventListener('hidden.bs.modal', () => {
+                    insertTextWithUndo(textarea, 0, textarea.value.length, newContent, newContent.length);
+                }, { once: true });
+                const modal = bootstrap.Modal.getInstance(frontMatterModal);
+                modal?.hide();
+            });
+        }
+    }
 });
