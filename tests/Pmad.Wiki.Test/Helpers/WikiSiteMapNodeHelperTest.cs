@@ -660,17 +660,19 @@ public class WikiSiteMapNodeHelperTest
         {
             new WikiPageInfo { PageName = "page-a", Title = "Zebra", Culture = null, SortOrder = 1 },
             new WikiPageInfo { PageName = "page-b", Title = "Apple", Culture = null, SortOrder = 1 },
-            new WikiPageInfo { PageName = "page-c", Title = "Mango", Culture = null, SortOrder = 1 }
+            new WikiPageInfo { PageName = "page-c", Title = "Mango", Culture = null, SortOrder = 1 },
+            new WikiPageInfo { PageName = "page-d", Title = "_Special", Culture = null, SortOrder = 1 }
         };
 
         // Act
         var result = WikiSiteMapNodeHelper.Build(pages, "en");
 
         // Assert: same SortOrder falls back to DisplayName (Title) order, not PageName order
-        Assert.Equal(3, result.Count);
-        Assert.Equal("page-b", result[0].PageName); // Title "Apple"
-        Assert.Equal("page-c", result[1].PageName); // Title "Mango"
-        Assert.Equal("page-a", result[2].PageName); // Title "Zebra"
+        Assert.Equal(4, result.Count);
+        Assert.Equal("page-d", result[0].PageName); // Title "_Special"
+        Assert.Equal("page-b", result[1].PageName); // Title "Apple"
+        Assert.Equal("page-c", result[2].PageName); // Title "Mango"
+        Assert.Equal("page-a", result[3].PageName); // Title "Zebra"
     }
 
     #endregion

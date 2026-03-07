@@ -101,7 +101,7 @@ internal static class WikiSiteMapNodeHelper
         nodes.Sort((a, b) =>
         {
             var cmp = a.SortOrder.CompareTo(b.SortOrder);
-            return cmp != 0 ? cmp : string.Compare(a.DisplayName, b.DisplayName, StringComparison.OrdinalIgnoreCase);
+            return cmp != 0 ? cmp : string.Compare(a.DisplayName, b.DisplayName, StringComparison.InvariantCultureIgnoreCase);
         });
         foreach (var node in nodes)
         {
