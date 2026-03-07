@@ -458,8 +458,8 @@ namespace Pmad.Wiki.Controllers
                 viewModel.FrontMatterFields.AddRange([
                     new WikiFrontMatterField { Key = "title", Label = _localizer["Title"], HelpText = _localizer["Override the page title (leave empty to use the first H1 heading)."] },
                     new WikiFrontMatterField { Key = "description", Label = _localizer["Description"] },
-                    new WikiFrontMatterField { Key = "location", Label = _localizer["Default Location"], HelpText = _localizer["Default location for pages created from this template. Supports placeholders: {date}, {year}, {month}, {day}, {datetime}."] },
-                    new WikiFrontMatterField { Key = "pattern", Label = _localizer["Name Pattern"], HelpText = _localizer["Name pattern for pages created from this template. Supports placeholders: {date}, {year}, {month}, {day}, {datetime}."] }
+                    new WikiFrontMatterField { Key = "location", Label = _localizer["Default Location"], HelpText = _localizer["Default location for pages created from this template. Supports placeholders: {date}, {year}, {month}, {day}, {datetime} and custom properties."] },
+                    new WikiFrontMatterField { Key = "pattern", Label = _localizer["Name Pattern"], HelpText = _localizer["Name pattern for pages created from this template. Supports placeholders: {date}, {year}, {month}, {day}, {datetime} and custom properties."] }
                 ]);
             }
             else
