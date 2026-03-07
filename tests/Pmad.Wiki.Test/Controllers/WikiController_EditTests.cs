@@ -779,6 +779,270 @@ public class WikiController_EditTests : WikiControllerTestBase
 
     #endregion
 
+    #region Edit GET Action - FrontMatterFields Tests
+
+    [Fact]
+    public async Task Edit_Get_RegularPage_HasCorrectFrontMatterFields()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("TestPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("TestPage", null, null, null, null, null, CancellationToken.None);
+
+        // Assert
+        var model = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        Assert.Equal(4, model.FrontMatterFields.Count);
+        Assert.Equal(["title", "sortOrder", "showSubPages", "subPagesRecursive"],
+            model.FrontMatterFields.Select(f => f.Key));
+    }
+
+    [Fact]
+    public async Task Edit_Get_RegularPage_FrontMatterFieldsHaveCorrectTypes()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("TestPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("TestPage", null, null, null, null, null, CancellationToken.None);
+
+        // Assert
+        var model = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+        var fields = model.FrontMatterFields;
+
+        Assert.Equal(WikiFrontMatterFieldType.Text,     fields.Single(f => f.Key == "title").Type);
+        Assert.Equal(WikiFrontMatterFieldType.Number,   fields.Single(f => f.Key == "sortOrder").Type);
+        Assert.Equal(WikiFrontMatterFieldType.Checkbox, fields.Single(f => f.Key == "showSubPages").Type);
+        Assert.Equal(WikiFrontMatterFieldType.Checkbox, fields.Single(f => f.Key == "subPagesRecursive").Type);
+    }
+
+    [Fact]
+    public async Task Edit_Get_RegularPage_SubPagesRecursiveDependsOnShowSubPages()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("TestPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("TestPage", null, null, null, null, null, CancellationToken.None);
+
+        // Assert
+        var model = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+        var fields = model.FrontMatterFields;
+
+        // Only subPagesRecursive has a dependency
+        Assert.Null(fields.Single(f => f.Key == "title").DependsOn);
+        Assert.Null(fields.Single(f => f.Key == "sortOrder").DependsOn);
+        Assert.Null(fields.Single(f => f.Key == "showSubPages").DependsOn);
+        Assert.Equal("showSubPages", fields.Single(f => f.Key == "subPagesRecursive").DependsOn);
+    }
+
+    [Fact]
+    public async Task Edit_Get_RegularPage_FrontMatterFieldsHaveLabels()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("TestPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("TestPage", null, null, null, null, null, CancellationToken.None);
+
+        // Assert
+        var model = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        Assert.All(model.FrontMatterFields, f => Assert.False(string.IsNullOrEmpty(f.Label)));
+    }
+
+    [Fact]
+    public async Task Edit_Get_TemplatePage_WithTemplatesPrefix_HasCorrectFrontMatterFields()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("_templates/MyTemplate", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("_templates/MyTemplate", null, null, null, null, null, CancellationToken.None);
+
+        // Assert
+        var model = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        Assert.Equal(4, model.FrontMatterFields.Count);
+        Assert.Equal(["title", "description", "location", "pattern"],
+            model.FrontMatterFields.Select(f => f.Key));
+    }
+
+    [Fact]
+    public async Task Edit_Get_TemplatePage_WithTemplateSuffix_HasCorrectFrontMatterFields()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("docs/_template", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("docs/_template", null, null, null, null, null, CancellationToken.None);
+
+        // Assert
+        var model = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        Assert.Equal(4, model.FrontMatterFields.Count);
+        Assert.Equal(["title", "description", "location", "pattern"],
+            model.FrontMatterFields.Select(f => f.Key));
+    }
+
+    [Fact]
+    public async Task Edit_Get_TemplatePage_WithExactTemplateName_HasCorrectFrontMatterFields()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("_template", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("_template", null, null, null, null, null, CancellationToken.None);
+
+        // Assert
+        var model = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        Assert.Equal(4, model.FrontMatterFields.Count);
+        Assert.Equal(["title", "description", "location", "pattern"],
+            model.FrontMatterFields.Select(f => f.Key));
+    }
+
+    [Fact]
+    public async Task Edit_Get_TemplatePage_AllFieldsAreTextType()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("_templates/BlogPost", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("_templates/BlogPost", null, null, null, null, null, CancellationToken.None);
+
+        // Assert
+        var model = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        Assert.All(model.FrontMatterFields, f => Assert.Equal(WikiFrontMatterFieldType.Text, f.Type));
+    }
+
+    [Fact]
+    public async Task Edit_Get_TemplatePage_NoDependsOnRelationships()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("_templates/BlogPost", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WikiPage?)null);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit("_templates/BlogPost", null, null, null, null, null, CancellationToken.None);
+
+        // Assert
+        var model = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        Assert.All(model.FrontMatterFields, f => Assert.Null(f.DependsOn));
+    }
+
+    #endregion
+
     #region Edit POST Action Tests
 
     [Fact]
@@ -1546,6 +1810,203 @@ public class WikiController_EditTests : WikiControllerTestBase
                 It.Is<string[]>(ids => ids.Length == 1 && ids[0] == "singleid123"),
                 It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    #endregion
+
+    #region Edit POST Action - FrontMatterFields Tests
+
+    [Fact]
+    public async Task Edit_Post_WithInvalidModelState_RegularPage_HasCorrectFrontMatterFields()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var model = new WikiPageEditViewModel
+        {
+            PageName = "TestPage",
+            Content = "# Test",
+            CommitMessage = "Test",
+            IsNew = true
+        };
+
+        SetupUserContext("testuser");
+        _controller.ModelState.AddModelError("Content", "Content is required");
+
+        // Act
+        var result = await _controller.Edit(model, CancellationToken.None);
+
+        // Assert
+        var viewModel = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        Assert.Equal(4, viewModel.FrontMatterFields.Count);
+        Assert.Equal(["title", "sortOrder", "showSubPages", "subPagesRecursive"],
+            viewModel.FrontMatterFields.Select(f => f.Key));
+    }
+
+    [Fact]
+    public async Task Edit_Post_WithInvalidModelState_TemplatePage_HasCorrectFrontMatterFields()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var model = new WikiPageEditViewModel
+        {
+            PageName = "_templates/MyTemplate",
+            Content = "# Template",
+            CommitMessage = "Test",
+            IsNew = true
+        };
+
+        SetupUserContext("testuser");
+        _controller.ModelState.AddModelError("Content", "Content is required");
+
+        // Act
+        var result = await _controller.Edit(model, CancellationToken.None);
+
+        // Assert
+        var viewModel = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        Assert.Equal(4, viewModel.FrontMatterFields.Count);
+        Assert.Equal(["title", "description", "location", "pattern"],
+            viewModel.FrontMatterFields.Select(f => f.Key));
+    }
+
+    [Fact]
+    public async Task Edit_Post_WithContentHashMismatch_HasCorrectFrontMatterFields()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var currentPage = new WikiPage
+        {
+            PageName = "TestPage",
+            Content = WikiPageContentParser.Parse("# Different Content"),
+            ContentHash = "newhash123",
+            LastModifiedBy = "otheruser",
+            Title = "Test Page"
+        };
+
+        _mockPageService
+            .Setup(x => x.GetPageAsync("TestPage", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(currentPage);
+
+        var model = new WikiPageEditViewModel
+        {
+            PageName = "TestPage",
+            Content = "# My Content",
+            CommitMessage = "Update page",
+            IsNew = false,
+            OriginalContentHash = "oldhash456"
+        };
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit(model, CancellationToken.None);
+
+        // Assert
+        var viewModel = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        Assert.Equal(4, viewModel.FrontMatterFields.Count);
+        Assert.Equal(["title", "sortOrder", "showSubPages", "subPagesRecursive"],
+            viewModel.FrontMatterFields.Select(f => f.Key));
+    }
+
+    [Fact]
+    public async Task Edit_Post_WhenSaveThrowsException_RegularPage_HasCorrectFrontMatterFields()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        var mockWikiUser = Mock.Of<IWikiUser>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.User).Returns(mockWikiUser);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockWikiPageEditService
+            .Setup(x => x.SavePageAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IWikiUser>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("Repository error"));
+
+        var model = new WikiPageEditViewModel
+        {
+            PageName = "TestPage",
+            Content = "# Test",
+            CommitMessage = "Test",
+            IsNew = true
+        };
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit(model, CancellationToken.None);
+
+        // Assert
+        var viewModel = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        Assert.Equal(4, viewModel.FrontMatterFields.Count);
+        Assert.Equal(["title", "sortOrder", "showSubPages", "subPagesRecursive"],
+            viewModel.FrontMatterFields.Select(f => f.Key));
+    }
+
+    [Fact]
+    public async Task Edit_Post_WhenSaveThrowsException_TemplatePage_HasCorrectFrontMatterFields()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        var mockWikiUser = Mock.Of<IWikiUser>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+        mockUser.Setup(x => x.User).Returns(mockWikiUser);
+        mockUser.Setup(x => x.Groups).Returns(Array.Empty<string>());
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        _mockWikiPageEditService
+            .Setup(x => x.SavePageAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IWikiUser>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("Repository error"));
+
+        var model = new WikiPageEditViewModel
+        {
+            PageName = "_templates/Report",
+            Content = "# Template",
+            CommitMessage = "Test",
+            IsNew = true
+        };
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.Edit(model, CancellationToken.None);
+
+        // Assert
+        var viewModel = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
+
+        Assert.Equal(4, viewModel.FrontMatterFields.Count);
+        Assert.Equal(["title", "description", "location", "pattern"],
+            viewModel.FrontMatterFields.Select(f => f.Key));
     }
 
     #endregion

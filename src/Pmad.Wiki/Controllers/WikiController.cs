@@ -411,7 +411,7 @@ namespace Pmad.Wiki.Controllers
             else
             {
                 page = await _pageService.GetPageAsync(id, culture, cancellationToken);
-                
+
                 if (page == null)
                 {
                     commitMessage = _localizer["Create page {0}", id];
@@ -433,7 +433,7 @@ namespace Pmad.Wiki.Controllers
                     content = page.RawContent;
                 }
             }
-            
+
             var viewModel = new WikiPageEditViewModel
             {
                 PageName = id,
@@ -444,9 +444,33 @@ namespace Pmad.Wiki.Controllers
                 OriginalContentHash = page?.ContentHash
             };
 
+            GenerateFrontMatterFields(id, viewModel);
+
             await GenerateBreadcrumbAsync(id, culture, viewModel.Breadcrumb, cancellationToken);
 
             return View(viewModel);
+        }
+
+        private void GenerateFrontMatterFields(string id, WikiPageEditViewModel viewModel)
+        {
+            if (WikiFilePathHelper.IsTemplatePageName(id))
+            {
+                viewModel.FrontMatterFields.AddRange([
+                    new WikiFrontMatterField { Key = "title", Label = _localizer["Title"], HelpText = _localizer["Override the page title (leave empty to use the first H1 heading)."] },
+                    new WikiFrontMatterField { Key = "description", Label = _localizer["Description"] },
+                    new WikiFrontMatterField { Key = "location", Label = _localizer["Default Location"], HelpText = _localizer["Default location for pages created from this template. Supports placeholders: {date}, {year}, {month}, {day}, {datetime} and custom properties."] },
+                    new WikiFrontMatterField { Key = "pattern", Label = _localizer["Name Pattern"], HelpText = _localizer["Name pattern for pages created from this template. Supports placeholders: {date}, {year}, {month}, {day}, {datetime} and custom properties."] }
+                ]);
+            }
+            else
+            {
+                viewModel.FrontMatterFields.AddRange([
+                    new WikiFrontMatterField { Key = "title", Label = _localizer["Title"], HelpText = _localizer["Override the page title (leave empty to use the first H1 heading)."] },
+                    new WikiFrontMatterField { Key = "sortOrder", Label = _localizer["Sort Order"], Type = WikiFrontMatterFieldType.Number, HelpText = _localizer["Order of this page among its siblings in the site map. Lower values appear first. Defaults to 0."] },
+                    new WikiFrontMatterField { Key = "showSubPages", Label = _localizer["Show sub-pages"], Type = WikiFrontMatterFieldType.Checkbox, HelpText = _localizer["Display a list of direct sub-pages below the page content."] },
+                    new WikiFrontMatterField { Key = "subPagesRecursive", Label = _localizer["Sub-pages recursive"], Type = WikiFrontMatterFieldType.Checkbox, HelpText = _localizer["Include all descendants recursively. Has no effect when Show sub-pages is disabled."], DependsOn = "showSubPages" }
+                ]);
+            }
         }
 
         [HttpGet]
@@ -542,6 +566,8 @@ namespace Pmad.Wiki.Controllers
             {
                 ModelState.AddModelError(nameof(model.Culture), _localizer["Invalid culture identifier."]);
             }
+
+            GenerateFrontMatterFields(model.PageName, model);
 
             if (!ModelState.IsValid)
             {

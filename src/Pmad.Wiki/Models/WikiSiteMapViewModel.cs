@@ -18,6 +18,7 @@ public class WikiSiteMapNode
     public DateTimeOffset? LastModified { get; set; }
     public string? LastModifiedBy { get; set; }
     public int Level { get; set; }
+    public int SortOrder { get; set; }
     public List<WikiSiteMapNode> Children { get; set; } = new();
     public bool HasPage { get; set; }
 }
