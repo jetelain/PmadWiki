@@ -1149,7 +1149,8 @@ public class WikiPagePermissionHelperTest
     {
         // Arrange
         _options.UsePageLevelPermissions = true;
-        var cancellationToken = new CancellationToken();
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = cancellationTokenSource.Token;
 
         _mockAccessControlService
             .Setup(x => x.GetMatchingRuleAsync("admin/settings", cancellationToken))
