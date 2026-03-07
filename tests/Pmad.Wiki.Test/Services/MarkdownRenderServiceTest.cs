@@ -259,7 +259,7 @@ public class Test
         var html = _service.ToHtml(markdown);
 
         // Assert
-        Assert.Contains("<blockquote>", html);
+        Assert.Contains("<blockquote class=\"blockquote\">", html);
         Assert.Contains("This is a quote", html);
     }
 
@@ -639,7 +639,7 @@ public class Test
         var html = _service.ToHtml(markdown);
 
         // Assert
-        Assert.Contains("<table>", html);
+        Assert.Contains("<table class=\"table\">", html);
         Assert.Contains("<thead>", html);
         Assert.Contains("<tbody>", html);
         Assert.Contains("Header 1", html);
@@ -809,8 +809,8 @@ var code = ""sample"";
         Assert.Contains("<ul>", html);
         Assert.Contains("/wiki/view/test", html);
         Assert.Contains("<pre><code", html);
-        Assert.Contains("<blockquote>", html);
-        Assert.Contains("<table>", html);
+        Assert.Contains("<blockquote class=\"blockquote\">", html);
+        Assert.Contains("<table class=\"table\">", html);
     }
 
     [Fact]
