@@ -190,6 +190,11 @@ namespace Pmad.Wiki.Controllers
                 }).ToList()
             };
 
+            if (wikiUser?.CanAdmin == true)
+            {
+                viewModel.PermissionSummary = await _pagePermissionHelper.GetPagePermissionSummaryAsync(id, cancellationToken);
+            }
+
             return View(viewModel);
         }
 

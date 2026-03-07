@@ -74,7 +74,7 @@ public abstract class WikiControllerTestBase
             optionsWrapper,
             _mockLogger.Object,
             _mockLocalizer.Object,
-            new WikiPagePermissionHelper(_mockPageService.Object, _mockAccessControlService.Object, optionsWrapper));
+            new WikiPagePermissionHelper(_mockPageService.Object, _mockAccessControlService.Object, _mockUserService.Object, optionsWrapper));
 
         // Setup default HTTP context
         var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor());

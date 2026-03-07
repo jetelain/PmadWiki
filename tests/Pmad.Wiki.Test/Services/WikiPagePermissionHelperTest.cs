@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using Moq;
+using Pmad.Wiki.Models;
 using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki.Test.Services;
@@ -8,6 +9,7 @@ public class WikiPagePermissionHelperTest
 {
     private readonly Mock<IWikiPageService> _mockPageService;
     private readonly Mock<IPageAccessControlService> _mockAccessControlService;
+    private readonly Mock<IWikiUserService> _mockUserService;
     private readonly WikiOptions _options;
     private readonly WikiPagePermissionHelper _helper;
 
@@ -15,6 +17,7 @@ public class WikiPagePermissionHelperTest
     {
         _mockPageService = new Mock<IWikiPageService>();
         _mockAccessControlService = new Mock<IPageAccessControlService>();
+        _mockUserService = new Mock<IWikiUserService>();
 
         _options = new WikiOptions
         {
@@ -30,6 +33,7 @@ public class WikiPagePermissionHelperTest
         _helper = new WikiPagePermissionHelper(
             _mockPageService.Object,
             _mockAccessControlService.Object,
+            _mockUserService.Object,
             optionsWrapper);
     }
 
@@ -1035,6 +1039,132 @@ public class WikiPagePermissionHelperTest
         // Act & Assert - CanEdit
         var canEdit = await _helper.CanEdit(mockUser, "TestPage", CancellationToken.None);
         Assert.False(canEdit);
+    }
+
+    #endregion
+
+    #region GetPagePermissionSummaryAsync Tests
+
+    [Fact]
+    public async Task GetPagePermissionSummaryAsync_WithPageLevelPermissionsDisabled_ReturnsIsEnabledFalse()
+    {
+        // Arrange
+        _options.UsePageLevelPermissions = false;
+
+        // Act
+        var result = await _helper.GetPagePermissionSummaryAsync("TestPage", CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsEnabled);
+        Assert.Null(result.EffectiveRule);
+        _mockAccessControlService.Verify(x => x.GetMatchingRuleAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _mockUserService.Verify(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetPagePermissionSummaryAsync_WithNoMatchingRule_ReturnsIsEnabledTrueAndNoEffectiveRule()
+    {
+        // Arrange
+        _options.UsePageLevelPermissions = true;
+
+        _mockAccessControlService
+            .Setup(x => x.GetMatchingRuleAsync("docs/guide", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PageAccessRule?)null);
+
+        // Act
+        var result = await _helper.GetPagePermissionSummaryAsync("docs/guide", CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsEnabled);
+        Assert.Null(result.EffectiveRule);
+        _mockUserService.Verify(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetPagePermissionSummaryAsync_WithMatchingRule_ReturnsEffectiveRule()
+    {
+        // Arrange
+        _options.UsePageLevelPermissions = true;
+
+        _mockAccessControlService
+            .Setup(x => x.GetMatchingRuleAsync("admin/settings", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageAccessRule("admin/**", new[] { "admin" }, new[] { "admin" }, 1));
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Enumerable.Empty<IWikiUserGroup>());
+
+        // Act
+        var result = await _helper.GetPagePermissionSummaryAsync("admin/settings", CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsEnabled);
+        Assert.NotNull(result.EffectiveRule);
+        Assert.Equal("admin/**", result.EffectiveRule.Pattern);
+        Assert.Equal(1, result.EffectiveRule.Order);
+        Assert.Single(result.EffectiveRule.ReadGroups);
+        Assert.Equal("admin", result.EffectiveRule.ReadGroups[0].Name);
+        Assert.Single(result.EffectiveRule.WriteGroups);
+        Assert.Equal("admin", result.EffectiveRule.WriteGroups[0].Name);
+    }
+
+    [Fact]
+    public async Task GetPagePermissionSummaryAsync_WithMatchingRule_ResolvesGroupLabelsFromUserService()
+    {
+        // Arrange
+        _options.UsePageLevelPermissions = true;
+
+        _mockAccessControlService
+            .Setup(x => x.GetMatchingRuleAsync("docs/guide", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageAccessRule("docs/**", new[] { "editors", "viewers" }, new[] { "editors" }, 1));
+
+        var editorsGroup = new Mock<IWikiUserGroup>();
+        editorsGroup.Setup(x => x.Name).Returns("editors");
+        editorsGroup.Setup(x => x.Label).Returns("Editors");
+        editorsGroup.Setup(x => x.Description).Returns("Can edit pages");
+        editorsGroup.Setup(x => x.Color).Returns(WikiColor.Primary);
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { editorsGroup.Object });
+
+        // Act
+        var result = await _helper.GetPagePermissionSummaryAsync("docs/guide", CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsEnabled);
+        Assert.NotNull(result.EffectiveRule);
+        Assert.Equal(2, result.EffectiveRule.ReadGroups.Count);
+        var editorsReadGroup = result.EffectiveRule.ReadGroups.First(g => g.Name == "editors");
+        Assert.Equal("Editors", editorsReadGroup.Label);
+        Assert.Equal("Can edit pages", editorsReadGroup.Description);
+        var viewersReadGroup = result.EffectiveRule.ReadGroups.First(g => g.Name == "viewers");
+        Assert.Null(viewersReadGroup.Label);
+        Assert.Single(result.EffectiveRule.WriteGroups);
+        Assert.Equal("Editors", result.EffectiveRule.WriteGroups[0].Label);
+    }
+
+    [Fact]
+    public async Task GetPagePermissionSummaryAsync_PassesCancellationTokenToServices()
+    {
+        // Arrange
+        _options.UsePageLevelPermissions = true;
+        var cancellationToken = new CancellationToken();
+
+        _mockAccessControlService
+            .Setup(x => x.GetMatchingRuleAsync("admin/settings", cancellationToken))
+            .ReturnsAsync(new PageAccessRule("admin/**", new[] { "admin" }, new[] { "admin" }, 1));
+
+        _mockUserService
+            .Setup(x => x.GetAllWikiGroupsAsync(cancellationToken))
+            .ReturnsAsync(Enumerable.Empty<IWikiUserGroup>());
+
+        // Act
+        await _helper.GetPagePermissionSummaryAsync("admin/settings", cancellationToken);
+
+        // Assert
+        _mockAccessControlService.Verify(x => x.GetMatchingRuleAsync("admin/settings", cancellationToken), Times.Once);
+        _mockUserService.Verify(x => x.GetAllWikiGroupsAsync(cancellationToken), Times.Once);
     }
 
     #endregion

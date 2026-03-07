@@ -300,8 +300,20 @@
   <data name="Ordered List" xml:space="preserve">
     <value>Liste ordonnée</value>
   </data>
+  <data name="Page Access Control" xml:space="preserve">
+    <value>Contrôle d'accès à la page</value>
+  </data>
   <data name="Page Access Control Rules" xml:space="preserve">
     <value>Règles d'accès aux pages</value>
+  </data>
+  <data name="Page-level permissions are disabled." xml:space="preserve">
+    <value>Les autorisations au niveau des pages sont désactivées.</value>
+  </data>
+  <data name="No rule matches this page. All users have access." xml:space="preserve">
+    <value>Aucune règle ne correspond à cette page. Tous les utilisateurs ont accès.</value>
+  </data>
+  <data name="Matched Rule" xml:space="preserve">
+    <value>Règle appliquée</value>
   </data>
   <data name="Page-level permissions are currently disabled. Set &lt;code&gt;UsePageLevelPermissions = true&lt;/code&gt; in WikiOptions to enable this feature." xml:space="preserve">
     <value>Les autorisations au niveau des pages sont actuellement désactivées. Définissez &lt;code&gt;UsePageLevelPermissions = true&lt;/code&gt; dans WikiOptions pour activer cette fonctionnalité.</value>

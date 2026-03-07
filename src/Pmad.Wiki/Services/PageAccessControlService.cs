@@ -37,30 +37,28 @@ public class PageAccessControlService : IPageAccessControlService
             return new PageAccessPermissions { CanRead = true, CanEdit = true };
         }
 
-        var rules = await GetRulesAsync(cancellationToken);
+        var rule = await GetMatchingRuleAsync(pageName, cancellationToken);
 
-        // Sort rules by order (lower first)
-        var sortedRules = rules.OrderBy(r => r.Order).ToList();
-
-        // Find the first matching rule
-        foreach (var rule in sortedRules)
+        if (rule == null)
         {
-            if (rule.Matches(pageName))
-            {
-                var canRead = rule.ReadGroups.Length == 0 || rule.ReadGroups.Intersect(userGroups, StringComparer.OrdinalIgnoreCase).Any();
-                var canEdit = rule.WriteGroups.Length == 0 || rule.WriteGroups.Intersect(userGroups, StringComparer.OrdinalIgnoreCase).Any();
-
-                return new PageAccessPermissions
-                {
-                    CanRead = canRead,
-                    CanEdit = canEdit,
-                    MatchedPattern = rule.Pattern
-                };
-            }
+            return new PageAccessPermissions { CanRead = true, CanEdit = true };
         }
 
-        // No rule matched - default to allow all
-        return new PageAccessPermissions { CanRead = true, CanEdit = true };
+        var canRead = rule.ReadGroups.Length == 0 || rule.ReadGroups.Intersect(userGroups, StringComparer.OrdinalIgnoreCase).Any();
+        var canEdit = rule.WriteGroups.Length == 0 || rule.WriteGroups.Intersect(userGroups, StringComparer.OrdinalIgnoreCase).Any();
+
+        return new PageAccessPermissions
+        {
+            CanRead = canRead,
+            CanEdit = canEdit,
+            MatchedPattern = rule.Pattern
+        };
+    }
+
+    public async Task<PageAccessRule?> GetMatchingRuleAsync(string pageName, CancellationToken cancellationToken = default)
+    {
+        var rules = await GetRulesAsync(cancellationToken);
+        return rules.OrderBy(r => r.Order).FirstOrDefault(r => r.Matches(pageName));
     }
 
     public async Task<List<PageAccessRule>> GetRulesAsync(CancellationToken cancellationToken = default)
