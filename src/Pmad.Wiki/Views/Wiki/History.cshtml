@@ -25,6 +25,57 @@
     </div>
 }
 
+@if (Model.PermissionSummary != null)
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-shield-lock"></i> @Localizer["Page Access Control"]
+                </h6>
+                @if (Model.PermissionSummary.IsEnabled)
+                {
+                    <a asp-controller="WikiAdmin" asp-action="EditAccessControl" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i> @Localizer["Edit Rules"]
+                    </a>
+                }
+            </div>
+            @if (!Model.PermissionSummary.IsEnabled)
+            {
+                <span class="text-muted">@Localizer["Page-level permissions are disabled."]</span>
+            }
+            else if (Model.PermissionSummary.EffectiveRule == null)
+            {
+                <span class="text-muted">@Localizer["No rule matches this page. All users have access."]</span>
+            }
+            else
+            {
+                var rule = Model.PermissionSummary.EffectiveRule;
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>@Localizer["Matched Rule"]</th>
+                            <th>@Localizer["Read Groups"]</th>
+                            <th>@Localizer["Write Groups"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>@rule.Pattern</code></td>
+                            <td>
+                                @await Html.PartialAsync("_AccessGroups", rule.ReadGroups)
+                            </td>
+                            <td>
+                                @await Html.PartialAsync("_AccessGroups", rule.WriteGroups)
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+}
+
     @if (Model.Entries.Any())
     {
         <div class="mb-3">

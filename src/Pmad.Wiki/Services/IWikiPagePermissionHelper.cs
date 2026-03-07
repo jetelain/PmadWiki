@@ -1,4 +1,6 @@
-﻿namespace Pmad.Wiki.Services;
+﻿using Pmad.Wiki.Models;
+
+namespace Pmad.Wiki.Services;
 
 /// <summary>
 /// Defines the contract for evaluating page-level permissions for a given wiki user.
@@ -40,5 +42,15 @@ public interface IWikiPagePermissionHelper
     /// <param name="cancellationToken">Token to cancel the async operation.</param>
     /// <returns><c>true</c> if the user can edit the page; otherwise, <c>false</c>.</returns>
     ValueTask<bool> CanEdit(IWikiUserWithPermissions? wikiUser, string pageName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a summary of the effective page-level permission rule for the given page.
+    /// Only meaningful for admin users; returns a model describing whether permissions are enabled
+    /// and which rule (if any) matches the page.
+    /// </summary>
+    /// <param name="pageName">The name of the page to inspect.</param>
+    /// <param name="cancellationToken">Token to cancel the async operation.</param>
+    /// <returns>A <see cref="WikiPagePermissionSummaryViewModel"/> describing the effective rule.</returns>
+    Task<WikiPagePermissionSummaryViewModel> GetPagePermissionSummaryAsync(string pageName, CancellationToken cancellationToken = default);
 
 }
