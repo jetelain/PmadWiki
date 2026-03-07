@@ -795,7 +795,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         input.disabled = parent ? !parent.checked : false;
                     }
                 } else if (input.dataset.fmType === 'number') {
-                    input.value = value ? String(value) : '';
+                    let numericValue = null;
+                    if (value !== undefined && value !== null && value !== '') {
+                        const parsed = typeof value === 'number' ? value : parseInt(value, 10);
+                        numericValue = !isNaN(parsed) ? parsed : null;
+                    }
+                    input.value = numericValue !== null && numericValue !== 0 ? String(numericValue) : '';
                 } else {
                     input.value = value || '';
                 }
