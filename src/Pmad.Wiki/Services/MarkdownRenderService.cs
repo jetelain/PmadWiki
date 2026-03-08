@@ -1,6 +1,8 @@
 ﻿using System.Collections.Concurrent;
+using System.Text;
 using Markdig;
 using Markdig.Parsers;
+using Markdig.Renderers;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Microsoft.AspNetCore.Routing;
@@ -31,6 +33,65 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
         ProcessWikiLinks(document, currentPageName ?? string.Empty, culture);
 
         return Markdown.ToHtml(document, pipeline);
+    }
+
+    public string ToHtmlSlideShow(string markdown, string? culture = null, string? currentPageName = null)
+    {
+        var pipeline = GetOrCreatePipeline(culture);
+
+        var document = MarkdownParser.Parse(markdown, pipeline);
+
+        ProcessWikiLinks(document, currentPageName ?? string.Empty, culture);
+
+        var sb = new StringBuilder();
+
+        RenderSlideShow(pipeline, document, sb);
+
+        return sb.ToString();
+    }
+
+    private static void RenderSlideShow(MarkdownPipeline pipeline, MarkdownDocument document, StringBuilder sb)
+    {
+        using (var writer = new StringWriter(sb))
+        {
+            var renderer = new HtmlRenderer(writer);
+            pipeline.Setup(renderer);
+
+            sb.AppendLine("<div class=\"reveal\"><div class=\"slides\">");
+
+            var slideBlocks = new List<Block>();
+            foreach (var block in document)
+            {
+                if (block is ThematicBreakBlock)
+                {
+                    AppendSlide(sb, slideBlocks, renderer);
+                    slideBlocks.Clear();
+                }
+                else if (!(block is LinkReferenceDefinitionGroup))
+                {
+                    slideBlocks.Add(block);
+                }
+            }
+
+            AppendSlide(sb, slideBlocks, renderer);
+
+            sb.AppendLine("</div></div>");
+        }
+    }
+
+    private static void AppendSlide(StringBuilder sb, List<Block> blocks, HtmlRenderer renderer)
+    {
+        if (blocks.Count == 0)
+        {
+            return;
+        }
+
+        sb.Append("<section>");
+        foreach (var block in blocks)
+        {
+            renderer.Render(block);
+        }
+        sb.AppendLine("</section>");
     }
 
     private void ProcessWikiLinks(Markdig.Syntax.MarkdownDocument document, string currentPageName, string? culture)

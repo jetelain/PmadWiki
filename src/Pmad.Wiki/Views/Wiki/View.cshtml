@@ -57,9 +57,21 @@
         </div>
     </div>
 
-    <div class="wiki-content">
-        @Html.Raw(Model.HtmlContent)
-    </div>
+    @if (Model.IsSlideShow)
+    {
+        <div class="wiki-slideshow-wrapper">
+            @Html.Raw(Model.HtmlContent)
+            <button class="wiki-slideshow-fullscreen-btn" id="slideshow-fullscreen-btn" title="@Localizer["Full Screen"]">
+                <i class="bi bi-fullscreen"></i>
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="wiki-content">
+            @Html.Raw(Model.HtmlContent)
+        </div>
+    }
 
     @if (Model.SubPages.Any())
     {
@@ -91,4 +103,39 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/lib/pmad-wiki/css/style.css" />
+    @if (Model.IsSlideShow)
+    {
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/@(Model.SlideShowTheme).css" />
+    }
+}
+
+@section Scripts {
+    @if (Model.IsSlideShow)
+    {
+        <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+        <script>
+            Reveal.initialize({ embedded: true, hash: true });
+
+            (function () {
+                var btn = document.getElementById('slideshow-fullscreen-btn');
+                var wrapper = document.querySelector('.wiki-slideshow-wrapper');
+
+                btn.addEventListener('click', function () {
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else {
+                        wrapper.requestFullscreen();
+                    }
+                });
+
+                document.addEventListener('fullscreenchange', function () {
+                    btn.innerHTML = document.fullscreenElement
+                        ? '<i class="bi bi-fullscreen-exit"></i>'
+                        : '<i class="bi bi-fullscreen"></i>';
+                    Reveal.layout();
+                });
+            })();
+        </script>
+    }
 }
