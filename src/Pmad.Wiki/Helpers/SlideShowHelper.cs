@@ -8,7 +8,7 @@ internal static class SlideShowHelper
     private static readonly HashSet<string> SlideShowThemesSet =
         new(SlideShowThemesList, StringComparer.OrdinalIgnoreCase);
 
-    internal static string DefaultTheme = "black";
+    internal const string DefaultTheme = "black";
 
     public static string GetValidTheme(string? theme)
     {

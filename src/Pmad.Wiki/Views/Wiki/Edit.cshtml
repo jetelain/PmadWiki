@@ -1,6 +1,10 @@
 @model Pmad.Wiki.Models.WikiPageEditViewModel
+@using Microsoft.AspNetCore.Localization
 @{
     ViewData["Title"] = Model.IsNew ? Localizer["Create: {0}", Model.PageName] : Localizer["Edit: {0}", Model.PageName];
+
+    var requestCultureFeature = Context.Features.Get<IRequestCultureFeature>();
+    var currentUICulture = requestCultureFeature?.RequestCulture.UICulture ?? System.Globalization.CultureInfo.InvariantCulture;
 }
 
 <div class="wiki-edit">
@@ -196,7 +200,7 @@
                                 <option value="">@Localizer["Default"]</option>
                                 @foreach (var option in field.Options ?? [])
                                 {
-                                    <option value="@option">@(char.ToUpper(option[0]) + option[1..])</option>
+                                    <option value="@option">@currentUICulture.TextInfo.ToTitleCase(option)</option>
                                 }
                             </select>
                         }
