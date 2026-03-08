@@ -4,7 +4,8 @@ public enum WikiFrontMatterFieldType
 {
     Text,
     Number,
-    Checkbox
+    Checkbox,
+    Select
 }
 
 public class WikiFrontMatterField
@@ -22,4 +23,9 @@ public class WikiFrontMatterField
     /// for this field to be enabled.
     /// </summary>
     public string? DependsOn { get; set; }
+
+    /// <summary>
+    /// List of allowed values for a <see cref="WikiFrontMatterFieldType.Select"/> field.
+    /// </summary>
+    public IReadOnlyList<string>? Options { get; set; }
 }

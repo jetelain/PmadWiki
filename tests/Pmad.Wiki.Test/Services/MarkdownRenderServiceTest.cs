@@ -969,4 +969,248 @@ var code = ""sample"";
     }
 
     #endregion
+
+    #region ToHtmlSlideShow Tests
+
+    [Fact]
+    public void ToHtmlSlideShow_AlwaysHasRevealWrapper()
+    {
+        // Arrange
+        var markdown = "# Hello";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Contains("<div class=\"reveal\"><div class=\"slides\">", html);
+        Assert.Contains("</div></div>", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithEmptyContent_ProducesWrapperWithoutSections()
+    {
+        // Arrange
+        var markdown = "";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Contains("<div class=\"reveal\"><div class=\"slides\">", html);
+        Assert.DoesNotContain("<section>", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithNoSeparators_WrapsSingleSection()
+    {
+        // Arrange
+        var markdown = "# Hello\n\nContent of the slide.";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Equal(1, CountOccurrences(html, "<section>"));
+        Assert.Contains("Hello", html);
+        Assert.Contains("Content of the slide.", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithSeparator_CreatesTwoSections()
+    {
+        // Arrange
+        var markdown = "# Slide 1\n\n---\n\n# Slide 2";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Equal(2, CountOccurrences(html, "<section>"));
+        Assert.Contains("Slide 1", html);
+        Assert.Contains("Slide 2", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithMultipleSeparators_CreatesCorrectNumberOfSections()
+    {
+        // Arrange
+        var markdown = "Slide 1\n\n---\n\nSlide 2\n\n---\n\nSlide 3";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Equal(3, CountOccurrences(html, "<section>"));
+        Assert.Contains("Slide 1", html);
+        Assert.Contains("Slide 2", html);
+        Assert.Contains("Slide 3", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithLeadingSeparator_SkipsEmptyFirstSection()
+    {
+        // Arrange
+        var markdown = "---\n\n# Only Slide";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Equal(1, CountOccurrences(html, "<section>"));
+        Assert.Contains("Only Slide", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithTrailingSeparator_SkipsEmptyLastSection()
+    {
+        // Arrange
+        var markdown = "# Only Slide\n\n---";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Equal(1, CountOccurrences(html, "<section>"));
+        Assert.Contains("Only Slide", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithConsecutiveSeparators_SkipsEmptySections()
+    {
+        // Arrange
+        var markdown = "Slide 1\n\n---\n\n---\n\nSlide 2";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Equal(2, CountOccurrences(html, "<section>"));
+        Assert.Contains("Slide 1", html);
+        Assert.Contains("Slide 2", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_ContentIsRenderedAsHtml()
+    {
+        // Arrange
+        var markdown = "# Title\n\nThis is **bold** and *italic* text.";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Contains("<h1", html);
+        Assert.Contains("Title", html);
+        Assert.Contains("<strong>bold</strong>", html);
+        Assert.Contains("<em>italic</em>", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_SlidesContentIsWrappedInSections()
+    {
+        // Arrange
+        var markdown = "# Slide 1\n\n---\n\n# Slide 2";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        // Each slide section must be opened and closed
+        Assert.Equal(CountOccurrences(html, "<section>"), CountOccurrences(html, "</section>"));
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithWikiLinks_ConvertsLinks()
+    {
+        // Arrange
+        var markdown = "[Page](test.md)";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown, null, "home");
+
+        // Assert
+        Assert.Contains("/wiki/view/test", html);
+        Assert.Contains(">Page</a>", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithCulture_AppliesCultureToLinks()
+    {
+        // Arrange
+        var markdown = "[Page](test.md)";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown, "fr", "home");
+
+        // Assert
+        Assert.Contains("/wiki/view/test?culture=fr", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithCurrentPageName_ResolvesRelativeLinks()
+    {
+        // Arrange
+        var markdown = "[Settings](settings.md)";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown, null, "docs/admin/intro");
+
+        // Assert
+        Assert.Contains("/wiki/view/docs/admin/settings", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithImageLink_ConvertsToMediaRoute()
+    {
+        // Arrange
+        var markdown = "![Image](image.png)";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Contains("/wiki/media/image.png", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithExternalLink_DoesNotConvert()
+    {
+        // Arrange
+        var markdown = "[External](https://example.com)";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Contains("https://example.com", html);
+        Assert.DoesNotContain("/wiki/view/", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithHtmlTag_EscapesHtml()
+    {
+        // Arrange
+        var markdown = "Slide with <script>alert('XSS')</script>";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.DoesNotContain("<script>", html);
+        Assert.Contains("&lt;script&gt;", html);
+    }
+
+    #endregion
+
+    private static int CountOccurrences(string source, string value)
+    {
+        int count = 0;
+        int index = 0;
+        while ((index = source.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += value.Length;
+        }
+        return count;
+    }
 }

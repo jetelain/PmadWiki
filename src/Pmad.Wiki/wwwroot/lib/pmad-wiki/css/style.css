@@ -140,3 +140,43 @@ a:hover .template-card .card-title {
     font-size: 3rem;
     color: #dc3545;
 }
+
+/* Slide show */
+.wiki-slideshow-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+}
+
+    .wiki-slideshow-wrapper .reveal {
+        height: 100%;
+    }
+
+    .wiki-slideshow-wrapper:fullscreen {
+        aspect-ratio: unset;
+        height: 100%;
+    }
+
+    .wiki-slideshow-wrapper:hover .wiki-slideshow-fullscreen-btn,
+    .wiki-slideshow-wrapper:fullscreen .wiki-slideshow-fullscreen-btn {
+        opacity: 1;
+    }
+
+.wiki-slideshow-fullscreen-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+    .wiki-slideshow-fullscreen-btn:hover {
+        background: rgba(0, 0, 0, 0.7);
+    }

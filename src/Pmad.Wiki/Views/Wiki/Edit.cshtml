@@ -1,6 +1,10 @@
 @model Pmad.Wiki.Models.WikiPageEditViewModel
+@using Microsoft.AspNetCore.Localization
 @{
     ViewData["Title"] = Model.IsNew ? Localizer["Create: {0}", Model.PageName] : Localizer["Edit: {0}", Model.PageName];
+
+    var requestCultureFeature = Context.Features.Get<IRequestCultureFeature>();
+    var currentUICulture = requestCultureFeature?.RequestCulture.UICulture ?? System.Globalization.CultureInfo.InvariantCulture;
 }
 
 <div class="wiki-edit">
@@ -186,6 +190,19 @@
                             <label for="fm-@field.Key" class="form-label">@field.Label</label>
                             <input type="number" class="form-control" id="fm-@field.Key"
                                    data-fm-key="@field.Key" data-fm-type="number" step="1" />
+                        }
+                        else if (field.Type == WikiFrontMatterFieldType.Select)
+                        {
+                            <label for="fm-@field.Key" class="form-label">@field.Label</label>
+                            <select class="form-select" id="fm-@field.Key"
+                                    data-fm-key="@field.Key" data-fm-type="select"
+                                    data-fm-depends-on="@field.DependsOn">
+                                <option value="">@Localizer["Default"]</option>
+                                @foreach (var option in field.Options ?? [])
+                                {
+                                    <option value="@option">@currentUICulture.TextInfo.ToTitleCase(option)</option>
+                                }
+                            </select>
                         }
                         else
                         {

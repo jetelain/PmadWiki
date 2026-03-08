@@ -805,8 +805,8 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var model = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
 
-        Assert.Equal(4, model.FrontMatterFields.Count);
-        Assert.Equal(["title", "sortOrder", "showSubPages", "subPagesRecursive"],
+        Assert.Equal(6, model.FrontMatterFields.Count);
+        Assert.Equal(["title", "sortOrder", "slideShow", "slideShowTheme", "showSubPages", "subPagesRecursive"],
             model.FrontMatterFields.Select(f => f.Key));
     }
 
@@ -1845,8 +1845,8 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var viewModel = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
 
-        Assert.Equal(4, viewModel.FrontMatterFields.Count);
-        Assert.Equal(["title", "sortOrder", "showSubPages", "subPagesRecursive"],
+        Assert.Equal(6, viewModel.FrontMatterFields.Count);
+        Assert.Equal(["title", "sortOrder", "slideShow", "slideShowTheme", "showSubPages", "subPagesRecursive"],
             viewModel.FrontMatterFields.Select(f => f.Key));
     }
 
@@ -1926,8 +1926,8 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var viewModel = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
 
-        Assert.Equal(4, viewModel.FrontMatterFields.Count);
-        Assert.Equal(["title", "sortOrder", "showSubPages", "subPagesRecursive"],
+        Assert.Equal(6, viewModel.FrontMatterFields.Count);
+        Assert.Equal(["title", "sortOrder", "slideShow", "slideShowTheme", "showSubPages", "subPagesRecursive"],
             viewModel.FrontMatterFields.Select(f => f.Key));
     }
 
@@ -1965,8 +1965,8 @@ public class WikiController_EditTests : WikiControllerTestBase
         // Assert
         var viewModel = Assert.IsType<WikiPageEditViewModel>(Assert.IsType<ViewResult>(result).Model);
 
-        Assert.Equal(4, viewModel.FrontMatterFields.Count);
-        Assert.Equal(["title", "sortOrder", "showSubPages", "subPagesRecursive"],
+        Assert.Equal(6, viewModel.FrontMatterFields.Count);
+        Assert.Equal(["title", "sortOrder", "slideShow", "slideShowTheme", "showSubPages", "subPagesRecursive"],
             viewModel.FrontMatterFields.Select(f => f.Key));
     }
 

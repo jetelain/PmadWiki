@@ -779,7 +779,13 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!parentInput) return;
             parentInput.addEventListener('change', function () {
                 input.disabled = !this.checked;
-                if (!this.checked) input.checked = false;
+                if (!this.checked) {
+                    if (input.type === 'checkbox') {
+                        input.checked = false;
+                    } else {
+                        input.value = '';
+                    }
+                }
             });
         });
 
@@ -803,6 +809,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     input.value = numericValue !== null && numericValue !== 0 ? String(numericValue) : '';
                 } else {
                     input.value = value || '';
+                }
+                if (input.dataset.fmType !== 'checkbox' && input.dataset.fmDependsOn) {
+                    const parent = document.querySelector(`[data-fm-key="${input.dataset.fmDependsOn}"]`);
+                    input.disabled = parent ? !parent.checked : false;
                 }
             });
         });
