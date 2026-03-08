@@ -128,12 +128,77 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
+        let revealInstance = null;
+        let revealCssLoaded = false;
+        let revealJsLoaded = false;
+        let currentRevealTheme = null;
+
+        function ensureRevealCss() {
+            if (revealCssLoaded) return;
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css';
+            document.head.appendChild(link);
+            revealCssLoaded = true;
+        }
+
+        function ensureRevealThemeCss(theme) {
+            if (currentRevealTheme === theme) return;
+            const oldLink = document.getElementById('reveal-preview-theme-css');
+            if (oldLink) {
+                oldLink.remove();
+            }
+            const link = document.createElement('link');
+            link.id = 'reveal-preview-theme-css';
+            link.rel = 'stylesheet';
+            link.href = `https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/${theme}.css`;
+            document.head.appendChild(link);
+            currentRevealTheme = theme;
+        }
+
+        async function ensureRevealJs() {
+            if (revealJsLoaded) return;
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+            revealJsLoaded = true;
+        }
+
+        async function initSlideshowPreview() {
+            if (revealInstance) {
+                revealInstance.destroy();
+                revealInstance = null;
+            }
+            const revealEl = previewContent.querySelector('.reveal');
+            if (!revealEl) {
+                previewContent.classList.remove('wiki-slideshow-wrapper');
+                previewContainer.style.overflowY = '';
+                return;
+            }
+            previewContent.classList.add('wiki-slideshow-wrapper');
+            previewContainer.style.overflowY = 'hidden';
+            ensureRevealCss();
+            ensureRevealThemeCss(revealEl.dataset.theme || 'black');
+            await ensureRevealJs();
+            revealInstance = new Reveal(revealEl, { embedded: true });
+            await revealInstance.initialize();
+        }
+
         async function updatePreview() {
             if (!isPreviewMode) return;
 
             const markdown = textarea.value;
 
             if (!markdown.trim()) {
+                if (revealInstance) {
+                    revealInstance.destroy();
+                    revealInstance = null;
+                }
+                previewContent.classList.remove('wiki-slideshow-wrapper');
                 const emptyMessage = document.createElement('p');
                 emptyMessage.className = 'text-muted';
                 emptyMessage.textContent = config.labels.noContentToPreview;
@@ -169,11 +234,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const html = await response.text();
                 previewContent.innerHTML = html;
+                // Make element visible before slideshow init so reveal.js can measure dimensions
+                previewLoading.classList.add("d-none");
+                previewContent.classList.remove("d-none");
+                try {
+                    await initSlideshowPreview();
+                } catch (slideError) {
+                    console.error('Error initializing slideshow preview:', slideError);
+                    previewContent.classList.remove('wiki-slideshow-wrapper');
+                    previewContainer.style.overflowY = '';
+                }
             } catch (error) {
                 console.error('Error rendering preview:', error);
+                if (revealInstance) {
+                    revealInstance.destroy();
+                    revealInstance = null;
+                }
+                previewContent.classList.remove('wiki-slideshow-wrapper');
+                previewContainer.style.overflowY = '';
                 previewContent.innerHTML = '';
                 previewContent.appendChild(createAlert(config.labels.failedToRenderPreview));
-            } finally {
                 previewLoading.classList.add("d-none");
                 previewContent.classList.remove("d-none");
             }

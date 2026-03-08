@@ -559,7 +559,19 @@ namespace Pmad.Wiki.Controllers
                 return Content(string.Empty);
             }
 
-            var html = _markdownRenderService.ToHtml(request.Markdown, request.Culture, request.PageName);
+            var (frontMatter, contentWithoutFrontMatter) = WikiFrontMatterParser.Parse<WikiPageFrontMatter>(request.Markdown);
+
+            string html;
+            if (frontMatter.SlideShow)
+            {
+                var theme = SlideShowHelper.GetValidTheme(frontMatter.SlideShowTheme);
+                html = _markdownRenderService.ToHtmlSlideShow(contentWithoutFrontMatter, request.Culture, request.PageName, theme);
+            }
+            else
+            {
+                html = _markdownRenderService.ToHtml(request.Markdown, request.Culture, request.PageName);
+            }
+
             return Content(html);
         }
 

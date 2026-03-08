@@ -20,6 +20,7 @@ public interface IMarkdownRenderService
     /// <param name="markdown">The Markdown source text to render.</param>
     /// <param name="culture">The optional culture code used for localisation of the rendered output.</param>
     /// <param name="currentPageName">The optional name of the current page, used to resolve relative links.</param>
+    /// <param name="theme">The optional reveal.js theme name. When provided, it is embedded as a <c>data-theme</c> attribute on the root element.</param>
     /// <returns>The rendered HTML string wrapping slides in a reveal.js-compatible structure.</returns>
-    string ToHtmlSlideShow(string markdown, string? culture = null, string? currentPageName = null);
+    string ToHtmlSlideShow(string markdown, string? culture = null, string? currentPageName = null, string? theme = null);
 }
