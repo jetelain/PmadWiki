@@ -278,10 +278,12 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/lib/pmad-wiki/css/style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
 }
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
     <script type="application/json" id="wiki-edit-config">
         @Json.Serialize(new {
             apiEndpoints = new {

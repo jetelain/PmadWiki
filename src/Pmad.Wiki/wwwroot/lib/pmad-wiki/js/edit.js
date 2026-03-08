@@ -130,8 +130,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         let revealInstance = null;
-        let revealCssLoaded = false;
-        let revealJsLoaded = false;
         let currentRevealTheme = null;
 
         function destroySlideshow() {
@@ -141,15 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             previewContent.classList.remove('wiki-slideshow-wrapper');
             previewContainer.style.overflowY = '';
-        }
-
-        function ensureRevealCss() {
-            if (revealCssLoaded) return;
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css';
-            document.head.appendChild(link);
-            revealCssLoaded = true;
         }
 
         function ensureRevealThemeCss(theme) {
@@ -166,18 +155,6 @@ document.addEventListener('DOMContentLoaded', function () {
             currentRevealTheme = theme;
         }
 
-        async function ensureRevealJs() {
-            if (revealJsLoaded) return;
-            await new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js';
-                script.onload = resolve;
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-            revealJsLoaded = true;
-        }
-
         async function initSlideshowPreview() {
             destroySlideshow();
             const revealEl = previewContent.querySelector('.reveal');
@@ -186,9 +163,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             previewContent.classList.add('wiki-slideshow-wrapper');
             previewContainer.style.overflowY = 'hidden';
-            ensureRevealCss();
             ensureRevealThemeCss(revealEl.dataset.theme || 'black');
-            await ensureRevealJs();
             revealInstance = new Reveal(revealEl, { embedded: true });
             await revealInstance.initialize();
         }
