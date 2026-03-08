@@ -59,7 +59,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
             var renderer = new HtmlRenderer(writer);
             pipeline.Setup(renderer);
 
-            if (theme != null)
+            if (!string.IsNullOrEmpty(theme))
             {
                 sb.AppendLine($"<div class=\"reveal\" data-theme=\"{HttpUtility.HtmlAttributeEncode(SlideShowHelper.GetValidTheme(theme))}\"><div class=\"slides\">");
             }
