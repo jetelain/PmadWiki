@@ -10,7 +10,7 @@ internal static class SlideShowHelper
 
     internal const string DefaultTheme = "black";
 
-    public static string GetValidTheme(string? theme)
+    internal static string GetValidTheme(string? theme)
     {
         return SlideShowThemesSet.Contains(theme ?? string.Empty)
                     ? theme!.ToLowerInvariant()
