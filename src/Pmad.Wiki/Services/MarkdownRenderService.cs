@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
+using System.Web;
 using Markdig;
 using Markdig.Parsers;
 using Markdig.Renderers;
@@ -14,6 +15,7 @@ namespace Pmad.Wiki.Services;
 public sealed class MarkdownRenderService : IMarkdownRenderService
 {
     private readonly ConcurrentDictionary<string, MarkdownPipeline> _pipelineCache = new();
+    private readonly ConcurrentDictionary<string, MarkdownPipeline> _slideshowPipelineCache = new();
     private readonly WikiOptions _options;
     private readonly LinkGenerator _linkGenerator;
 
@@ -35,9 +37,9 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
         return Markdown.ToHtml(document, pipeline);
     }
 
-    public string ToHtmlSlideShow(string markdown, string? culture = null, string? currentPageName = null)
+    public string ToHtmlSlideShow(string markdown, string? culture = null, string? currentPageName = null, string? theme = null)
     {
-        var pipeline = GetOrCreatePipeline(culture);
+        var pipeline = GetOrCreateSlideshowPipeline(culture);
 
         var document = MarkdownParser.Parse(markdown, pipeline);
 
@@ -45,19 +47,26 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
 
         var sb = new StringBuilder();
 
-        RenderSlideShow(pipeline, document, sb);
+        RenderSlideShow(pipeline, document, sb, theme);
 
         return sb.ToString();
     }
 
-    private static void RenderSlideShow(MarkdownPipeline pipeline, MarkdownDocument document, StringBuilder sb)
+    private static void RenderSlideShow(MarkdownPipeline pipeline, MarkdownDocument document, StringBuilder sb, string? theme = null)
     {
         using (var writer = new StringWriter(sb))
         {
             var renderer = new HtmlRenderer(writer);
             pipeline.Setup(renderer);
 
-            sb.AppendLine("<div class=\"reveal\"><div class=\"slides\">");
+            if (!string.IsNullOrEmpty(theme))
+            {
+                sb.AppendLine($"<div class=\"reveal\" data-theme=\"{HttpUtility.HtmlAttributeEncode(SlideShowHelper.GetValidTheme(theme))}\"><div class=\"slides\">");
+            }
+            else
+            {
+                sb.AppendLine("<div class=\"reveal\"><div class=\"slides\">");
+            }
 
             var slideBlocks = new List<Block>();
             foreach (var block in document)
@@ -211,13 +220,33 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
     private MarkdownPipeline GetOrCreatePipeline(string? culture)
     {
         var cacheKey = culture ?? _options.NeutralMarkdownPageCulture;
-        
+
         return _pipelineCache.GetOrAdd(cacheKey, key =>
         {
             var builder = new MarkdownPipelineBuilder()
                 .UseAdvancedExtensions()
                 .UseYamlFrontMatter()
                 .UseBootstrap()
+                .DisableHtml();
+
+            if (_options.ConfigureMarkdown != null)
+            {
+                _options.ConfigureMarkdown(builder);
+            }
+
+            return builder.Build();
+        });
+    }
+
+    private MarkdownPipeline GetOrCreateSlideshowPipeline(string? culture)
+    {
+        var cacheKey = culture ?? _options.NeutralMarkdownPageCulture;
+
+        return _slideshowPipelineCache.GetOrAdd(cacheKey, key =>
+        {
+            var builder = new MarkdownPipelineBuilder()
+                .UseAdvancedExtensions()
+                .UseYamlFrontMatter()
                 .DisableHtml();
 
             if (_options.ConfigureMarkdown != null)

@@ -1,4 +1,4 @@
-using Markdig;
+ï»¿using Markdig;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
@@ -912,7 +912,7 @@ var code = ""sample"";
     public void ToHtml_WithSpecialCharacters_PreservesCharacters()
     {
         // Arrange
-        var markdown = "Special chars: & < > \" ' © ® ™";
+        var markdown = "Special chars: & < > \" ' Â© Â® â„¢";
 
         // Act
         var html = _service.ToHtml(markdown);
@@ -1198,6 +1198,78 @@ var code = ""sample"";
         // Assert
         Assert.DoesNotContain("<script>", html);
         Assert.Contains("&lt;script&gt;", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithTheme_AddsDataThemeAttribute()
+    {
+        // Arrange
+        var markdown = "# Hello";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown, theme: "white");
+
+        // Assert
+        Assert.Contains("data-theme=\"white\"", html);
+        Assert.Contains("<div class=\"reveal\" data-theme=\"white\">", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithNullTheme_NoDataThemeAttribute()
+    {
+        // Arrange
+        var markdown = "# Hello";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown, theme: null);
+
+        // Assert
+        Assert.DoesNotContain("data-theme", html);
+        Assert.Contains("<div class=\"reveal\"><div class=\"slides\">", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithTheme_StillCreatesCorrectSlides()
+    {
+        // Arrange
+        var markdown = "# Slide 1\n\n---\n\n# Slide 2";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown, theme: "black");
+
+        // Assert
+        Assert.Contains("data-theme=\"black\"", html);
+        Assert.Equal(2, CountOccurrences(html, "<section>"));
+        Assert.Contains("Slide 1", html);
+        Assert.Contains("Slide 2", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithTable_DoesNotApplyBootstrapTableClass()
+    {
+        // Arrange
+        var markdown = "| Header | Value |\n|--------|-------|\n| Cell | Data |";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert - slideshow pipeline omits UseBootstrap(), so no Bootstrap table class
+        Assert.Contains("<table>", html);
+        Assert.DoesNotContain("class=\"table\"", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithBlockquote_DoesNotApplyBootstrapBlockquoteClass()
+    {
+        // Arrange
+        var markdown = "> A quote";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert - no Bootstrap blockquote class in slideshow pipeline
+        Assert.Contains("<blockquote>", html);
+        Assert.DoesNotContain("class=\"blockquote\"", html);
     }
 
     #endregion

@@ -464,4 +464,210 @@ var code = ""example"";
 
     #endregion
 
+    #region SlideShow PreviewMarkdown Tests
+
+    [Fact]
+    public async Task PreviewMarkdown_WithSlideShowFrontMatter_CallsToHtmlSlideShow()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var markdown = "---\nslideShow: true\n---\n# Slide 1\n\n---\n\n# Slide 2";
+        var contentWithoutFrontMatter = "# Slide 1\n\n---\n\n# Slide 2";
+        var expectedHtml = "<div class=\"reveal\" data-theme=\"black\"><div class=\"slides\"><section><h1>Slide 1</h1></section><section><h1>Slide 2</h1></section></div></div>";
+
+        var request = new PreviewMarkdownRequest
+        {
+            Markdown = markdown,
+            PageName = "TestPage",
+            Culture = null
+        };
+
+        _mockMarkdownRenderService
+            .Setup(x => x.ToHtmlSlideShow(contentWithoutFrontMatter, null, "TestPage", "black"))
+            .Returns(expectedHtml);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.PreviewMarkdown(request, CancellationToken.None);
+
+        // Assert
+        var contentResult = Assert.IsType<ContentResult>(result);
+        Assert.Equal(expectedHtml, contentResult.Content);
+
+        _mockMarkdownRenderService.Verify(
+            x => x.ToHtmlSlideShow(contentWithoutFrontMatter, null, "TestPage", "black"),
+            Times.Once);
+        _mockMarkdownRenderService.Verify(
+            x => x.ToHtml(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task PreviewMarkdown_WithSlideShowAndCustomTheme_PassesThemeToRenderer()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var markdown = "---\nslideShow: true\nslideShowTheme: moon\n---\n# Slide";
+        var contentWithoutFrontMatter = "# Slide";
+        var expectedHtml = "<div class=\"reveal\" data-theme=\"moon\">...</div>";
+
+        var request = new PreviewMarkdownRequest
+        {
+            Markdown = markdown,
+            PageName = "TestPage",
+            Culture = null
+        };
+
+        _mockMarkdownRenderService
+            .Setup(x => x.ToHtmlSlideShow(contentWithoutFrontMatter, null, "TestPage", "moon"))
+            .Returns(expectedHtml);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.PreviewMarkdown(request, CancellationToken.None);
+
+        // Assert
+        var contentResult = Assert.IsType<ContentResult>(result);
+        Assert.Equal(expectedHtml, contentResult.Content);
+
+        _mockMarkdownRenderService.Verify(
+            x => x.ToHtmlSlideShow(contentWithoutFrontMatter, null, "TestPage", "moon"),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task PreviewMarkdown_WithSlideShowAndInvalidTheme_UsesDefaultTheme()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var markdown = "---\nslideShow: true\nslideShowTheme: notAValidTheme\n---\n# Slide";
+        var contentWithoutFrontMatter = "# Slide";
+        var expectedHtml = "<div class=\"reveal\" data-theme=\"black\">...</div>";
+
+        var request = new PreviewMarkdownRequest
+        {
+            Markdown = markdown,
+            PageName = "TestPage",
+            Culture = null
+        };
+
+        _mockMarkdownRenderService
+            .Setup(x => x.ToHtmlSlideShow(contentWithoutFrontMatter, null, "TestPage", "black"))
+            .Returns(expectedHtml);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.PreviewMarkdown(request, CancellationToken.None);
+
+        // Assert
+        _mockMarkdownRenderService.Verify(
+            x => x.ToHtmlSlideShow(contentWithoutFrontMatter, null, "TestPage", "black"),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task PreviewMarkdown_WithSlideShowAndCulture_PassesCultureToRenderer()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var markdown = "---\nslideShow: true\n---\n# Slide";
+        var contentWithoutFrontMatter = "# Slide";
+        var expectedHtml = "<div class=\"reveal\" data-theme=\"black\">...</div>";
+
+        var request = new PreviewMarkdownRequest
+        {
+            Markdown = markdown,
+            PageName = "TestPage",
+            Culture = "fr"
+        };
+
+        _mockMarkdownRenderService
+            .Setup(x => x.ToHtmlSlideShow(contentWithoutFrontMatter, "fr", "TestPage", "black"))
+            .Returns(expectedHtml);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.PreviewMarkdown(request, CancellationToken.None);
+
+        // Assert
+        _mockMarkdownRenderService.Verify(
+            x => x.ToHtmlSlideShow(contentWithoutFrontMatter, "fr", "TestPage", "black"),
+            Times.Once);
+        _mockMarkdownRenderService.Verify(
+            x => x.ToHtml(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task PreviewMarkdown_WithNonSlideShowFrontMatter_CallsToHtml()
+    {
+        // Arrange
+        var mockUser = new Mock<IWikiUserWithPermissions>();
+        mockUser.Setup(x => x.CanEdit).Returns(true);
+
+        _mockUserService
+            .Setup(x => x.GetWikiUserAsync(It.IsAny<ClaimsPrincipal>(), false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockUser.Object);
+
+        var markdown = "---\ntitle: My Page\n---\n# Content";
+        var expectedHtml = "<h1>Content</h1>";
+
+        var request = new PreviewMarkdownRequest
+        {
+            Markdown = markdown,
+            PageName = "TestPage",
+            Culture = null
+        };
+
+        _mockMarkdownRenderService
+            .Setup(x => x.ToHtml(markdown, null, "TestPage"))
+            .Returns(expectedHtml);
+
+        SetupUserContext("testuser");
+
+        // Act
+        var result = await _controller.PreviewMarkdown(request, CancellationToken.None);
+
+        // Assert
+        var contentResult = Assert.IsType<ContentResult>(result);
+        Assert.Equal(expectedHtml, contentResult.Content);
+
+        _mockMarkdownRenderService.Verify(
+            x => x.ToHtml(markdown, null, "TestPage"),
+            Times.Once);
+        _mockMarkdownRenderService.Verify(
+            x => x.ToHtmlSlideShow(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()),
+            Times.Never);
+    }
+
+    #endregion
+
 }
