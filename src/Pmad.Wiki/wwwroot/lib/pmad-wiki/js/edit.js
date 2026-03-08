@@ -120,6 +120,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 toggleEditingButtons(true);
                 updatePreview();
             } else {
+                destroySlideshow();
                 textarea.classList.remove("d-none");
                 previewContainer.classList.add("d-none");
                 previewButtonText.textContent = config.labels.preview;
@@ -132,6 +133,15 @@ document.addEventListener('DOMContentLoaded', function () {
         let revealCssLoaded = false;
         let revealJsLoaded = false;
         let currentRevealTheme = null;
+
+        function destroySlideshow() {
+            if (revealInstance) {
+                revealInstance.destroy();
+                revealInstance = null;
+            }
+            previewContent.classList.remove('wiki-slideshow-wrapper');
+            previewContainer.style.overflowY = '';
+        }
 
         function ensureRevealCss() {
             if (revealCssLoaded) return;
@@ -169,14 +179,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         async function initSlideshowPreview() {
-            if (revealInstance) {
-                revealInstance.destroy();
-                revealInstance = null;
-            }
+            destroySlideshow();
             const revealEl = previewContent.querySelector('.reveal');
             if (!revealEl) {
-                previewContent.classList.remove('wiki-slideshow-wrapper');
-                previewContainer.style.overflowY = '';
                 return;
             }
             previewContent.classList.add('wiki-slideshow-wrapper');
@@ -194,12 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const markdown = textarea.value;
 
             if (!markdown.trim()) {
-                if (revealInstance) {
-                    revealInstance.destroy();
-                    revealInstance = null;
-                }
-                previewContent.classList.remove('wiki-slideshow-wrapper');
-                previewContainer.style.overflowY = '';
+                destroySlideshow();
                 const emptyMessage = document.createElement('p');
                 emptyMessage.className = 'text-muted';
                 emptyMessage.textContent = config.labels.noContentToPreview;
@@ -242,17 +242,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     await initSlideshowPreview();
                 } catch (slideError) {
                     console.error('Error initializing slideshow preview:', slideError);
-                    previewContent.classList.remove('wiki-slideshow-wrapper');
-                    previewContainer.style.overflowY = '';
+                    destroySlideshow();
                 }
             } catch (error) {
                 console.error('Error rendering preview:', error);
-                if (revealInstance) {
-                    revealInstance.destroy();
-                    revealInstance = null;
-                }
-                previewContent.classList.remove('wiki-slideshow-wrapper');
-                previewContainer.style.overflowY = '';
+                destroySlideshow();
                 previewContent.innerHTML = '';
                 previewContent.appendChild(createAlert(config.labels.failedToRenderPreview));
                 previewLoading.classList.add("d-none");
