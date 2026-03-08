@@ -199,6 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     revealInstance = null;
                 }
                 previewContent.classList.remove('wiki-slideshow-wrapper');
+                previewContainer.style.overflowY = '';
                 const emptyMessage = document.createElement('p');
                 emptyMessage.className = 'text-muted';
                 emptyMessage.textContent = config.labels.noContentToPreview;
