@@ -1,4 +1,4 @@
-using Markdig;
+ï»¿using Markdig;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
@@ -912,7 +912,7 @@ var code = ""sample"";
     public void ToHtml_WithSpecialCharacters_PreservesCharacters()
     {
         // Arrange
-        var markdown = "Special chars: & < > \" ' © ® ™";
+        var markdown = "Special chars: & < > \" ' Â© Â® â„¢";
 
         // Act
         var html = _service.ToHtml(markdown);
@@ -1253,7 +1253,7 @@ var code = ""sample"";
         // Act
         var html = _service.ToHtmlSlideShow(markdown);
 
-        // Assert — slideshow pipeline omits UseBootstrap(), so no Bootstrap table class
+        // Assert - slideshow pipeline omits UseBootstrap(), so no Bootstrap table class
         Assert.Contains("<table>", html);
         Assert.DoesNotContain("class=\"table\"", html);
     }
@@ -1267,7 +1267,7 @@ var code = ""sample"";
         // Act
         var html = _service.ToHtmlSlideShow(markdown);
 
-        // Assert — no Bootstrap blockquote class in slideshow pipeline
+        // Assert - no Bootstrap blockquote class in slideshow pipeline
         Assert.Contains("<blockquote>", html);
         Assert.DoesNotContain("class=\"blockquote\"", html);
     }
