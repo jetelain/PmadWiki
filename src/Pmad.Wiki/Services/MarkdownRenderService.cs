@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
+using System.Web;
 using Markdig;
 using Markdig.Parsers;
 using Markdig.Renderers;
@@ -60,7 +61,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
 
             if (theme != null)
             {
-                sb.AppendLine($"<div class=\"reveal\" data-theme=\"{theme}\"><div class=\"slides\">");
+                sb.AppendLine($"<div class=\"reveal\" data-theme=\"{HttpUtility.HtmlAttributeEncode(SlideShowHelper.GetValidTheme(theme))}\"><div class=\"slides\">");
             }
             else
             {
