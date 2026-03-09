@@ -106,7 +106,7 @@
     @if (Model.IsSlideShow)
     {
         <link rel="stylesheet" href="~/lib/revealjs/reveal.css" />
-        <link rel="stylesheet" href="@Model.SlideShowThemeUri" />
+        <link rel="stylesheet" href="@Url.Content("~")@Model.SlideShowThemeUri" />
     }
 } 
 

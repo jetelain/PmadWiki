@@ -33,7 +33,8 @@ document.addEventListener('DOMContentLoaded', function () {
             quote: 'Quote',
             linkText: 'link text',
             altText: 'alt text'
-        }
+        },
+        basePath: ''
     };
 
     const configElement = document.getElementById('wiki-edit-config');
@@ -163,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             previewContent.classList.add('wiki-slideshow-wrapper');
             previewContainer.style.overflowY = 'hidden';
-            ensureRevealThemeCss(revealEl.dataset.theme || '/lib/revealjs/theme/black.css');
+            ensureRevealThemeCss(config.basePath + (revealEl.dataset.theme || '/lib/revealjs/theme/black.css'));
             revealInstance = new Reveal(revealEl, { embedded: true });
             await revealInstance.initialize();
         }
