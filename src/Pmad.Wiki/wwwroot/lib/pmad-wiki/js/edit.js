@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             previewContent.classList.add('wiki-slideshow-wrapper');
             previewContainer.style.overflowY = 'hidden';
-            ensureRevealThemeCss(config.basePath + (revealEl.dataset.theme || '/lib/revealjs/theme/black.css'));
+            ensureRevealThemeCss(config.basePath.replace(/\/+$/, '') + (revealEl.dataset.theme || '/lib/revealjs/theme/black.css'));
             revealInstance = new Reveal(revealEl, { embedded: true });
             await revealInstance.initialize();
         }

@@ -188,7 +188,7 @@ public class SlideShowHelperTest
     [InlineData("beige",     "/lib/revealjs/theme/beige.css")]
     [InlineData("solarized", "/lib/revealjs/theme/solarized.css")]
     [InlineData("dracula",   "/lib/revealjs/theme/dracula.css")]
-    public void GetThemeUri_WithBuiltInTheme_ReturnsCdnUri(string theme, string expected)
+    public void GetThemeUri_WithBuiltInTheme_ReturnsLibUri(string theme, string expected)
     {
         var result = SlideShowHelper.GetThemeUri(theme);
 
@@ -196,7 +196,7 @@ public class SlideShowHelperTest
     }
 
     [Fact]
-    public void GetThemeUri_WithAllBuiltInThemes_ReturnsCdnUris()
+    public void GetThemeUri_WithAllBuiltInThemes_ReturnsLibUris()
     {
         foreach (var theme in SlideShowHelper.SlideShowThemesList)
         {
