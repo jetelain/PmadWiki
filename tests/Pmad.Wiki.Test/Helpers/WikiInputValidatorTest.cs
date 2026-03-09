@@ -735,7 +735,94 @@ public class WikiInputValidatorTest
     }
 
     #endregion
+
+    #region IsValidThemeName Tests
+
+    [Theory]
+    [InlineData("black")]
+    [InlineData("white")]
+    [InlineData("my-theme")]
+    [InlineData("custom_theme")]
+    [InlineData("theme123")]
+    [InlineData("my-custom-Theme_1")]
+    [InlineData("a")]
+    [InlineData("123")]
+    [InlineData("A")]
+    [InlineData("CamelCase")]
+    [InlineData("kebab-case")]
+    [InlineData("snake_case")]
+    public void IsValidThemeName_WithValidName_ReturnsTrue(string name)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidThemeName(name);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsValidThemeName_AllBuiltInThemesAreValid()
+    {
+        foreach (var theme in SlideShowHelper.SlideShowThemesList)
+        {
+            Assert.True(WikiInputValidator.IsValidThemeName(theme), $"Expected '{theme}' to be valid.");
+        }
+    }
+
+    [Fact]
+    public void IsValidThemeName_WithNull_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidThemeName(null!);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsValidThemeName_WithEmptyString_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidThemeName("");
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsValidThemeName_WithWhitespace_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidThemeName("   ");
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Theory]
+    [InlineData("my theme")]      // space
+    [InlineData("my.theme")]      // dot — unsafe in CSS filename
+    [InlineData("my/theme")]      // slash — path injection
+    [InlineData("my\\theme")]     // backslash
+    [InlineData("my@theme")]      // at sign
+    [InlineData("my#theme")]      // hash
+    [InlineData("my!theme")]      // exclamation
+    [InlineData("../etc/passwd")] // path traversal
+    [InlineData("<script>")]      // HTML injection
+    [InlineData("\"quoted\"")]    // double quotes
+    [InlineData("theme?query")]   // query string character
+    [InlineData("theme&other")]   // ampersand
+    [InlineData("theme=value")]   // equals sign
+    [InlineData("theme;end")]     // semicolon
+    [InlineData("theme:colon")]   // colon
+    public void IsValidThemeName_WithInvalidCharacters_ReturnsFalse(string name)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidThemeName(name);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    #endregion
 }
-
-
-

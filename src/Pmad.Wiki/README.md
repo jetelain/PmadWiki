@@ -72,6 +72,7 @@ This project uses the following third-party libraries:
 - **Markdig** - Markdown processor for .NET
 - **Bootstrap 5** - Front-end framework
 - **Bootstrap Icons** - Icon library
+- **Reveal.js** - Slide show presentation framework
 - **Mergely** - Text diff and merge library (Mozilla Public License Version 1.1)
   - Copyright © Jamie Peabody
   - Used for displaying side-by-side diff comparisons

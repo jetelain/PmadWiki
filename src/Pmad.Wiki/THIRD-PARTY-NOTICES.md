@@ -45,6 +45,15 @@ Mergely itself utilizes:
 
 ---
 
+## Reveal.js
+
+**License:** MIT License
+**Copyright:** © 2011-2024 Hakim El Hattab, http://hakim.se, and reveal.js contributors
+**Website:** https://revealjs.com/
+**Used for:** Slide show presentation framework
+
+---
+
 ## License Summaries
 
 ### Mozilla Public License Version 1.1 (MPL-1.1)
@@ -72,4 +81,4 @@ A permissive free software license that permits reuse with minimal restrictions.
 
 For questions about licensing or third-party software usage, please refer to the individual license files in the project or contact the project maintainers.
 
-Last updated: 2024
+Last updated: 2026-03-09

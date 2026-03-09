@@ -61,7 +61,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
 
             if (!string.IsNullOrEmpty(theme))
             {
-                sb.AppendLine($"<div class=\"reveal\" data-theme=\"{HttpUtility.HtmlAttributeEncode(SlideShowHelper.GetValidTheme(theme))}\"><div class=\"slides\">");
+                sb.AppendLine($"<div class=\"reveal\" data-theme=\"{HttpUtility.HtmlAttributeEncode(SlideShowHelper.GetThemeUri(theme))}\"><div class=\"slides\">");
             }
             else
             {
