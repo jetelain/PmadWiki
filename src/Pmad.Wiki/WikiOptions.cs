@@ -59,7 +59,7 @@ public class WikiOptions
 
     /// <summary>
     /// Gets or sets the list of allowed reveal.js themes for slide show pages.
-    /// Built-in reveal.js themes are served from the CDN. Custom themes must be placed under <c>/css/reveal-themes/</c>.
+    /// Built-in reveal.js themes are served from <c>/lib/revealjs/theme/</c>. Custom themes must be placed under <c>/css/revealjs-custom-theme/</c>.
     /// </summary>
     public List<string> SlideShowAllowedThemes { get; set; } = [.. Helpers.SlideShowHelper.SlideShowThemesList];
 

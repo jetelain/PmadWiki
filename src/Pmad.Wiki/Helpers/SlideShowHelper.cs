@@ -39,9 +39,9 @@ internal static class SlideShowHelper
             theme = DefaultTheme;
         }
 
-        var encodedTheme = Uri.EscapeDataString(theme);
+        var encodedTheme = Uri.EscapeDataString(theme.ToLowerInvariant());
         return SlideShowThemesSet.Contains(theme)
             ? $"{RevealJsRoot}/theme/{encodedTheme}.css"
-            : $"/css/reveal-themes/{encodedTheme}.css";
+            : $"/css/revealjs-custom-theme/{encodedTheme}.css";
     }
 }

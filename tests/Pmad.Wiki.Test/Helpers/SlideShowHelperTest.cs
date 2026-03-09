@@ -208,10 +208,10 @@ public class SlideShowHelperTest
     }
 
     [Theory]
-    [InlineData("my-theme",      "/css/reveal-themes/my-theme.css")]
-    [InlineData("custom_theme",  "/css/reveal-themes/custom_theme.css")]
-    [InlineData("corporate",     "/css/reveal-themes/corporate.css")]
-    [InlineData("dark2",         "/css/reveal-themes/dark2.css")]
+    [InlineData("my-theme",      "/css/revealjs-custom-theme/my-theme.css")]
+    [InlineData("custom_theme",  "/css/revealjs-custom-theme/custom_theme.css")]
+    [InlineData("corporate",     "/css/revealjs-custom-theme/corporate.css")]
+    [InlineData("dark2",         "/css/revealjs-custom-theme/dark2.css")]
     public void GetThemeUri_WithCustomTheme_ReturnsLocalUri(string theme, string expected)
     {
         var result = SlideShowHelper.GetThemeUri(theme);
