@@ -53,6 +53,17 @@ public class WikiOptions
     public string? Layout { get; set; }
 
     /// <summary>
+    /// Gets or sets the default reveal.js theme for slide show pages.
+    /// </summary>
+    public string SlideShowDefaultTheme { get; set; } = Helpers.SlideShowHelper.DefaultTheme;
+
+    /// <summary>
+    /// Gets or sets the list of allowed reveal.js themes for slide show pages.
+    /// Built-in reveal.js themes are served from <c>/lib/revealjs/theme/</c>. Custom themes must be placed under <c>/css/revealjs-custom-theme/</c>.
+    /// </summary>
+    public List<string> SlideShowAllowedThemes { get; set; } = [.. Helpers.SlideShowHelper.SlideShowThemesList];
+
+    /// <summary>
     /// Gets or sets the list of allowed file extensions for media.
     /// </summary>
     /// <remarks>This property defines which file types are permitted for media content. Extensions should include the leading period (e.g., ".jpg").</remarks>

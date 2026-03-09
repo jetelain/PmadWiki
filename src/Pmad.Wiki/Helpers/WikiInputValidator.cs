@@ -63,6 +63,12 @@ public static partial class WikiInputValidator
     private static partial Regex TemplateParameterNameRegex();
 
     /// <summary>
+    /// Slide show theme names: alphanumeric, hyphens and underscores only, safe for use as a CSS file name and URL path segment.
+    /// </summary>
+    [GeneratedRegex("^[a-zA-Z0-9_-]+$", RegexOptions.CultureInvariant)]
+    internal static partial Regex ThemeNameRegex();
+
+    /// <summary>
     /// Temporary media identifiers, which are a lowercase GUID without dashes, like "a3f1e2b4c5d67890e1f2a3b4c5d67890"
     /// </summary>
     /// <returns></returns>
@@ -184,5 +190,14 @@ public static partial class WikiInputValidator
         {
             throw new ArgumentException("Invalid temporary media ID.", nameof(tempMediaId));
         }
+    }
+
+    internal static bool IsValidThemeName(string themeName)
+    {
+        if (string.IsNullOrWhiteSpace(themeName))
+        {
+            return false;
+        }
+        return ThemeNameRegex().IsMatch(themeName);
     }
 }

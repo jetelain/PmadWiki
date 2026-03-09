@@ -1210,8 +1210,8 @@ var code = ""sample"";
         var html = _service.ToHtmlSlideShow(markdown, theme: "white");
 
         // Assert
-        Assert.Contains("data-theme=\"white\"", html);
-        Assert.Contains("<div class=\"reveal\" data-theme=\"white\">", html);
+        Assert.Contains("data-theme=\"/lib/revealjs/theme/white.css\"", html);
+        Assert.Contains("<div class=\"reveal\" data-theme=\"/lib/revealjs/theme/white.css\">", html);
     }
 
     [Fact]
@@ -1238,7 +1238,7 @@ var code = ""sample"";
         var html = _service.ToHtmlSlideShow(markdown, theme: "black");
 
         // Assert
-        Assert.Contains("data-theme=\"black\"", html);
+        Assert.Contains("data-theme=\"/lib/revealjs/theme/black.css\"", html);
         Assert.Equal(2, CountOccurrences(html, "<section>"));
         Assert.Contains("Slide 1", html);
         Assert.Contains("Slide 2", html);

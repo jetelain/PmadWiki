@@ -1,11 +1,11 @@
-# Third-Party Notices
+ï»¿# Third-Party Notices
 
 This file contains notices for third-party software included with or used by Pmad.Wiki.
 
 ## Mergely
 
 **License:** Mozilla Public License Version 1.1 (MPL-1.1)  
-**Copyright:** © Jamie Peabody  
+**Copyright:** Â© Jamie Peabody  
 **Website:** https://www.mergely.com/  
 **Used for:** Visual side-by-side diff comparison of wiki page revisions
 
@@ -21,7 +21,7 @@ Mergely itself utilizes:
 ## Markdig
 
 **License:** BSD 2-Clause License  
-**Copyright:** © 2016-present, Alexandre Mutel  
+**Copyright:** Â© 2016-present, Alexandre Mutel  
 **Website:** https://github.com/xoofx/markdig  
 **Used for:** Markdown parsing and rendering
 
@@ -30,7 +30,7 @@ Mergely itself utilizes:
 ## Bootstrap
 
 **License:** MIT License  
-**Copyright:** © 2011-2024 The Bootstrap Authors  
+**Copyright:** Â© 2011-2024 The Bootstrap Authors  
 **Website:** https://getbootstrap.com/  
 **Used for:** UI framework and styling
 
@@ -39,9 +39,18 @@ Mergely itself utilizes:
 ## Bootstrap Icons
 
 **License:** MIT License  
-**Copyright:** © 2019-2024 The Bootstrap Authors  
+**Copyright:** Â© 2019-2024 The Bootstrap Authors  
 **Website:** https://icons.getbootstrap.com/  
 **Used for:** Icon library
+
+---
+
+## Reveal.js
+
+**License:** MIT License
+**Copyright:** Â© 2011-2024 Hakim El Hattab, http://hakim.se, and reveal.js contributors
+**Website:** https://revealjs.com/
+**Used for:** Slide show presentation framework
 
 ---
 
@@ -72,4 +81,4 @@ A permissive free software license that permits reuse with minimal restrictions.
 
 For questions about licensing or third-party software usage, please refer to the individual license files in the project or contact the project maintainers.
 
-Last updated: 2024
+Last updated: 2026-03-09

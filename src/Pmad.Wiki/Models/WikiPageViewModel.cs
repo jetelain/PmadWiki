@@ -15,5 +15,5 @@ public class WikiPageViewModel
     public DateTimeOffset? LastModified { get; set; }
     public List<WikiSiteMapNode> SubPages { get; set; } = new();
     public bool IsSlideShow { get; set; }
-    public string SlideShowTheme { get; set; } = SlideShowHelper.DefaultTheme;
+    public string SlideShowThemeUri { get; set; } = SlideShowHelper.GetThemeUri(SlideShowHelper.DefaultTheme);
 }

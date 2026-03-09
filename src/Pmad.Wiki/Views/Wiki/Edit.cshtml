@@ -278,12 +278,12 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/lib/pmad-wiki/css/style.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+    <link rel="stylesheet" href="~/lib/revealjs/reveal.css" />
 }
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+    <script src="~/lib/revealjs/reveal.js"></script>
     <script type="application/json" id="wiki-edit-config">
         @Json.Serialize(new {
             apiEndpoints = new {
@@ -317,7 +317,8 @@
                 quote = Localizer.GetString("Quote").ToString(),
                 linkText = Localizer.GetString("link text").ToString(),
                 altText = Localizer.GetString("alt text").ToString()
-            }
+            },
+            basePath = Url.Content("~")
         })
     </script>
     <script src="~/lib/pmad-wiki/js/edit.js"></script>

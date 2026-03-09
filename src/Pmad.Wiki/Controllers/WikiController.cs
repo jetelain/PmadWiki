@@ -95,6 +95,8 @@ namespace Pmad.Wiki.Controllers
 
             var availableCultures = await _pageService.GetAvailableCulturesForPageAsync(id, cancellationToken);
 
+            var slideShowTheme = SlideShowHelper.GetValidTheme(page.FrontMatter.SlideShowTheme, _options);
+
             var viewModel = new WikiPageViewModel
             {
                 PageName = id,
@@ -108,7 +110,7 @@ namespace Pmad.Wiki.Controllers
                 LastModifiedBy = page.LastModifiedBy,
                 LastModified = page.LastModified,
                 IsSlideShow = page.FrontMatter.SlideShow,
-                SlideShowTheme = SlideShowHelper.GetValidTheme(page.FrontMatter.SlideShowTheme)
+                SlideShowThemeUri = SlideShowHelper.GetThemeUri(slideShowTheme)
             };
 
             if (page.FrontMatter.ShowSubPages)
@@ -477,7 +479,7 @@ namespace Pmad.Wiki.Controllers
                     new WikiFrontMatterField { Key = "title", Label = _localizer["Title"], HelpText = _localizer["Override the page title (leave empty to use the first H1 heading)."] },
                     new WikiFrontMatterField { Key = "sortOrder", Label = _localizer["Sort Order"], Type = WikiFrontMatterFieldType.Number, HelpText = _localizer["Order of this page among its siblings in the site map. Lower values appear first. Defaults to 0."] },
                     new WikiFrontMatterField { Key = "slideShow", Label = _localizer["Slide Show"], Type = WikiFrontMatterFieldType.Checkbox, HelpText = _localizer["Display the page content as a reveal.js slide show. Use --- to separate slides."] },
-                    new WikiFrontMatterField { Key = "slideShowTheme", Label = _localizer["Slide Show Theme"], Type = WikiFrontMatterFieldType.Select, Options = SlideShowHelper.SlideShowThemesList, DependsOn = "slideShow" },
+                    new WikiFrontMatterField { Key = "slideShowTheme", Label = _localizer["Slide Show Theme"], Type = WikiFrontMatterFieldType.Select, Options = _options.SlideShowAllowedThemes, DependsOn = "slideShow" },
                     new WikiFrontMatterField { Key = "showSubPages", Label = _localizer["Show sub-pages"], Type = WikiFrontMatterFieldType.Checkbox, HelpText = _localizer["Display a list of direct sub-pages below the page content."] },
                     new WikiFrontMatterField { Key = "subPagesRecursive", Label = _localizer["Sub-pages recursive"], Type = WikiFrontMatterFieldType.Checkbox, HelpText = _localizer["Include all descendants recursively. Has no effect when Show sub-pages is disabled."], DependsOn = "showSubPages" }
                 ]);
@@ -564,7 +566,7 @@ namespace Pmad.Wiki.Controllers
             string html;
             if (frontMatter.SlideShow)
             {
-                var theme = SlideShowHelper.GetValidTheme(frontMatter.SlideShowTheme);
+                var theme = SlideShowHelper.GetValidTheme(frontMatter.SlideShowTheme, _options);
                 html = _markdownRenderService.ToHtmlSlideShow(contentWithoutFrontMatter, request.Culture, request.PageName, theme);
             }
             else

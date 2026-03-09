@@ -33,7 +33,8 @@ document.addEventListener('DOMContentLoaded', function () {
             quote: 'Quote',
             linkText: 'link text',
             altText: 'alt text'
-        }
+        },
+        basePath: ''
     };
 
     const configElement = document.getElementById('wiki-edit-config');
@@ -141,8 +142,8 @@ document.addEventListener('DOMContentLoaded', function () {
             previewContainer.style.overflowY = '';
         }
 
-        function ensureRevealThemeCss(theme) {
-            if (currentRevealTheme === theme) return;
+        function ensureRevealThemeCss(themeUri) {
+            if (currentRevealTheme === themeUri) return;
             const oldLink = document.getElementById('reveal-preview-theme-css');
             if (oldLink) {
                 oldLink.remove();
@@ -150,9 +151,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const link = document.createElement('link');
             link.id = 'reveal-preview-theme-css';
             link.rel = 'stylesheet';
-            link.href = `https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/${theme}.css`;
+            link.href = themeUri;
             document.head.appendChild(link);
-            currentRevealTheme = theme;
+            currentRevealTheme = themeUri;
         }
 
         async function initSlideshowPreview() {
@@ -163,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             previewContent.classList.add('wiki-slideshow-wrapper');
             previewContainer.style.overflowY = 'hidden';
-            ensureRevealThemeCss(revealEl.dataset.theme || 'black');
+            ensureRevealThemeCss(config.basePath.replace(/\/+$/, '') + (revealEl.dataset.theme || '/lib/revealjs/theme/black.css'));
             revealInstance = new Reveal(revealEl, { embedded: true });
             await revealInstance.initialize();
         }

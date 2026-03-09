@@ -1,3 +1,4 @@
+using Pmad.Wiki;
 using Pmad.Wiki.Helpers;
 
 namespace Pmad.Wiki.Test.Helpers;
@@ -42,88 +43,196 @@ public class SlideShowHelperTest
 
     #endregion
 
-    #region GetValidTheme Tests
+    #region GetValidTheme_WithOptions Tests
+
+    private static WikiOptions DefaultOptions() => new();
+
+    private static WikiOptions OptionsWithAllowed(List<string> allowed, string defaultTheme = SlideShowHelper.DefaultTheme) =>
+        new() { SlideShowAllowedThemes = allowed, SlideShowDefaultTheme = defaultTheme };
 
     [Theory]
     [InlineData("black")]
     [InlineData("white")]
     [InlineData("league")]
-    [InlineData("beige")]
-    [InlineData("sky")]
-    [InlineData("night")]
-    [InlineData("serif")]
-    [InlineData("simple")]
-    [InlineData("solarized")]
-    [InlineData("blood")]
-    [InlineData("moon")]
     [InlineData("dracula")]
-    public void GetValidTheme_WithValidTheme_ReturnsTheme(string theme)
+    public void GetValidTheme_WithOptions_WithValidBuiltInTheme_ReturnsTheme(string theme)
     {
-        // Act
-        var result = SlideShowHelper.GetValidTheme(theme);
+        var result = SlideShowHelper.GetValidTheme(theme, DefaultOptions());
 
-        // Assert
         Assert.Equal(theme, result);
     }
 
     [Theory]
-    [InlineData("BLACK")]
-    [InlineData("White")]
-    [InlineData("League")]
-    [InlineData("DRACULA")]
-    [InlineData("Solarized")]
-    public void GetValidTheme_WithValidThemeInDifferentCase_ReturnsLowercase(string theme)
+    [InlineData("BLACK", "black")]
+    [InlineData("White", "white")]
+    [InlineData("DRACULA", "dracula")]
+    [InlineData("Solarized", "solarized")]
+    public void GetValidTheme_WithOptions_WithValidThemeInDifferentCase_ReturnsLowercase(string theme, string expected)
     {
-        // Act
-        var result = SlideShowHelper.GetValidTheme(theme);
+        var result = SlideShowHelper.GetValidTheme(theme, DefaultOptions());
 
-        // Assert
-        Assert.Equal(theme.ToLowerInvariant(), result);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
-    public void GetValidTheme_WithNull_ReturnsDefaultTheme()
+    public void GetValidTheme_WithOptions_WithThemeNotInAllowedList_ReturnsDefaultTheme()
     {
-        // Act
-        var result = SlideShowHelper.GetValidTheme(null);
+        var options = OptionsWithAllowed(["black", "white"], "white");
 
-        // Assert
+        var result = SlideShowHelper.GetValidTheme("blue", options);
+
+        Assert.Equal("white", result);
+    }
+
+    [Fact]
+    public void GetValidTheme_WithOptions_WithNull_ReturnsDefaultTheme()
+    {
+        var options = OptionsWithAllowed(["black", "white"], "white");
+
+        var result = SlideShowHelper.GetValidTheme(null, options);
+
+        Assert.Equal("white", result);
+    }
+
+    [Fact]
+    public void GetValidTheme_WithOptions_WithEmptyString_ReturnsDefaultTheme()
+    {
+        var options = OptionsWithAllowed(["black", "white"], "white");
+
+        var result = SlideShowHelper.GetValidTheme(string.Empty, options);
+
+        Assert.Equal("white", result);
+    }
+
+    [Fact]
+    public void GetValidTheme_WithOptions_WithCustomTheme_ReturnsCustomTheme()
+    {
+        var options = OptionsWithAllowed(["black", "my-theme"]);
+
+        var result = SlideShowHelper.GetValidTheme("my-theme", options);
+
+        Assert.Equal("my-theme", result);
+    }
+
+    [Fact]
+    public void GetValidTheme_WithOptions_WithCustomThemeDifferentCase_ReturnsLowercase()
+    {
+        var options = OptionsWithAllowed(["black", "my-theme"]);
+
+        var result = SlideShowHelper.GetValidTheme("MY-THEME", options);
+
+        Assert.Equal("my-theme", result);
+    }
+
+    [Fact]
+    public void GetValidTheme_WithOptions_WithRestrictedAllowedList_ReturnsAllowedDefault()
+    {
+        var options = OptionsWithAllowed(["moon", "sky"], "moon");
+
+        var result = SlideShowHelper.GetValidTheme("black", options);
+
+        Assert.Equal("moon", result);
+    }
+
+    [Fact]
+    public void GetValidTheme_WithOptions_WithInvalidThemeNameInAllowedList_FallsBackToDefault()
+    {
+        // "my theme" has a space — invalid name, should be skipped
+        var options = OptionsWithAllowed(["black", "my theme"], "black");
+
+        var result = SlideShowHelper.GetValidTheme("my theme", options);
+
+        Assert.Equal("black", result);
+    }
+
+    [Fact]
+    public void GetValidTheme_WithOptions_WithInvalidDefaultTheme_FallsBackToHardcodedDefault()
+    {
+        // both the requested theme and default are invalid names
+        var options = OptionsWithAllowed(["my theme"], "my theme");
+
+        var result = SlideShowHelper.GetValidTheme("other", options);
+
         Assert.Equal(SlideShowHelper.DefaultTheme, result);
     }
 
     [Fact]
-    public void GetValidTheme_WithEmptyString_ReturnsDefaultTheme()
+    public void GetValidTheme_WithOptions_WithEmptyAllowedList_FallsBackToHardcodedDefault()
     {
-        // Act
-        var result = SlideShowHelper.GetValidTheme(string.Empty);
+        var options = OptionsWithAllowed([], "black");
 
-        // Assert
+        var result = SlideShowHelper.GetValidTheme("black", options);
+
         Assert.Equal(SlideShowHelper.DefaultTheme, result);
     }
+
+    [Fact]
+    public void GetValidTheme_WithOptions_ReturnValueIsAlwaysLowercase()
+    {
+        var options = DefaultOptions();
+        foreach (var theme in SlideShowHelper.SlideShowThemesList)
+        {
+            var result = SlideShowHelper.GetValidTheme(theme.ToUpperInvariant(), options);
+            Assert.Equal(theme, result);
+        }
+    }
+
+    #endregion
+
+    #region GetThemeUri Tests
 
     [Theory]
-    [InlineData("unknown")]
-    [InlineData("invalid")]
-    [InlineData("bootstrap")]
-    [InlineData("dark")]
-    [InlineData("light")]
-    public void GetValidTheme_WithInvalidTheme_ReturnsDefaultTheme(string theme)
+    [InlineData("black",     "/lib/revealjs/theme/black.css")]
+    [InlineData("white",     "/lib/revealjs/theme/white.css")]
+    [InlineData("league",    "/lib/revealjs/theme/league.css")]
+    [InlineData("beige",     "/lib/revealjs/theme/beige.css")]
+    [InlineData("solarized", "/lib/revealjs/theme/solarized.css")]
+    [InlineData("dracula",   "/lib/revealjs/theme/dracula.css")]
+    public void GetThemeUri_WithBuiltInTheme_ReturnsLibUri(string theme, string expected)
     {
-        // Act
-        var result = SlideShowHelper.GetValidTheme(theme);
+        var result = SlideShowHelper.GetThemeUri(theme);
 
-        // Assert
-        Assert.Equal(SlideShowHelper.DefaultTheme, result);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
-    public void GetValidTheme_ReturnValueIsAlwaysLowercase()
+    public void GetThemeUri_WithAllBuiltInThemes_ReturnsLibUris()
     {
         foreach (var theme in SlideShowHelper.SlideShowThemesList)
         {
-            var result = SlideShowHelper.GetValidTheme(theme.ToUpperInvariant());
-            Assert.Equal(theme, result);
+            var result = SlideShowHelper.GetThemeUri(theme);
+
+            Assert.StartsWith("/lib/revealjs/theme/", result);
+            Assert.EndsWith($"{theme}.css", result);
         }
+    }
+
+    [Theory]
+    [InlineData("my-theme",      "/css/revealjs-custom-theme/my-theme.css")]
+    [InlineData("custom_theme",  "/css/revealjs-custom-theme/custom_theme.css")]
+    [InlineData("corporate",     "/css/revealjs-custom-theme/corporate.css")]
+    [InlineData("dark2",         "/css/revealjs-custom-theme/dark2.css")]
+    public void GetThemeUri_WithCustomTheme_ReturnsLocalUri(string theme, string expected)
+    {
+        var result = SlideShowHelper.GetThemeUri(theme);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("my theme")]    // space
+    [InlineData("my.theme")]    // dot
+    [InlineData("my/theme")]    // slash
+    [InlineData("../evil")]     // path traversal
+    [InlineData("<script>")]    // HTML injection
+    [InlineData("theme&other")] // ampersand
+    [InlineData("theme?x=1")]   // query string characters
+    public void GetThemeUri_WithInvalidThemeName_ReturnsDefaultThemeUri(string theme)
+    {
+        var result = SlideShowHelper.GetThemeUri(theme);
+
+        Assert.Equal("/lib/revealjs/theme/black.css", result);
     }
 
     #endregion
