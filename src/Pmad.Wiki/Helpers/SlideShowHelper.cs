@@ -10,8 +10,6 @@ internal static class SlideShowHelper
 
     internal const string DefaultTheme = "black";
 
-    internal const string RevealJsRoot = "/lib/revealjs";
-
     internal static string GetValidTheme(string? theme, WikiOptions options)
     {
         var allowed = options.SlideShowAllowedThemes;
@@ -41,7 +39,7 @@ internal static class SlideShowHelper
 
         var encodedTheme = Uri.EscapeDataString(theme.ToLowerInvariant());
         return SlideShowThemesSet.Contains(theme)
-            ? $"{RevealJsRoot}/theme/{encodedTheme}.css"
+            ? $"/lib/revealjs/theme/{encodedTheme}.css"
             : $"/css/revealjs-custom-theme/{encodedTheme}.css";
     }
 }

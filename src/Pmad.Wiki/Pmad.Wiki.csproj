@@ -46,8 +46,4 @@
 		<PackageReference Include="Pmad.Git.HttpServer" Version="0.1.111" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="wwwroot\lib\revealjs\" />
-	</ItemGroup>
-
 </Project>
