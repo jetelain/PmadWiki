@@ -1,4 +1,5 @@
 ﻿using Markdig;
+using Pmad.Wiki.Models;
 
 namespace Pmad.Wiki;
 
@@ -73,4 +74,9 @@ public class WikiOptions
         ".mp4", ".webm", ".ogg", 
         ".pdf"
     };
+
+    /// <summary>
+    /// Gets or sets the default configuration options for slideshow presentations using reveal.js.
+    /// </summary>
+    public RevealJsConfig SlideShowDefaultOptions { get; set; } = new RevealJsConfig();
 }

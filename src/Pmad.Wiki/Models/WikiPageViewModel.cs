@@ -16,4 +16,6 @@ public class WikiPageViewModel
     public List<WikiSiteMapNode> SubPages { get; set; } = new();
     public bool IsSlideShow { get; set; }
     public string SlideShowThemeUri { get; set; } = SlideShowHelper.GetThemeUri(SlideShowHelper.DefaultTheme);
+    public RevealJsConfig SlideShowConfig { get; set; } = new RevealJsConfig();
+
 }
