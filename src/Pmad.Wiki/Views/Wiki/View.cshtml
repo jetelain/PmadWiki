@@ -115,7 +115,7 @@
     {
         <script src="~/lib/revealjs/reveal.js"></script>
         <script>
-            Reveal.initialize({ embedded: true });
+            Reveal.initialize(@Json.Serialize(Model.SlideShowConfig));
 
             (function () {
                 var btn = document.getElementById('slideshow-fullscreen-btn');

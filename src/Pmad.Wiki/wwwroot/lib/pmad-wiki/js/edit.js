@@ -34,7 +34,8 @@ document.addEventListener('DOMContentLoaded', function () {
             linkText: 'link text',
             altText: 'alt text'
         },
-        basePath: ''
+        basePath: '',
+        slideShowConfig: { embedded: true, width: 1920, height: 1080 }
     };
 
     const configElement = document.getElementById('wiki-edit-config');
@@ -165,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function () {
             previewContent.classList.add('wiki-slideshow-wrapper');
             previewContainer.style.overflowY = 'hidden';
             ensureRevealThemeCss(config.basePath.replace(/\/+$/, '') + (revealEl.dataset.theme || '/lib/revealjs/theme/black.css'));
-            revealInstance = new Reveal(revealEl, { embedded: true });
+            revealInstance = new Reveal(revealEl, config.slideShowConfig);
             await revealInstance.initialize();
         }
 

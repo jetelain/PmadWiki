@@ -110,7 +110,8 @@ namespace Pmad.Wiki.Controllers
                 LastModifiedBy = page.LastModifiedBy,
                 LastModified = page.LastModified,
                 IsSlideShow = page.FrontMatter.SlideShow,
-                SlideShowThemeUri = SlideShowHelper.GetThemeUri(slideShowTheme)
+                SlideShowThemeUri = SlideShowHelper.GetThemeUri(slideShowTheme),
+                SlideShowConfig = _options.SlideShowDefaultOptions
             };
 
             if (page.FrontMatter.ShowSubPages)
@@ -452,7 +453,8 @@ namespace Pmad.Wiki.Controllers
                 CommitMessage = commitMessage,
                 Culture = culture,
                 IsNew = page == null,
-                OriginalContentHash = page?.ContentHash
+                OriginalContentHash = page?.ContentHash,
+                SlideShowConfig = _options.SlideShowDefaultOptions
             };
 
             GenerateFrontMatterFields(id, viewModel);
@@ -591,6 +593,8 @@ namespace Pmad.Wiki.Controllers
             {
                 ModelState.AddModelError(nameof(model.Culture), _localizer["Invalid culture identifier."]);
             }
+
+            model.SlideShowConfig = _options.SlideShowDefaultOptions;
 
             GenerateFrontMatterFields(model.PageName, model);
 

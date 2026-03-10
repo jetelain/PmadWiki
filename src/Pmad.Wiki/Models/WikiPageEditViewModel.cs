@@ -28,4 +28,6 @@ public class WikiPageEditViewModel
     /// any media files that are still referenced in the content will be moved to permanent storage.
     /// </summary>
     public string? TemporaryMediaIds { get; set; }
+
+    public RevealJsConfig SlideShowConfig { get; set; } = new RevealJsConfig();
 }
