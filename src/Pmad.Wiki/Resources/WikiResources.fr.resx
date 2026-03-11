@@ -642,4 +642,7 @@
   <data name="Display the page content as a reveal.js slide show. Use --- to separate slides." xml:space="preserve">
     <value>Afficher le contenu de la page sous forme de diaporama reveal.js. Utilisez --- pour séparer les diapositives.</value>
   </data>
+  <data name="This page is a template. It can be used to create a new page." xml:space="preserve">
+    <value>Cette page est un modèle. Elle peut être utilisée pour créer une nouvelle page.</value>
+  </data>
 </root>

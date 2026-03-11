@@ -1,3 +1,5 @@
+using Pmad.Wiki.Models;
+
 namespace Pmad.Wiki.Services;
 
 /// <summary>
@@ -22,4 +24,9 @@ public class WikiPageInfo
 
     /// <summary>Gets or sets the sort order of this page among its siblings in the site map.</summary>
     public int SortOrder { get; set; }
+
+    /// <summary>
+    /// Gets or sets the type of the page, which can affect how it is displayed in the site map and other UI elements.
+    /// </summary>
+    public WikiPageType Type { get; set; }
 }
