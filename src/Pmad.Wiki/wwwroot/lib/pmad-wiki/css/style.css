@@ -204,27 +204,13 @@ a:hover .template-card .card-title {
     display: none;
 }
 
+
 a.wiki-slideshow {
     border: var(--bs-border-width) solid var(--bs-secondary);
-    color: var(--bs-secondary);
-    background-color: transparent;
     padding: 0.25em 0.75em 0.25em 0.5em;
     display: inline-block;
     border-radius: var(--bs-border-radius-sm);
-    text-decoration: none;
-    line-height: 1.5;
-    vertical-align: middle;
-    transition: color .15s ease-in-out,
-                background-color .15s ease-in-out,
-                border-color .15s ease-in-out;
 }
-
-    a.wiki-slideshow:hover {
-        background-color: var(--bs-secondary);
-        border-color: var(--bs-secondary);
-        color: #fff;
-        text-decoration: none;
-    }
 
     a.wiki-slideshow::before {
         content: "\f3a9";
@@ -239,5 +225,5 @@ a.wiki-slideshow {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         margin-right: 0.5em;
+        color: var(--bs-secondary);
     }
-
