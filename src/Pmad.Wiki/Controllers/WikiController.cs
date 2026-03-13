@@ -564,7 +564,7 @@ namespace Pmad.Wiki.Controllers
                 return Content(string.Empty);
             }
 
-            var (frontMatter, contentWithoutFrontMatter) = WikiFrontMatterParser.Parse<WikiPageFrontMatter>(request.Markdown);
+            var (frontMatter, _) = WikiFrontMatterParser.Parse<WikiPageFrontMatter>(request.Markdown);
 
             string html;
             if (frontMatter.SlideShow)
