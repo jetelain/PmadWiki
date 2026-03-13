@@ -570,7 +570,7 @@ namespace Pmad.Wiki.Controllers
             if (frontMatter.SlideShow)
             {
                 var theme = SlideShowHelper.GetValidTheme(frontMatter.SlideShowTheme, _options);
-                html = _markdownRenderService.ToHtmlSlideShow(contentWithoutFrontMatter, request.Culture, request.PageName, theme);
+                html = _markdownRenderService.ToHtmlSlideShow(request.Markdown, request.Culture, request.PageName, theme);
             }
             else
             {

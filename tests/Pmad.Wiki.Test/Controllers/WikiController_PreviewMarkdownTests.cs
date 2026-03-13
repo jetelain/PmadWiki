@@ -478,7 +478,6 @@ var code = ""example"";
             .ReturnsAsync(mockUser.Object);
 
         var markdown = "---\nslideShow: true\n---\n# Slide 1\n\n---\n\n# Slide 2";
-        var contentWithoutFrontMatter = "# Slide 1\n\n---\n\n# Slide 2";
         var expectedHtml = "<div class=\"reveal\" data-theme=\"black\"><div class=\"slides\"><section><h1>Slide 1</h1></section><section><h1>Slide 2</h1></section></div></div>";
 
         var request = new PreviewMarkdownRequest
@@ -489,7 +488,7 @@ var code = ""example"";
         };
 
         _mockMarkdownRenderService
-            .Setup(x => x.ToHtmlSlideShow(contentWithoutFrontMatter, null, "TestPage", "black"))
+            .Setup(x => x.ToHtmlSlideShow(markdown, null, "TestPage", "black"))
             .Returns(expectedHtml);
 
         SetupUserContext("testuser");
@@ -502,7 +501,7 @@ var code = ""example"";
         Assert.Equal(expectedHtml, contentResult.Content);
 
         _mockMarkdownRenderService.Verify(
-            x => x.ToHtmlSlideShow(contentWithoutFrontMatter, null, "TestPage", "black"),
+            x => x.ToHtmlSlideShow(markdown, null, "TestPage", "black"),
             Times.Once);
         _mockMarkdownRenderService.Verify(
             x => x.ToHtml(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()),
@@ -521,7 +520,6 @@ var code = ""example"";
             .ReturnsAsync(mockUser.Object);
 
         var markdown = "---\nslideShow: true\nslideShowTheme: moon\n---\n# Slide";
-        var contentWithoutFrontMatter = "# Slide";
         var expectedHtml = "<div class=\"reveal\" data-theme=\"moon\">...</div>";
 
         var request = new PreviewMarkdownRequest
@@ -532,7 +530,7 @@ var code = ""example"";
         };
 
         _mockMarkdownRenderService
-            .Setup(x => x.ToHtmlSlideShow(contentWithoutFrontMatter, null, "TestPage", "moon"))
+            .Setup(x => x.ToHtmlSlideShow(markdown, null, "TestPage", "moon"))
             .Returns(expectedHtml);
 
         SetupUserContext("testuser");
@@ -545,7 +543,7 @@ var code = ""example"";
         Assert.Equal(expectedHtml, contentResult.Content);
 
         _mockMarkdownRenderService.Verify(
-            x => x.ToHtmlSlideShow(contentWithoutFrontMatter, null, "TestPage", "moon"),
+            x => x.ToHtmlSlideShow(markdown, null, "TestPage", "moon"),
             Times.Once);
     }
 
@@ -561,7 +559,6 @@ var code = ""example"";
             .ReturnsAsync(mockUser.Object);
 
         var markdown = "---\nslideShow: true\nslideShowTheme: notAValidTheme\n---\n# Slide";
-        var contentWithoutFrontMatter = "# Slide";
         var expectedHtml = "<div class=\"reveal\" data-theme=\"black\">...</div>";
 
         var request = new PreviewMarkdownRequest
@@ -572,7 +569,7 @@ var code = ""example"";
         };
 
         _mockMarkdownRenderService
-            .Setup(x => x.ToHtmlSlideShow(contentWithoutFrontMatter, null, "TestPage", "black"))
+            .Setup(x => x.ToHtmlSlideShow(markdown, null, "TestPage", "black"))
             .Returns(expectedHtml);
 
         SetupUserContext("testuser");
@@ -582,7 +579,7 @@ var code = ""example"";
 
         // Assert
         _mockMarkdownRenderService.Verify(
-            x => x.ToHtmlSlideShow(contentWithoutFrontMatter, null, "TestPage", "black"),
+            x => x.ToHtmlSlideShow(markdown, null, "TestPage", "black"),
             Times.Once);
     }
 
@@ -598,7 +595,6 @@ var code = ""example"";
             .ReturnsAsync(mockUser.Object);
 
         var markdown = "---\nslideShow: true\n---\n# Slide";
-        var contentWithoutFrontMatter = "# Slide";
         var expectedHtml = "<div class=\"reveal\" data-theme=\"black\">...</div>";
 
         var request = new PreviewMarkdownRequest
@@ -609,7 +605,7 @@ var code = ""example"";
         };
 
         _mockMarkdownRenderService
-            .Setup(x => x.ToHtmlSlideShow(contentWithoutFrontMatter, "fr", "TestPage", "black"))
+            .Setup(x => x.ToHtmlSlideShow(markdown, "fr", "TestPage", "black"))
             .Returns(expectedHtml);
 
         SetupUserContext("testuser");
@@ -619,7 +615,7 @@ var code = ""example"";
 
         // Assert
         _mockMarkdownRenderService.Verify(
-            x => x.ToHtmlSlideShow(contentWithoutFrontMatter, "fr", "TestPage", "black"),
+            x => x.ToHtmlSlideShow(markdown, "fr", "TestPage", "black"),
             Times.Once);
         _mockMarkdownRenderService.Verify(
             x => x.ToHtml(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()),

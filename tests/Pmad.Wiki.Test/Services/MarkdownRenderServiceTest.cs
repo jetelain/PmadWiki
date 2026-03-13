@@ -997,7 +997,7 @@ var code = ""sample"";
 
         // Assert
         Assert.Contains("<div class=\"reveal\"><div class=\"slides\">", html);
-        Assert.DoesNotContain("<section>", html);
+        Assert.DoesNotContain("<section ", html);
     }
 
     [Fact]
@@ -1010,7 +1010,7 @@ var code = ""sample"";
         var html = _service.ToHtmlSlideShow(markdown);
 
         // Assert
-        Assert.Equal(1, CountOccurrences(html, "<section>"));
+        Assert.Equal(1, CountOccurrences(html, "<section "));
         Assert.Contains("Hello", html);
         Assert.Contains("Content of the slide.", html);
     }
@@ -1025,7 +1025,7 @@ var code = ""sample"";
         var html = _service.ToHtmlSlideShow(markdown);
 
         // Assert
-        Assert.Equal(2, CountOccurrences(html, "<section>"));
+        Assert.Equal(2, CountOccurrences(html, "<section "));
         Assert.Contains("Slide 1", html);
         Assert.Contains("Slide 2", html);
     }
@@ -1040,7 +1040,7 @@ var code = ""sample"";
         var html = _service.ToHtmlSlideShow(markdown);
 
         // Assert
-        Assert.Equal(3, CountOccurrences(html, "<section>"));
+        Assert.Equal(3, CountOccurrences(html, "<section "));
         Assert.Contains("Slide 1", html);
         Assert.Contains("Slide 2", html);
         Assert.Contains("Slide 3", html);
@@ -1056,7 +1056,7 @@ var code = ""sample"";
         var html = _service.ToHtmlSlideShow(markdown);
 
         // Assert
-        Assert.Equal(1, CountOccurrences(html, "<section>"));
+        Assert.Equal(1, CountOccurrences(html, "<section "));
         Assert.Contains("Only Slide", html);
     }
 
@@ -1070,7 +1070,7 @@ var code = ""sample"";
         var html = _service.ToHtmlSlideShow(markdown);
 
         // Assert
-        Assert.Equal(1, CountOccurrences(html, "<section>"));
+        Assert.Equal(1, CountOccurrences(html, "<section "));
         Assert.Contains("Only Slide", html);
     }
 
@@ -1084,7 +1084,7 @@ var code = ""sample"";
         var html = _service.ToHtmlSlideShow(markdown);
 
         // Assert
-        Assert.Equal(2, CountOccurrences(html, "<section>"));
+        Assert.Equal(2, CountOccurrences(html, "<section "));
         Assert.Contains("Slide 1", html);
         Assert.Contains("Slide 2", html);
     }
@@ -1116,7 +1116,7 @@ var code = ""sample"";
 
         // Assert
         // Each slide section must be opened and closed
-        Assert.Equal(CountOccurrences(html, "<section>"), CountOccurrences(html, "</section>"));
+        Assert.Equal(CountOccurrences(html, "<section "), CountOccurrences(html, "</section>"));
     }
 
     [Fact]
@@ -1239,9 +1239,91 @@ var code = ""sample"";
 
         // Assert
         Assert.Contains("data-theme=\"/lib/revealjs/theme/black.css\"", html);
-        Assert.Equal(2, CountOccurrences(html, "<section>"));
+        Assert.Equal(2, CountOccurrences(html, "<section "));
         Assert.Contains("Slide 1", html);
         Assert.Contains("Slide 2", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_SectionsHaveDataSlideLineAttribute()
+    {
+        // Arrange
+        var markdown = "# Slide 1\n\n---\n\n# Slide 2";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Contains("data-slide-line=", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_FirstSlideStartsAtLineZero()
+    {
+        // Arrange
+        var markdown = "# Slide 1";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Contains("<section data-slide-line=\"0\">", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_SubsequentSlidesHaveCorrectLineNumbers()
+    {
+        // Arrange - line 0: "# Slide 1", line 1: blank, line 2: "---", line 3: blank, line 4: "# Slide 2"
+        var markdown = "# Slide 1\n\n---\n\n# Slide 2";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Contains("<section data-slide-line=\"0\">", html);
+        Assert.Contains("<section data-slide-line=\"4\">", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithFrontMatter_FrontMatterIsNotRenderedInSlides()
+    {
+        // Arrange
+        var markdown = "---\nslideShow: true\n---\n# Slide 1";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.DoesNotContain("slideShow", html);
+        Assert.Contains("Slide 1", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithFrontMatter_LineNumbersIncludeFrontMatterLines()
+    {
+        // Arrange - front matter occupies lines 0-2, "# Slide 1" starts at line 3
+        var markdown = "---\nslideShow: true\n---\n# Slide 1";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Contains("<section data-slide-line=\"3\">", html);
+    }
+
+    [Fact]
+    public void ToHtmlSlideShow_WithFrontMatterAndMultipleSlides_LineNumbersAreCorrect()
+    {
+        // Arrange - front matter lines 0-2, "# Slide 1" at line 3, blank at 4,
+        //           "---" separator at line 5, blank at 6, "# Slide 2" at line 7
+        var markdown = "---\nslideShow: true\n---\n# Slide 1\n\n---\n\n# Slide 2";
+
+        // Act
+        var html = _service.ToHtmlSlideShow(markdown);
+
+        // Assert
+        Assert.Contains("<section data-slide-line=\"3\">", html);
+        Assert.Contains("<section data-slide-line=\"7\">", html);
     }
 
     [Fact]
