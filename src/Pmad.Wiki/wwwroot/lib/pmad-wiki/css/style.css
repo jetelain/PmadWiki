@@ -157,26 +157,87 @@ a:hover .template-card .card-title {
         height: 100%;
     }
 
-    .wiki-slideshow-wrapper:hover .wiki-slideshow-fullscreen-btn,
-    .wiki-slideshow-wrapper:fullscreen .wiki-slideshow-fullscreen-btn {
+    .wiki-slideshow-wrapper:hover .wiki-slideshow-btn-group,
+    .wiki-slideshow-wrapper.wiki-slideshow-fullpage .wiki-slideshow-btn-group,
+    .wiki-slideshow-wrapper:fullscreen .wiki-slideshow-btn-group {
         opacity: 1;
     }
 
-.wiki-slideshow-fullscreen-btn {
+.wiki-slideshow-wrapper.wiki-slideshow-fullpage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    aspect-ratio: unset;
+}
+
+.wiki-slideshow-btn-group {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
     z-index: 100;
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.wiki-slideshow-action-btn {
     background: rgba(0, 0, 0, 0.4);
     color: #fff;
     border: none;
     border-radius: 0.25rem;
     padding: 0.25rem 0.5rem;
     cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s;
 }
 
-    .wiki-slideshow-fullscreen-btn:hover {
+    .wiki-slideshow-action-btn:hover {
         background: rgba(0, 0, 0, 0.7);
     }
+
+.wiki-slideshow-wrapper:fullscreen #slideshow-fullpage-btn {
+    display: none;
+}
+.wiki-slideshow-wrapper.wiki-slideshow-fullpage #slideshow-fullscreen-btn {
+    display: none;
+}
+
+a.wiki-slideshow {
+    border: var(--bs-border-width) solid var(--bs-secondary);
+    color: var(--bs-secondary);
+    background-color: transparent;
+    padding: 0.25em 0.75em 0.25em 0.5em;
+    display: inline-block;
+    border-radius: var(--bs-border-radius-sm);
+    text-decoration: none;
+    line-height: 1.5;
+    vertical-align: middle;
+    transition: color .15s ease-in-out,
+                background-color .15s ease-in-out,
+                border-color .15s ease-in-out;
+}
+
+    a.wiki-slideshow:hover {
+        background-color: var(--bs-secondary);
+        border-color: var(--bs-secondary);
+        color: #fff;
+        text-decoration: none;
+    }
+
+    a.wiki-slideshow::before {
+        content: "\f3a9";
+        display: inline-block;
+        font-family: bootstrap-icons !important;
+        font-style: normal;
+        font-weight: 400 !important;
+        font-variant: normal;
+        text-transform: none;
+        line-height: 1;
+        vertical-align: -.125em;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        margin-right: 0.5em;
+    }
+
