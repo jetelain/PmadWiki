@@ -21,4 +21,26 @@ public class WikiSiteMapNode
     public int SortOrder { get; set; }
     public List<WikiSiteMapNode> Children { get; set; } = new();
     public bool HasPage { get; set; }
+    public WikiPageType Type { get; set; }
+
+    public string IconClass
+    {
+        get
+        {
+            if (Children.Count > 0)
+            {
+                return "bi-folder";
+            }
+            switch (Type)
+            {
+                case WikiPageType.Template:
+                    return "bi-file-code";
+                case WikiPageType.SlideShow:
+                    return "bi-file-play";
+                case WikiPageType.Normal:
+                default:
+                    return "bi-file-text";
+            }
+        }
+    }
 }

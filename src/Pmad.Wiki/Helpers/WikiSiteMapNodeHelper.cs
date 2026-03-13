@@ -57,6 +57,7 @@ internal static class WikiSiteMapNodeHelper
                             PageName = currentFullPath,
                             DisplayName = pageInfo?.Title ?? parts[i],
                             Title = pageInfo?.Title,
+                            Type = pageInfo?.Type ?? WikiPageType.Normal,
                             HasPage = true,
                             Culture = pageInfo?.Culture,
                             LastModified = pageInfo?.LastModified,

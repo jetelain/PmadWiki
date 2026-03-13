@@ -111,7 +111,8 @@ namespace Pmad.Wiki.Controllers
                 LastModified = page.LastModified,
                 IsSlideShow = page.FrontMatter.SlideShow,
                 SlideShowThemeUri = SlideShowHelper.GetThemeUri(slideShowTheme),
-                SlideShowConfig = _options.SlideShowDefaultOptions
+                SlideShowConfig = _options.SlideShowDefaultOptions,
+                IsTemplate = WikiFilePathHelper.IsTemplatePageName(id)
             };
 
             if (page.FrontMatter.ShowSubPages)
