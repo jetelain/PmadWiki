@@ -42,6 +42,5 @@ public class WikiSiteMapNode
                     return "bi-file-text";
             }
         }
-
     }
 }
