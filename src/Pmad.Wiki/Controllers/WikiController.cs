@@ -564,13 +564,13 @@ namespace Pmad.Wiki.Controllers
                 return Content(string.Empty);
             }
 
-            var (frontMatter, contentWithoutFrontMatter) = WikiFrontMatterParser.Parse<WikiPageFrontMatter>(request.Markdown);
+            var (frontMatter, _) = WikiFrontMatterParser.Parse<WikiPageFrontMatter>(request.Markdown);
 
             string html;
             if (frontMatter.SlideShow)
             {
                 var theme = SlideShowHelper.GetValidTheme(frontMatter.SlideShowTheme, _options);
-                html = _markdownRenderService.ToHtmlSlideShow(contentWithoutFrontMatter, request.Culture, request.PageName, theme);
+                html = _markdownRenderService.ToHtmlSlideShow(request.Markdown, request.Culture, request.PageName, theme);
             }
             else
             {

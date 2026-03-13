@@ -157,7 +157,12 @@ document.addEventListener('DOMContentLoaded', function () {
             currentRevealTheme = themeUri;
         }
 
-        async function initSlideshowPreview() {
+        function getCursorLine(textarea) {
+            // zero-based line number (like markdig)
+            return textarea.value.slice(0, textarea.selectionStart).match(/\n/g)?.length ?? 0;
+        }
+
+        async function initSlideshowPreview(cursorLine) {
             destroySlideshow();
             const revealEl = previewContent.querySelector('.reveal');
             if (!revealEl) {
@@ -168,12 +173,25 @@ document.addEventListener('DOMContentLoaded', function () {
             ensureRevealThemeCss(config.basePath.replace(/\/+$/, '') + (revealEl.dataset.theme || '/lib/revealjs/theme/black.css'));
             revealInstance = new Reveal(revealEl, config.slideShowConfig);
             await revealInstance.initialize();
+
+            if (cursorLine !== undefined && cursorLine >= 0) {
+                const sections = revealEl.querySelectorAll('.slides > section');
+                let targetSlide = 0;
+                sections.forEach((section, index) => {
+                    const slideLine = parseInt(section.getAttribute('data-slide-line'), 10);
+                    if (!isNaN(slideLine) && slideLine <= cursorLine) {
+                        targetSlide = index;
+                    }
+                });
+                revealInstance.slide(targetSlide);
+            }
         }
 
         async function updatePreview() {
             if (!isPreviewMode) return;
 
             const markdown = textarea.value;
+            const cursorLine = getCursorLine(textarea);
 
             if (!markdown.trim()) {
                 destroySlideshow();
@@ -216,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 previewLoading.classList.add("d-none");
                 previewContent.classList.remove("d-none");
                 try {
-                    await initSlideshowPreview();
+                    await initSlideshowPreview(cursorLine);
                 } catch (slideError) {
                     console.error('Error initializing slideshow preview:', slideError);
                     destroySlideshow();

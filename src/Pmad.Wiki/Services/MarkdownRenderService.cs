@@ -2,6 +2,7 @@
 using System.Text;
 using System.Web;
 using Markdig;
+using Markdig.Extensions.Yaml;
 using Markdig.Parsers;
 using Markdig.Renderers;
 using Markdig.Syntax;
@@ -76,7 +77,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
                     AppendSlide(sb, slideBlocks, renderer);
                     slideBlocks.Clear();
                 }
-                else if (!(block is LinkReferenceDefinitionGroup))
+                else if (!(block is LinkReferenceDefinitionGroup) && !(block is YamlFrontMatterBlock))
                 {
                     slideBlocks.Add(block);
                 }
@@ -95,7 +96,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
             return;
         }
 
-        sb.Append("<section>");
+        sb.Append($"<section data-slide-line=\"{blocks[0].Line}\">");
         foreach (var block in blocks)
         {
             renderer.Render(block);
