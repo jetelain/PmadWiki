@@ -75,9 +75,14 @@
     {
         <div class="wiki-slideshow-wrapper">
             @Html.Raw(Model.HtmlContent)
-            <button class="wiki-slideshow-fullscreen-btn" id="slideshow-fullscreen-btn" title="@Localizer["Full Screen"]">
-                <i class="bi bi-fullscreen"></i>
-            </button>
+            <div class="wiki-slideshow-btn-group">
+                <button class="wiki-slideshow-action-btn" id="slideshow-fullpage-btn" title="@Localizer["Full Page"]">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                </button>
+                <button class="wiki-slideshow-action-btn" id="slideshow-fullscreen-btn" title="@Localizer["Full Screen"]">
+                    <i class="bi bi-fullscreen"></i>
+                </button>
+            </div>
         </div>
     }
     else
@@ -132,10 +137,20 @@
             Reveal.initialize(@Json.Serialize(Model.SlideShowConfig));
 
             (function () {
-                var btn = document.getElementById('slideshow-fullscreen-btn');
+                var fullpageBtn = document.getElementById('slideshow-fullpage-btn');
+                var fullscreenBtn = document.getElementById('slideshow-fullscreen-btn');
                 var wrapper = document.querySelector('.wiki-slideshow-wrapper');
 
-                btn.addEventListener('click', function () {
+                fullpageBtn.addEventListener('click', function () {
+                    var isFullpage = wrapper.classList.toggle('wiki-slideshow-fullpage');
+                    document.body.style.overflow = isFullpage ? 'hidden' : '';
+                    fullpageBtn.innerHTML = isFullpage
+                        ? '<i class="bi bi-arrows-angle-contract"></i>'
+                        : '<i class="bi bi-arrows-fullscreen"></i>';
+                    Reveal.layout();
+                });
+
+                fullscreenBtn.addEventListener('click', function () {
                     if (document.fullscreenElement) {
                         document.exitFullscreen();
                     } else {
@@ -144,7 +159,7 @@
                 });
 
                 document.addEventListener('fullscreenchange', function () {
-                    btn.innerHTML = document.fullscreenElement
+                    fullscreenBtn.innerHTML = document.fullscreenElement
                         ? '<i class="bi bi-fullscreen-exit"></i>'
                         : '<i class="bi bi-fullscreen"></i>';
                     Reveal.layout();
