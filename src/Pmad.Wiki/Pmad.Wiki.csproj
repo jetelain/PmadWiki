@@ -42,8 +42,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Pmad.Git.LocalRepositories" Version="0.1.111" />
-		<PackageReference Include="Pmad.Git.HttpServer" Version="0.1.111" />
+		<PackageReference Include="Pmad.Git.LocalRepositories" Version="0.1.112" />
+		<PackageReference Include="Pmad.Git.HttpServer" Version="0.1.112" />
 	</ItemGroup>
 
 </Project>
