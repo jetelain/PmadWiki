@@ -17,7 +17,7 @@ namespace Pmad.Wiki.Services;
 public sealed class MarkdownRenderService : IMarkdownRenderService
 {
     private readonly ConcurrentDictionary<string, MarkdownPipeline> _pipelineCache;
-    private readonly ConcurrentDictionary<string, MarkdownPipeline> _slideshowPipelineCache
+    private readonly ConcurrentDictionary<string, MarkdownPipeline> _slideshowPipelineCache;
     private readonly WikiOptions _options;
     private readonly LinkGenerator _linkGenerator;
 
