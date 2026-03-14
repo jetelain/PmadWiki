@@ -22,4 +22,22 @@ public record class WikiPageFrontMatter
     /// Has no effect when <see cref="ShowSubPages"/> is <c>false</c>.
     /// </summary>
     public bool SubPagesRecursive { get; set; }
+
+    /// <summary>
+    /// Gets or sets the sort order of this page among its siblings in the site map.
+    /// Pages are sorted by ascending sort order, then alphabetically. Defaults to <c>0</c>.
+    /// </summary>
+    public int SortOrder { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the page content should be rendered as a reveal.js slide show.
+    /// Use <c>---</c> on its own line to separate slides.
+    /// </summary>
+    public bool SlideShow { get; set; }
+
+    /// <summary>
+    /// Gets or sets the reveal.js theme name to use when <see cref="SlideShow"/> is enabled.
+    /// Defaults to <c>black</c> when not set or when an unknown value is provided.
+    /// </summary>
+    public string? SlideShowTheme { get; set; }
 }

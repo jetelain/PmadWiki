@@ -17,13 +17,17 @@ public class WikiPageEditViewModel
     public string? Culture { get; set; }
     
     public bool IsNew { get; set; }
-    
+
+    public List<WikiFrontMatterField> FrontMatterFields { get; } = new();
+
     public string? OriginalContentHash { get; set; }
-        
+
     /// <summary>
     /// Comma-separated list of temporary media IDs that were uploaded during editing.
     /// These will be cleared from the temporary storage after the page is saved, and 
     /// any media files that are still referenced in the content will be moved to permanent storage.
     /// </summary>
     public string? TemporaryMediaIds { get; set; }
+
+    public RevealJsConfig SlideShowConfig { get; set; } = new RevealJsConfig();
 }

@@ -96,16 +96,24 @@ namespace Pmad.Wiki.Controllers
 
             var availableCultures = await _pageService.GetAvailableCulturesForPageAsync(id, cancellationToken);
 
+            var slideShowTheme = SlideShowHelper.GetValidTheme(page.FrontMatter.SlideShowTheme, _options);
+
             var viewModel = new WikiPageViewModel
             {
                 PageName = id,
-                HtmlContent = _markdownRenderService.ToHtml(page.ContentWithoutFrontMatter, culture, id),
+                HtmlContent = page.FrontMatter.SlideShow
+                    ? _markdownRenderService.ToHtmlSlideShow(page.ContentWithoutFrontMatter, culture, id)
+                    : _markdownRenderService.ToHtml(page.ContentWithoutFrontMatter, culture, id),
                 Title = page.Title,
                 CanEdit = canEdit,
                 Culture = culture,
                 AvailableCultures = availableCultures,
                 LastModifiedBy = page.LastModifiedBy,
-                LastModified = page.LastModified
+                LastModified = page.LastModified,
+                IsSlideShow = page.FrontMatter.SlideShow,
+                SlideShowThemeUri = SlideShowHelper.GetThemeUri(slideShowTheme),
+                SlideShowConfig = _options.SlideShowDefaultOptions,
+                IsTemplate = WikiFilePathHelper.IsTemplatePageName(id)
             };
 
             if (page.FrontMatter.ShowSubPages)
@@ -190,6 +198,11 @@ namespace Pmad.Wiki.Controllers
                     Timestamp = h.Timestamp
                 }).ToList()
             };
+
+            if (wikiUser?.CanAdmin == true)
+            {
+                viewModel.PermissionSummary = await _pagePermissionHelper.GetPagePermissionSummaryAsync(id, cancellationToken);
+            }
 
             return View(viewModel);
         }
@@ -412,7 +425,7 @@ namespace Pmad.Wiki.Controllers
             else
             {
                 page = await _pageService.GetPageAsync(id, culture, cancellationToken);
-                
+
                 if (page == null)
                 {
                     commitMessage = _localizer["Create page {0}", id];
@@ -434,7 +447,7 @@ namespace Pmad.Wiki.Controllers
                     content = page.RawContent;
                 }
             }
-            
+
             var viewModel = new WikiPageEditViewModel
             {
                 PageName = id,
@@ -442,12 +455,39 @@ namespace Pmad.Wiki.Controllers
                 CommitMessage = commitMessage,
                 Culture = culture,
                 IsNew = page == null,
-                OriginalContentHash = page?.ContentHash
+                OriginalContentHash = page?.ContentHash,
+                SlideShowConfig = _options.SlideShowDefaultOptions
             };
+
+            GenerateFrontMatterFields(id, viewModel);
 
             await GenerateBreadcrumbAsync(id, culture, viewModel.Breadcrumb, cancellationToken);
 
             return View(viewModel);
+        }
+
+        private void GenerateFrontMatterFields(string id, WikiPageEditViewModel viewModel)
+        {
+            if (WikiFilePathHelper.IsTemplatePageName(id))
+            {
+                viewModel.FrontMatterFields.AddRange([
+                    new WikiFrontMatterField { Key = "title", Label = _localizer["Title"], HelpText = _localizer["Override the page title (leave empty to use the first H1 heading)."] },
+                    new WikiFrontMatterField { Key = "description", Label = _localizer["Description"] },
+                    new WikiFrontMatterField { Key = "location", Label = _localizer["Default Location"], HelpText = _localizer["Default location for pages created from this template. Supports placeholders: {date}, {year}, {month}, {day}, {datetime} and custom properties."] },
+                    new WikiFrontMatterField { Key = "pattern", Label = _localizer["Name Pattern"], HelpText = _localizer["Name pattern for pages created from this template. Supports placeholders: {date}, {year}, {month}, {day}, {datetime} and custom properties."] }
+                ]);
+            }
+            else
+            {
+                viewModel.FrontMatterFields.AddRange([
+                    new WikiFrontMatterField { Key = "title", Label = _localizer["Title"], HelpText = _localizer["Override the page title (leave empty to use the first H1 heading)."] },
+                    new WikiFrontMatterField { Key = "sortOrder", Label = _localizer["Sort Order"], Type = WikiFrontMatterFieldType.Number, HelpText = _localizer["Order of this page among its siblings in the site map. Lower values appear first. Defaults to 0."] },
+                    new WikiFrontMatterField { Key = "slideShow", Label = _localizer["Slide Show"], Type = WikiFrontMatterFieldType.Checkbox, HelpText = _localizer["Display the page content as a reveal.js slide show. Use --- to separate slides."] },
+                    new WikiFrontMatterField { Key = "slideShowTheme", Label = _localizer["Slide Show Theme"], Type = WikiFrontMatterFieldType.Select, Options = _options.SlideShowAllowedThemes, DependsOn = "slideShow" },
+                    new WikiFrontMatterField { Key = "showSubPages", Label = _localizer["Show sub-pages"], Type = WikiFrontMatterFieldType.Checkbox, HelpText = _localizer["Display a list of direct sub-pages below the page content."] },
+                    new WikiFrontMatterField { Key = "subPagesRecursive", Label = _localizer["Sub-pages recursive"], Type = WikiFrontMatterFieldType.Checkbox, HelpText = _localizer["Include all descendants recursively. Has no effect when Show sub-pages is disabled."], DependsOn = "showSubPages" }
+                ]);
+            }
         }
 
         [HttpGet]
@@ -525,7 +565,19 @@ namespace Pmad.Wiki.Controllers
                 return Content(string.Empty);
             }
 
-            var html = _markdownRenderService.ToHtml(request.Markdown, request.Culture, request.PageName);
+            var (frontMatter, _) = WikiFrontMatterParser.Parse<WikiPageFrontMatter>(request.Markdown);
+
+            string html;
+            if (frontMatter.SlideShow)
+            {
+                var theme = SlideShowHelper.GetValidTheme(frontMatter.SlideShowTheme, _options);
+                html = _markdownRenderService.ToHtmlSlideShow(request.Markdown, request.Culture, request.PageName, theme);
+            }
+            else
+            {
+                html = _markdownRenderService.ToHtml(request.Markdown, request.Culture, request.PageName);
+            }
+
             return Content(html);
         }
 
@@ -543,6 +595,10 @@ namespace Pmad.Wiki.Controllers
             {
                 ModelState.AddModelError(nameof(model.Culture), _localizer["Invalid culture identifier."]);
             }
+
+            model.SlideShowConfig = _options.SlideShowDefaultOptions;
+
+            GenerateFrontMatterFields(model.PageName, model);
 
             if (!ModelState.IsValid)
             {

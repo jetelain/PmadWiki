@@ -22,6 +22,14 @@ public interface IPageAccessControlService
     Task<List<PageAccessRule>> GetRulesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets the first access control rule that matches the given page name, evaluated in priority order.
+    /// </summary>
+    /// <param name="pageName">The name of the page to check.</param>
+    /// <param name="cancellationToken">Token to cancel the async operation.</param>
+    /// <returns>The first matching <see cref="PageAccessRule"/>, or <c>null</c> if no rule matches.</returns>
+    Task<PageAccessRule?> GetMatchingRuleAsync(string pageName, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Saves the access control rules.
     /// </summary>
     /// <param name="rules">The rules to save.</param>

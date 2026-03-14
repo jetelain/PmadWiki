@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Pmad.Wiki.Models;
 
 namespace Pmad.Wiki.Services;
 
@@ -6,12 +7,14 @@ public sealed class WikiPagePermissionHelper : IWikiPagePermissionHelper
 {
     private readonly IWikiPageService _pageService;
     private readonly IPageAccessControlService _accessControlService;
+    private readonly IWikiUserService _userService;
     private readonly WikiOptions _options;
 
-    public WikiPagePermissionHelper(IWikiPageService pageService, IPageAccessControlService accessControlService, IOptions<WikiOptions> options)
+    public WikiPagePermissionHelper(IWikiPageService pageService, IPageAccessControlService accessControlService, IWikiUserService userService, IOptions<WikiOptions> options)
     {
         _pageService = pageService;
         _accessControlService = accessControlService;
+        _userService = userService;
         _options = options.Value;
     }
 
@@ -68,6 +71,36 @@ public sealed class WikiPagePermissionHelper : IWikiPagePermissionHelper
         var allPages = await _pageService.GetAllPagesAsync(cancellationToken);
 
         return await FilterAccessiblePages(wikiUser, allPages, cancellationToken);
+    }
+
+    public async Task<WikiPagePermissionSummaryViewModel> GetPagePermissionSummaryAsync(string pageName, CancellationToken cancellationToken = default)
+    {
+        if (!_options.UsePageLevelPermissions)
+        {
+            return new WikiPagePermissionSummaryViewModel { IsEnabled = false };
+        }
+
+        var matchedRule = await _accessControlService.GetMatchingRuleAsync(pageName, cancellationToken);
+
+        if (matchedRule == null)
+        {
+            return new WikiPagePermissionSummaryViewModel { IsEnabled = true };
+        }
+
+        var groups = (await _userService.GetAllWikiGroupsAsync(cancellationToken))
+            .ToDictionary(g => g.Name, StringComparer.OrdinalIgnoreCase);
+
+        return new WikiPagePermissionSummaryViewModel
+        {
+            IsEnabled = true,
+            EffectiveRule = new WikiAccessControlRuleViewModel
+            {
+                Pattern = matchedRule.Pattern,
+                ReadGroups = matchedRule.ReadGroups.Select(groups.ResolveGroup).ToList(),
+                WriteGroups = matchedRule.WriteGroups.Select(groups.ResolveGroup).ToList(),
+                Order = matchedRule.Order
+            }
+        };
     }
 
     private async ValueTask<List<WikiPageInfo>> FilterAccessiblePages(IWikiUserWithPermissions? wikiUser, List<WikiPageInfo> pages, CancellationToken cancellationToken)

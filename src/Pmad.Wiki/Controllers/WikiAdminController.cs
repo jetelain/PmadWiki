@@ -47,18 +47,13 @@ namespace Pmad.Wiki.Controllers
             var groups = (await _userService.GetAllWikiGroupsAsync(cancellationToken))
                 .ToDictionary(g => g.Name, StringComparer.OrdinalIgnoreCase);
 
-            WikiGroupViewModel ResolveGroup(string name) =>
-                groups.TryGetValue(name, out var g)
-                    ? new WikiGroupViewModel(name, g.Label, g.Description)
-                    : new WikiGroupViewModel(name);
-
             var viewModel = new WikiAccessControlViewModel
             {
                 Rules = rules.Select(r => new WikiAccessControlRuleViewModel
                 {
                     Pattern = r.Pattern,
-                    ReadGroups = r.ReadGroups.Select(ResolveGroup).ToList(),
-                    WriteGroups = r.WriteGroups.Select(ResolveGroup).ToList(),
+                    ReadGroups = r.ReadGroups.Select(groups.ResolveGroup).ToList(),
+                    WriteGroups = r.WriteGroups.Select(groups.ResolveGroup).ToList(),
                     Order = r.Order
                 }).ToList(),
                 IsEnabled = _options.UsePageLevelPermissions,
@@ -135,7 +130,7 @@ namespace Pmad.Wiki.Controllers
         {
             var groups = await _userService.GetAllWikiGroupsAsync(cancellationToken);
             return groups
-                .Select(g => new WikiGroupViewModel(g.Name, g.Label, g.Description))
+                .Select(g => new WikiGroupViewModel(g.Name, g.Label, g.Description, g.Color))
                 .ToList();
         }
     }

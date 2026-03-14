@@ -1,6 +1,6 @@
 namespace Pmad.Wiki.Models;
 
-public record WikiGroupViewModel(string Name, string? Label = null, string? Description = null)
+public record WikiGroupViewModel(string Name, string? Label = null, string? Description = null, WikiColor Color = WikiColor.Secondary)
 {
     public string? Tooltip 
     {
@@ -19,4 +19,6 @@ public record WikiGroupViewModel(string Name, string? Label = null, string? Desc
     }
 
     public string ActualLabel => !string.IsNullOrEmpty(Label) ? Label : Name;
+
+    public string ClassSuffix => Color.ToString().ToLowerInvariant();
 }

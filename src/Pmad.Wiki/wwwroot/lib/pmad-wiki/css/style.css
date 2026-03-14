@@ -2,54 +2,6 @@
     line-height: 1.6;
 }
 
-    .wiki-content img {
-        max-width: 100%;
-        height: auto;
-    }
-
-    .wiki-content table {
-        width: 100%;
-        margin-bottom: 1rem;
-        border-collapse: collapse;
-    }
-
-        .wiki-content table th,
-        .wiki-content table td {
-            padding: 0.75rem;
-            border: 1px solid #dee2e6;
-        }
-
-        .wiki-content table thead th {
-            background-color: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-    .wiki-content pre {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 0.25rem;
-        overflow-x: auto;
-    }
-
-    .wiki-content code {
-        background-color: #f8f9fa;
-        padding: 0.2rem 0.4rem;
-        border-radius: 0.25rem;
-    }
-
-    .wiki-content pre code {
-        background-color: transparent;
-        padding: 0;
-    }
-
-    .wiki-content blockquote {
-        padding: 0.5rem 1rem;
-        margin: 0 0 1rem;
-        border-left: 0.25rem solid #dee2e6;
-        background-color: #f8f9fa;
-    }
-
-
 .wiki-sitemap-tree {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -188,3 +140,90 @@ a:hover .template-card .card-title {
     font-size: 3rem;
     color: #dc3545;
 }
+
+/* Slide show */
+.wiki-slideshow-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+}
+
+    .wiki-slideshow-wrapper .reveal {
+        height: 100%;
+    }
+
+    .wiki-slideshow-wrapper:fullscreen {
+        aspect-ratio: unset;
+        height: 100%;
+    }
+
+    .wiki-slideshow-wrapper:hover .wiki-slideshow-btn-group,
+    .wiki-slideshow-wrapper.wiki-slideshow-fullpage .wiki-slideshow-btn-group,
+    .wiki-slideshow-wrapper:fullscreen .wiki-slideshow-btn-group {
+        opacity: 1;
+    }
+
+.wiki-slideshow-wrapper.wiki-slideshow-fullpage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    aspect-ratio: unset;
+}
+
+.wiki-slideshow-btn-group {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 100;
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.wiki-slideshow-action-btn {
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+}
+
+    .wiki-slideshow-action-btn:hover {
+        background: rgba(0, 0, 0, 0.7);
+    }
+
+.wiki-slideshow-wrapper:fullscreen #slideshow-fullpage-btn {
+    display: none;
+}
+.wiki-slideshow-wrapper.wiki-slideshow-fullpage #slideshow-fullscreen-btn {
+    display: none;
+}
+
+
+a.wiki-slideshow {
+    border: var(--bs-border-width) solid var(--bs-secondary);
+    padding: 0.25em 0.75em 0.25em 0.5em;
+    display: inline-block;
+    border-radius: var(--bs-border-radius-sm);
+}
+
+    a.wiki-slideshow::before {
+        content: "\f3a9";
+        display: inline-block;
+        font-family: bootstrap-icons !important;
+        font-style: normal;
+        font-weight: 400 !important;
+        font-variant: normal;
+        text-transform: none;
+        line-height: 1;
+        vertical-align: -.125em;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        margin-right: 0.5em;
+        color: var(--bs-secondary);
+    }

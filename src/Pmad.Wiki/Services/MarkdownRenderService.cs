@@ -1,6 +1,10 @@
 ﻿using System.Collections.Concurrent;
+using System.Text;
+using System.Web;
 using Markdig;
+using Markdig.Extensions.Yaml;
 using Markdig.Parsers;
+using Markdig.Renderers;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Microsoft.AspNetCore.Routing;
@@ -13,6 +17,7 @@ namespace Pmad.Wiki.Services;
 public sealed class MarkdownRenderService : IMarkdownRenderService
 {
     private readonly ConcurrentDictionary<string, MarkdownPipeline> _pipelineCache;
+    private readonly ConcurrentDictionary<string, MarkdownPipeline> _slideshowPipelineCache
     private readonly WikiOptions _options;
     private readonly LinkGenerator _linkGenerator;
 
@@ -21,7 +26,13 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
         _options = options.Value ?? throw new ArgumentNullException(nameof(options));
         _linkGenerator = linkGenerator ?? throw new ArgumentNullException(nameof(linkGenerator));
         _pipelineCache = memoryCache.GetOrCreate(
-            $"MarkdownRenderService:{_options.WikiRepositoryName}",
+            $"MarkdownRenderService:Standard:{_options.WikiRepositoryName}",
+            entry => {
+                entry.SetSlidingExpiration(TimeSpan.FromDays(1));
+                return new ConcurrentDictionary<string, MarkdownPipeline>(StringComparer.Ordinal);
+            }) ?? throw new InvalidOperationException();
+        _slideshowPipelineCache = memoryCache.GetOrCreate(
+            $"MarkdownRenderService:SlideShow:{_options.WikiRepositoryName}",
             entry => {
                 entry.SetSlidingExpiration(TimeSpan.FromDays(1));
                 return new ConcurrentDictionary<string, MarkdownPipeline>(StringComparer.Ordinal);
@@ -38,6 +49,72 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
         ProcessWikiLinks(document, currentPageName ?? string.Empty, culture);
 
         return Markdown.ToHtml(document, pipeline);
+    }
+
+    public string ToHtmlSlideShow(string markdown, string? culture = null, string? currentPageName = null, string? theme = null)
+    {
+        var pipeline = GetOrCreateSlideshowPipeline(culture);
+
+        var document = MarkdownParser.Parse(markdown, pipeline);
+
+        ProcessWikiLinks(document, currentPageName ?? string.Empty, culture);
+
+        var sb = new StringBuilder();
+
+        RenderSlideShow(pipeline, document, sb, theme);
+
+        return sb.ToString();
+    }
+
+    private static void RenderSlideShow(MarkdownPipeline pipeline, MarkdownDocument document, StringBuilder sb, string? theme = null)
+    {
+        using (var writer = new StringWriter(sb))
+        {
+            var renderer = new HtmlRenderer(writer);
+            pipeline.Setup(renderer);
+
+            if (!string.IsNullOrEmpty(theme))
+            {
+                sb.AppendLine($"<div class=\"reveal\" data-theme=\"{HttpUtility.HtmlAttributeEncode(SlideShowHelper.GetThemeUri(theme))}\"><div class=\"slides\">");
+            }
+            else
+            {
+                sb.AppendLine("<div class=\"reveal\"><div class=\"slides\">");
+            }
+
+            var slideBlocks = new List<Block>();
+            foreach (var block in document)
+            {
+                if (block is ThematicBreakBlock)
+                {
+                    AppendSlide(sb, slideBlocks, renderer);
+                    slideBlocks.Clear();
+                }
+                else if (!(block is LinkReferenceDefinitionGroup) && !(block is YamlFrontMatterBlock))
+                {
+                    slideBlocks.Add(block);
+                }
+            }
+
+            AppendSlide(sb, slideBlocks, renderer);
+
+            sb.AppendLine("</div></div>");
+        }
+    }
+
+    private static void AppendSlide(StringBuilder sb, List<Block> blocks, HtmlRenderer renderer)
+    {
+        if (blocks.Count == 0)
+        {
+            return;
+        }
+
+        sb.Append($"<section data-slide-line=\"{blocks[0].Line}\">");
+        foreach (var block in blocks)
+        {
+            renderer.Render(block);
+        }
+        sb.AppendLine("</section>");
     }
 
     private void ProcessWikiLinks(Markdig.Syntax.MarkdownDocument document, string currentPageName, string? culture)
@@ -156,9 +233,30 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
 
     private MarkdownPipeline GetOrCreatePipeline(string? culture)
     {
-        var cacheKey = culture ?? "default";
-        
+        var cacheKey = culture ?? _options.NeutralMarkdownPageCulture;
+
         return _pipelineCache.GetOrAdd(cacheKey, key =>
+        {
+            var builder = new MarkdownPipelineBuilder()
+                .UseAdvancedExtensions()
+                .UseYamlFrontMatter()
+                .UseBootstrap()
+                .DisableHtml();
+
+            if (_options.ConfigureMarkdown != null)
+            {
+                _options.ConfigureMarkdown(builder);
+            }
+
+            return builder.Build();
+        });
+    }
+
+    private MarkdownPipeline GetOrCreateSlideshowPipeline(string? culture)
+    {
+        var cacheKey = culture ?? _options.NeutralMarkdownPageCulture;
+
+        return _slideshowPipelineCache.GetOrAdd(cacheKey, key =>
         {
             var builder = new MarkdownPipelineBuilder()
                 .UseAdvancedExtensions()

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Pmad.Git.HttpServer;
 using Pmad.Git.LocalRepositories;
 using Pmad.Wiki.Helpers;
+using Pmad.Wiki.Models;
 
 namespace Pmad.Wiki.Services;
 
@@ -235,7 +236,11 @@ public sealed class WikiPageService : IWikiPageService
                         Title = pageMetadata?.Title,
                         Culture = culture,
                         LastModified = file.Commit.Metadata.AuthorDate,
-                        LastModifiedBy = file.Commit.Metadata.AuthorName
+                        LastModifiedBy = file.Commit.Metadata.AuthorName,
+                        SortOrder = pageMetadata?.FrontMatter.SortOrder ?? 0,
+                        Type = WikiFilePathHelper.IsTemplatePageName(pageName) ? WikiPageType.Template : 
+                            (pageMetadata?.FrontMatter.SlideShow ?? false) ?  WikiPageType.SlideShow :
+                            WikiPageType.Normal
                     };
                 }
             }

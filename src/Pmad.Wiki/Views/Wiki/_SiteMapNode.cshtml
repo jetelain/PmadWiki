@@ -3,14 +3,7 @@
 <div class="sitemap-node level-@Model.Level">
     <div class="sitemap-node-content">
         <span class="sitemap-node-icon">
-            @if (Model.Children.Any())
-            {
-                <i class="bi bi-folder"></i>
-            }
-            else
-            {
-                <i class="bi bi-file-text"></i>
-            }
+            <i class="bi @Model.IconClass"></i>
         </span>
         @if (!Model.HasPage)
         {

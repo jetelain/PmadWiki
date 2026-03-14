@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Pmad.Wiki.Demo.Entities;
 using Pmad.Wiki.Helpers;
+using Pmad.Wiki.Models;
 using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki.Demo.Services;
@@ -58,8 +59,8 @@ public class DemoWikiUserService : IWikiUserService
     {
         return Task.FromResult<IEnumerable<IWikiUserGroup>>(new[]
         {
-            new DemoWikiUserGroup("admin", "Administrators", "Users with administrative permissions."),
-            new DemoWikiUserGroup("users", "Users", "Regular users with standard permissions.")
+            new DemoWikiUserGroup("admin", "Administrators", "Users with administrative permissions.", WikiColor.Danger),
+            new DemoWikiUserGroup("users", "Users", "Regular users with standard permissions.", WikiColor.Secondary)
         });
     }
 }

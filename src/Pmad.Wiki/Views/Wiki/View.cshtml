@@ -57,9 +57,40 @@
         </div>
     </div>
 
-    <div class="wiki-content">
-        @Html.Raw(Model.HtmlContent)
-    </div>
+    @if (Model.IsTemplate)
+    {
+        <div class="alert alert-info" role="alert">
+            <p>@Localizer["This page is a template. It can be used to create a new page."]</p>
+            @if (Model.CanEdit)
+            {
+                <a asp-action="CreatePage" asp-route-culture="@Model.Culture" asp-route-templateId="@Model.PageName" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i>
+                    @Localizer["Use This Template"]
+                </a>
+            }
+        </div>
+    }
+
+    @if (Model.IsSlideShow)
+    {
+        <div class="wiki-slideshow-wrapper">
+            @Html.Raw(Model.HtmlContent)
+            <div class="wiki-slideshow-btn-group">
+                <button class="wiki-slideshow-action-btn" id="slideshow-fullpage-btn" title="@Localizer["Full Page"]">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                </button>
+                <button class="wiki-slideshow-action-btn" id="slideshow-fullscreen-btn" title="@Localizer["Full Screen"]">
+                    <i class="bi bi-fullscreen"></i>
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="wiki-content">
+            @Html.Raw(Model.HtmlContent)
+        </div>
+    }
 
     @if (Model.SubPages.Any())
     {
@@ -91,4 +122,49 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/lib/pmad-wiki/css/style.css" />
+    @if (Model.IsSlideShow)
+    {
+        <link rel="stylesheet" href="~/lib/revealjs/reveal.css" />
+        <link rel="stylesheet" href="@Url.Content("~" + Model.SlideShowThemeUri)" />
+    }
+} 
+
+@section Scripts {
+    @if (Model.IsSlideShow)
+    {
+        <script src="~/lib/revealjs/reveal.js"></script>
+        <script>
+            Reveal.initialize(@Json.Serialize(Model.SlideShowConfig));
+
+            (function () {
+                var fullpageBtn = document.getElementById('slideshow-fullpage-btn');
+                var fullscreenBtn = document.getElementById('slideshow-fullscreen-btn');
+                var wrapper = document.querySelector('.wiki-slideshow-wrapper');
+
+                fullpageBtn.addEventListener('click', function () {
+                    var isFullpage = wrapper.classList.toggle('wiki-slideshow-fullpage');
+                    document.body.style.overflow = isFullpage ? 'hidden' : '';
+                    fullpageBtn.innerHTML = isFullpage
+                        ? '<i class="bi bi-arrows-angle-contract"></i>'
+                        : '<i class="bi bi-arrows-fullscreen"></i>';
+                    Reveal.layout();
+                });
+
+                fullscreenBtn.addEventListener('click', function () {
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else {
+                        wrapper.requestFullscreen();
+                    }
+                });
+
+                document.addEventListener('fullscreenchange', function () {
+                    fullscreenBtn.innerHTML = document.fullscreenElement
+                        ? '<i class="bi bi-fullscreen-exit"></i>'
+                        : '<i class="bi bi-fullscreen"></i>';
+                    Reveal.layout();
+                });
+            })();
+        </script>
+    }
 }

@@ -33,7 +33,9 @@ document.addEventListener('DOMContentLoaded', function () {
             quote: 'Quote',
             linkText: 'link text',
             altText: 'alt text'
-        }
+        },
+        basePath: '',
+        slideShowConfig: { embedded: true, width: 1920, height: 1080 }
     };
 
     const configElement = document.getElementById('wiki-edit-config');
@@ -120,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 toggleEditingButtons(true);
                 updatePreview();
             } else {
+                destroySlideshow();
                 textarea.classList.remove("d-none");
                 previewContainer.classList.add("d-none");
                 previewButtonText.textContent = config.labels.preview;
@@ -128,12 +131,70 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
+        let revealInstance = null;
+        let currentRevealTheme = null;
+
+        function destroySlideshow() {
+            if (revealInstance) {
+                revealInstance.destroy();
+                revealInstance = null;
+            }
+            previewContent.classList.remove('wiki-slideshow-wrapper');
+            previewContainer.style.overflowY = '';
+        }
+
+        function ensureRevealThemeCss(themeUri) {
+            if (currentRevealTheme === themeUri) return;
+            const oldLink = document.getElementById('reveal-preview-theme-css');
+            if (oldLink) {
+                oldLink.remove();
+            }
+            const link = document.createElement('link');
+            link.id = 'reveal-preview-theme-css';
+            link.rel = 'stylesheet';
+            link.href = themeUri;
+            document.head.appendChild(link);
+            currentRevealTheme = themeUri;
+        }
+
+        function getCursorLine(textarea) {
+            // zero-based line number (like markdig)
+            return textarea.value.slice(0, textarea.selectionStart).match(/\n/g)?.length ?? 0;
+        }
+
+        async function initSlideshowPreview(cursorLine) {
+            destroySlideshow();
+            const revealEl = previewContent.querySelector('.reveal');
+            if (!revealEl) {
+                return;
+            }
+            previewContent.classList.add('wiki-slideshow-wrapper');
+            previewContainer.style.overflowY = 'hidden';
+            ensureRevealThemeCss(config.basePath.replace(/\/+$/, '') + (revealEl.dataset.theme || '/lib/revealjs/theme/black.css'));
+            revealInstance = new Reveal(revealEl, config.slideShowConfig);
+            await revealInstance.initialize();
+
+            if (cursorLine !== undefined && cursorLine >= 0) {
+                const sections = revealEl.querySelectorAll('.slides > section');
+                let targetSlide = 0;
+                sections.forEach((section, index) => {
+                    const slideLine = parseInt(section.getAttribute('data-slide-line'), 10);
+                    if (!isNaN(slideLine) && slideLine <= cursorLine) {
+                        targetSlide = index;
+                    }
+                });
+                revealInstance.slide(targetSlide);
+            }
+        }
+
         async function updatePreview() {
             if (!isPreviewMode) return;
 
             const markdown = textarea.value;
+            const cursorLine = getCursorLine(textarea);
 
             if (!markdown.trim()) {
+                destroySlideshow();
                 const emptyMessage = document.createElement('p');
                 emptyMessage.className = 'text-muted';
                 emptyMessage.textContent = config.labels.noContentToPreview;
@@ -169,11 +230,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const html = await response.text();
                 previewContent.innerHTML = html;
+                // Make element visible before slideshow init so reveal.js can measure dimensions
+                previewLoading.classList.add("d-none");
+                previewContent.classList.remove("d-none");
+                try {
+                    await initSlideshowPreview(cursorLine);
+                } catch (slideError) {
+                    console.error('Error initializing slideshow preview:', slideError);
+                    destroySlideshow();
+                }
             } catch (error) {
                 console.error('Error rendering preview:', error);
+                destroySlideshow();
                 previewContent.innerHTML = '';
                 previewContent.appendChild(createAlert(config.labels.failedToRenderPreview));
-            } finally {
                 previewLoading.classList.add("d-none");
                 previewContent.classList.remove("d-none");
             }
@@ -701,5 +771,145 @@ document.addEventListener('DOMContentLoaded', function () {
         // Set cursor position
         const newPosition = start + cursorOffset;
         textarea.setSelectionRange(newPosition, newPosition);
+    }
+
+    // Front matter modal
+    const frontMatterModal = document.getElementById('frontMatterModal');
+    const saveFrontMatterBtn = document.getElementById('saveFrontMatter');
+
+    function extractFrontMatter(content) {
+        const match = /^\uFEFF?\s*---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n/.exec(content);
+        if (!match) return { yamlText: '', body: content };
+        const yamlText = match[1].replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        return { yamlText, body: content.slice(match[0].length) };
+    }
+
+    function getYamlFieldValue(yamlText, key) {
+        const match = new RegExp(`^${key}:\\s*(.*)$`, 'm').exec(yamlText);
+        if (!match) return null;
+        const rawVal = match[1].trim();
+        if (rawVal === 'true') return true;
+        if (rawVal === 'false') return false;
+
+        // Handle quoted scalars: strip quotes and unescape content
+        if (
+            rawVal.length >= 2 &&
+            ((rawVal.startsWith('"') && rawVal.endsWith('"')) ||
+             (rawVal.startsWith("'") && rawVal.endsWith("'")))
+        ) {
+            const quoteChar = rawVal[0];
+            let inner = rawVal.slice(1, -1);
+
+            if (quoteChar === '"') {
+                // Inverse of yamlEscapeString: "\\" -> "\", and \" -> "
+                inner = inner.replace(/\\\\/g, '\\').replace(/\\"/g, '"');
+            } else if (quoteChar === "'") {
+                // YAML single-quoted style: '' represents a single '
+                inner = inner.replace(/''/g, "'");
+            }
+
+            return inner || null;
+        }
+
+        return rawVal || null;
+    }
+
+    function yamlEscapeString(str) {
+        if (/[:#{}\[\]]/.test(str) || str !== str.trim()) {
+            return '"' + str.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+        }
+        return str;
+    }
+
+    function setYamlField(yamlText, key, value) {
+        const lineRegex = new RegExp(`^${key}:.*$`, 'm');
+        if (value === null || value === '' || value === false || value === undefined) {
+            return yamlText.replace(lineRegex, '').replace(/\n{3,}/g, '\n').replace(/^\n+|\n+$/g, '');
+        }
+        const yamlValue = typeof value === 'boolean' || typeof value === 'number' ? `${value}` : yamlEscapeString(value);
+        const newLine = `${key}: ${yamlValue}`;
+        if (lineRegex.test(yamlText)) {
+            return yamlText.replace(lineRegex, newLine);
+        }
+        return (yamlText ? yamlText + '\n' : '') + newLine;
+    }
+
+    function buildContent(yamlText, body) {
+        const trimmedYaml = yamlText.trim();
+        if (!trimmedYaml) return body;
+        return `---\n${trimmedYaml}\n---\n${body}`;
+    }
+
+    if (frontMatterModal) {
+        // Wire up dependency relationships declared via data-fm-depends-on
+        document.querySelectorAll('[data-fm-depends-on]').forEach(input => {
+            const dependsOnKey = input.dataset.fmDependsOn;
+            if (!dependsOnKey) return;
+            const parentInput = document.querySelector(`[data-fm-key="${dependsOnKey}"]`);
+            if (!parentInput) return;
+            parentInput.addEventListener('change', function () {
+                input.disabled = !this.checked;
+                if (!this.checked) {
+                    if (input.type === 'checkbox') {
+                        input.checked = false;
+                    } else {
+                        input.value = '';
+                    }
+                }
+            });
+        });
+
+        frontMatterModal.addEventListener('show.bs.modal', function () {
+            const { yamlText } = extractFrontMatter(textarea.value);
+            document.querySelectorAll('[data-fm-key]').forEach(input => {
+                const value = getYamlFieldValue(yamlText, input.dataset.fmKey);
+                if (input.dataset.fmType === 'checkbox') {
+                    input.checked = value === true;
+                    const dependsOnKey = input.dataset.fmDependsOn;
+                    if (dependsOnKey) {
+                        const parent = document.querySelector(`[data-fm-key="${dependsOnKey}"]`);
+                        input.disabled = parent ? !parent.checked : false;
+                    }
+                } else if (input.dataset.fmType === 'number') {
+                    let numericValue = null;
+                    if (value !== undefined && value !== null && value !== '') {
+                        const parsed = typeof value === 'number' ? value : parseInt(value, 10);
+                        numericValue = !isNaN(parsed) ? parsed : null;
+                    }
+                    input.value = numericValue !== null && numericValue !== 0 ? String(numericValue) : '';
+                } else {
+                    input.value = value || '';
+                }
+                if (input.dataset.fmType !== 'checkbox' && input.dataset.fmDependsOn) {
+                    const parent = document.querySelector(`[data-fm-key="${input.dataset.fmDependsOn}"]`);
+                    input.disabled = parent ? !parent.checked : false;
+                }
+            });
+        });
+
+        if (saveFrontMatterBtn) {
+            saveFrontMatterBtn.addEventListener('click', function () {
+                const { yamlText, body } = extractFrontMatter(textarea.value);
+                let newYaml = yamlText;
+                document.querySelectorAll('[data-fm-key]').forEach(input => {
+                    let value;
+                    if (input.dataset.fmType === 'checkbox') {
+                        value = input.checked;
+                    } else if (input.dataset.fmType === 'number') {
+                        const num = parseInt(input.value, 10);
+                        value = !isNaN(num) && num !== 0 ? num : null;
+                    } else {
+                        value = input.value.trim();
+                    }
+                    newYaml = setYamlField(newYaml, input.dataset.fmKey, value);
+                });
+                const newContent = buildContent(newYaml, body);
+                frontMatterModal.addEventListener('hidden.bs.modal', () => {
+                    insertTextWithUndo(textarea, 0, textarea.value.length, newContent, newContent.length);
+                }, { once: true });
+                const modal = bootstrap.Modal.getInstance(frontMatterModal);
+                modal?.hide();
+            });
+        }
     }
 });

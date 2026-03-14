@@ -1,3 +1,5 @@
+using Pmad.Wiki.Helpers;
+
 namespace Pmad.Wiki.Models;
 
 public class WikiPageViewModel
@@ -12,4 +14,9 @@ public class WikiPageViewModel
     public string? LastModifiedBy { get; set; }
     public DateTimeOffset? LastModified { get; set; }
     public List<WikiSiteMapNode> SubPages { get; set; } = new();
+    public bool IsSlideShow { get; set; }
+    public string SlideShowThemeUri { get; set; } = SlideShowHelper.GetThemeUri(SlideShowHelper.DefaultTheme);
+    public RevealJsConfig SlideShowConfig { get; set; } = new RevealJsConfig();
+
+    public bool IsTemplate { get; set; }
 }
