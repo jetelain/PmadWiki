@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Text;
+﻿using System.Text;
 using System.Web;
 using Markdig;
 using Markdig.Extensions.Yaml;
@@ -8,6 +7,7 @@ using Markdig.Renderers;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Pmad.Wiki.Helpers;
 
@@ -15,15 +15,17 @@ namespace Pmad.Wiki.Services;
 
 public sealed class MarkdownRenderService : IMarkdownRenderService
 {
-    private readonly ConcurrentDictionary<string, MarkdownPipeline> _pipelineCache = new();
-    private readonly ConcurrentDictionary<string, MarkdownPipeline> _slideshowPipelineCache = new();
+    private readonly MemoryCacheGroup _pipelineCache;
+    private readonly MemoryCacheGroup _slideshowPipelineCache;
     private readonly WikiOptions _options;
     private readonly LinkGenerator _linkGenerator;
 
-    public MarkdownRenderService(IOptions<WikiOptions> options, LinkGenerator linkGenerator)
+    public MarkdownRenderService(IOptions<WikiOptions> options, LinkGenerator linkGenerator, IMemoryCache memoryCache)
     {
         _options = options.Value ?? throw new ArgumentNullException(nameof(options));
         _linkGenerator = linkGenerator ?? throw new ArgumentNullException(nameof(linkGenerator));
+        _pipelineCache = new MemoryCacheGroup(memoryCache, $"MarkdownRenderService:Standard:{_options.WikiRepositoryName}", TimeSpan.FromDays(1));
+        _slideshowPipelineCache = new MemoryCacheGroup(memoryCache, $"MarkdownRenderService:SlideShow:{_options.WikiRepositoryName}", TimeSpan.FromDays(1));
     }
 
     public string ToHtml(string markdown, string? culture = null, string? currentPageName = null)
@@ -222,7 +224,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
     {
         var cacheKey = culture ?? _options.NeutralMarkdownPageCulture;
 
-        return _pipelineCache.GetOrAdd(cacheKey, key =>
+        return _pipelineCache.GetOrCreate(cacheKey, () =>
         {
             var builder = new MarkdownPipelineBuilder()
                 .UseAdvancedExtensions()
@@ -243,7 +245,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
     {
         var cacheKey = culture ?? _options.NeutralMarkdownPageCulture;
 
-        return _slideshowPipelineCache.GetOrAdd(cacheKey, key =>
+        return _slideshowPipelineCache.GetOrCreate(cacheKey, () =>
         {
             var builder = new MarkdownPipelineBuilder()
                 .UseAdvancedExtensions()
