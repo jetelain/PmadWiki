@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -53,7 +54,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
         _service = new WikiPageService(
             gitRepositoryService,
             _mockWikiUserService.Object,
-            new WikiPageMetadataCache(gitRepositoryService, optionsWrapper),
+            new WikiPageMetadataCache(gitRepositoryService, optionsWrapper, CreateCache()),
             optionsWrapper);
     }
 
@@ -980,5 +981,8 @@ public class WikiPageServiceIntegrationTests : IDisposable
     }
 
     #endregion
+
+    private static MemoryCache CreateCache() =>
+        new MemoryCache(Options.Create(new MemoryCacheOptions()));
 }
 
