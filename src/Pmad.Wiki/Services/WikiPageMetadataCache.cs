@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Text;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -13,7 +12,7 @@ public class WikiPageMetadataCache : IWikiPageMetadataCache
 {
     private readonly IGitRepositoryService _gitRepositoryService;
     private readonly WikiOptions _options;
-    private readonly ConcurrentDictionary<string, WikiPageMetadata> _metadataCache;
+    private readonly MemoryCacheGroup _cache;
 
     public WikiPageMetadataCache(
         IGitRepositoryService gitRepositoryService,
@@ -22,20 +21,14 @@ public class WikiPageMetadataCache : IWikiPageMetadataCache
     {
         _gitRepositoryService = gitRepositoryService;
         _options = options.Value;
-
-        _metadataCache = memoryCache.GetOrCreate(
-            $"WikiPageMetadataCache:{_options.WikiRepositoryName}", 
-            entry => {
-                entry.SetSlidingExpiration(TimeSpan.FromDays(1));
-                return new ConcurrentDictionary<string, WikiPageMetadata>(StringComparer.Ordinal); 
-            }) ?? throw new InvalidOperationException();
+        _cache = new MemoryCacheGroup(memoryCache, $"WikiPageMetadataCache:{_options.WikiRepositoryName}", TimeSpan.FromDays(1));
     }
 
     public async Task<WikiPageMetadata?> GetPageMetadataAsync(string pageName, string? culture, CancellationToken cancellationToken = default)
     {
         var cacheKey = GetCacheKey(pageName, culture);
 
-        if (_metadataCache.TryGetValue(cacheKey, out var cachedMetadata))
+        if (_cache.TryGetValue(cacheKey, out WikiPageMetadata? cachedMetadata))
         {
             return cachedMetadata;
         }
@@ -57,7 +50,7 @@ public class WikiPageMetadataCache : IWikiPageMetadataCache
 
     public void ClearCache()
     {
-        _metadataCache.Clear();
+        _cache.Clear();
     }
 
     public WikiPageMetadata ExtractAndCacheMetadata(string pageName, string? culture, string content)
@@ -71,7 +64,7 @@ public class WikiPageMetadataCache : IWikiPageMetadataCache
         var title = MarkdownTitleExtractor.ExtractFirstTitle(content, pageName);
         var metadata = new WikiPageMetadata(title, content.FrontMatter);
         var cacheKey = GetCacheKey(pageName, culture);
-        _metadataCache[cacheKey] = metadata;
+        _cache.Set(cacheKey, metadata);
         return metadata;
     }
 
