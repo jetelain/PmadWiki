@@ -32,6 +32,7 @@ internal sealed class MemoryCacheGroup
         var entryOptions = new MemoryCacheEntryOptions()
             .SetSlidingExpiration(_slidingExpiration)
             .AddExpirationToken(new CancellationChangeToken(GetOrCreateCts().Token));
+
         return _cache.Set(_keyPrefix + key, value, entryOptions);
     }
 
@@ -50,9 +51,18 @@ internal sealed class MemoryCacheGroup
         var old = _cache.Get<CancellationTokenSource>(_ctsKey);
         _cache.Remove(_ctsKey);
         old?.Cancel();
-        old?.Dispose();
+
+        // Do not dispose the old CTS, as there may have a concurrent thread calling Set/GetOrCreate,
+        // and disposing the CTS would cause ObjectDisposedExceptions. Let it be collected by GC when no longer referenced.
     }
 
+    /// <summary>
+    /// Singleton to protect against concurrent creation of multiple CTS for the same group, which would cause Clear to be ineffective.
+    /// </summary>
+    /// <remarks>
+    /// MemoryCacheGroup is usually a scoped object, so we need to use a global lock. 
+    /// The contention should be minimal as CTS is only created on cache miss, and very few cache groups are expected to be created.
+    /// </remarks>
     private static readonly object _ctsCreationLock = new();
 
     private CancellationTokenSource GetOrCreateCts()

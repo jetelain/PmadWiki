@@ -22,6 +22,8 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
 
     public MarkdownRenderService(IOptions<WikiOptions> options, LinkGenerator linkGenerator, IMemoryCache memoryCache)
     {
+        ArgumentNullException.ThrowIfNull(memoryCache);
+
         _options = options.Value ?? throw new ArgumentNullException(nameof(options));
         _linkGenerator = linkGenerator ?? throw new ArgumentNullException(nameof(linkGenerator));
         _pipelineCache = new MemoryCacheGroup(memoryCache, $"MarkdownRenderService:Standard:{_options.WikiRepositoryName}", TimeSpan.FromDays(1));
