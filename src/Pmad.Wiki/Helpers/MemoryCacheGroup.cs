@@ -27,7 +27,7 @@ internal sealed class MemoryCacheGroup
         return _cache.TryGetValue(_keyPrefix + key, out value);
     }
 
-    public TValue Set<TValue>(string key, TValue value)
+    public TValue Set<TValue>(string key, TValue value) where TValue : notnull
     {
         var entryOptions = new MemoryCacheEntryOptions()
             .SetSlidingExpiration(_slidingExpiration)
@@ -36,14 +36,21 @@ internal sealed class MemoryCacheGroup
         return _cache.Set(_keyPrefix + key, value, entryOptions);
     }
 
-    public TValue GetOrCreate<TValue>(string key, Func<TValue> factory)
+    public TValue GetOrCreate<TValue>(string key, Func<TValue> factory) where TValue : notnull
     {
-        return _cache.GetOrCreate(_keyPrefix + key, entry =>
+        var result = _cache.GetOrCreate(_keyPrefix + key, entry =>
         {
             entry.SetSlidingExpiration(_slidingExpiration);
             entry.AddExpirationToken(new CancellationChangeToken(GetOrCreateCts().Token));
             return factory();
-        })!;
+        });
+        if (result == null)
+        {
+            // This should never happen because of the where TValue : notnull constraint,
+            // but we check just in case the factory returns null or if the cache has been corrupted.
+            throw new InvalidOperationException("Factory or cache returned null, but TValue is not nullable.");
+        }
+        return result;
     }
 
     public void Clear()
