@@ -52,7 +52,7 @@ internal sealed class MemoryCacheGroup
         _cache.Remove(_ctsKey);
         old?.Cancel();
 
-        // Do not dispose the old CTS, as there may have a concurrent thread calling Set/GetOrCreate,
+        // Do not dispose the old CTS, as there may be a concurrent thread calling Set/GetOrCreate,
         // and disposing the CTS would cause ObjectDisposedExceptions. Let it be collected by GC when no longer referenced.
     }
 
@@ -60,8 +60,12 @@ internal sealed class MemoryCacheGroup
     /// Singleton to protect against concurrent creation of multiple CTS for the same group, which would cause Clear to be ineffective.
     /// </summary>
     /// <remarks>
-    /// MemoryCacheGroup is usually a scoped object, so we need to use a global lock. 
-    /// The contention should be minimal as CTS is only created on cache miss, and very few cache groups are expected to be created.
+    /// Multiple <see cref="MemoryCacheGroup"/> instances can share the same underlying <see cref="IMemoryCache"/>
+    /// and group key, regardless of their DI lifetime (scoped, singleton, etc.). Because
+    /// <see cref="IMemoryCache.GetOrCreate{TItem}(object, Func{ICacheEntry,TItem})"/> is not atomic, we use a
+    /// global lock to ensure that only a single <see cref="CancellationTokenSource"/> is created per group key.
+    /// The contention should be minimal as the CTS is only created on cache misses, and very few cache groups are
+    /// expected to be created.
     /// </remarks>
     private static readonly object _ctsCreationLock = new();
 
