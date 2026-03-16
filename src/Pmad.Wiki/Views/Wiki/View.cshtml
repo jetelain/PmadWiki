@@ -167,4 +167,16 @@
             })();
         </script>
     }
+    else
+    {
+        <script type="application/json" id="wiki-view-config">
+            @Json.Serialize(new {
+                labels = new {
+                    copy = Localizer.GetString("Copy").ToString(),
+                    copyToClipboard = Localizer.GetString("Copy to clipboard").ToString()
+                }
+            })
+        </script>
+        <script src="~/lib/pmad-wiki/js/view.js"></script>
+    }
 }
