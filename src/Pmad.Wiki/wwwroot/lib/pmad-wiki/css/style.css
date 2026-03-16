@@ -255,3 +255,7 @@ a.wiki-slideshow {
 .wiki-content .wiki-pre-wrapper:hover .wiki-pre-copy-btn {
     opacity: 1;
 }
+
+.wiki-content .wiki-pre-wrapper:focus-within .wiki-pre-copy-btn {
+    opacity: 1;
+}
