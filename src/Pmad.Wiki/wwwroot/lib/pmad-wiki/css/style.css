@@ -205,14 +205,14 @@ a:hover .template-card .card-title {
 }
 
 
-a.wiki-slideshow, a.wiki-page {
+a.wiki-slideshow, a.wiki-link {
     border: var(--bs-border-width) solid var(--bs-secondary);
     padding: 0.25em 0.75em 0.25em 0.5em;
     display: inline-block;
     border-radius: var(--bs-border-radius-sm);
 }
 
-    a.wiki-slideshow::before, a.wiki-page::before {
+    a.wiki-slideshow::before, a.wiki-link::before {
         display: inline-block;
         font-family: bootstrap-icons !important;
         font-style: normal;
@@ -227,7 +227,7 @@ a.wiki-slideshow, a.wiki-page {
         color: var(--bs-secondary);
     }
 
-    a.wiki-page:not([class*="bi-"])::before {
+    a.wiki-link:not([class*="bi-"])::before {
         content: "\f3b9";
     }
 
