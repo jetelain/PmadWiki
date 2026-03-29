@@ -27,22 +27,30 @@ internal sealed class MemoryCacheGroup
         return _cache.TryGetValue(_keyPrefix + key, out value);
     }
 
-    public TValue Set<TValue>(string key, TValue value)
+    public TValue Set<TValue>(string key, TValue value) where TValue : notnull
     {
         var entryOptions = new MemoryCacheEntryOptions()
             .SetSlidingExpiration(_slidingExpiration)
             .AddExpirationToken(new CancellationChangeToken(GetOrCreateCts().Token));
+
         return _cache.Set(_keyPrefix + key, value, entryOptions);
     }
 
-    public TValue GetOrCreate<TValue>(string key, Func<TValue> factory)
+    public TValue GetOrCreate<TValue>(string key, Func<TValue> factory) where TValue : notnull
     {
-        return _cache.GetOrCreate(_keyPrefix + key, entry =>
+        var result = _cache.GetOrCreate(_keyPrefix + key, entry =>
         {
             entry.SetSlidingExpiration(_slidingExpiration);
             entry.AddExpirationToken(new CancellationChangeToken(GetOrCreateCts().Token));
             return factory();
-        })!;
+        });
+        if (result == null)
+        {
+            // This should never happen because of the where TValue : notnull constraint,
+            // but we check just in case the factory returns null or if the cache has been corrupted.
+            throw new InvalidOperationException("Factory or cache returned null, but TValue is not nullable.");
+        }
+        return result;
     }
 
     public void Clear()
@@ -50,9 +58,22 @@ internal sealed class MemoryCacheGroup
         var old = _cache.Get<CancellationTokenSource>(_ctsKey);
         _cache.Remove(_ctsKey);
         old?.Cancel();
-        old?.Dispose();
+
+        // Do not dispose the old CTS, as there may be a concurrent thread calling Set/GetOrCreate,
+        // and disposing the CTS would cause ObjectDisposedExceptions. Let it be collected by GC when no longer referenced.
     }
 
+    /// <summary>
+    /// Singleton to protect against concurrent creation of multiple CTS for the same group, which would cause Clear to be ineffective.
+    /// </summary>
+    /// <remarks>
+    /// Multiple <see cref="MemoryCacheGroup"/> instances can share the same underlying <see cref="IMemoryCache"/>
+    /// and group key, regardless of their DI lifetime (scoped, singleton, etc.). Because
+    /// <see cref="IMemoryCache.GetOrCreate{TItem}(object, Func{ICacheEntry,TItem})"/> is not atomic, we use a
+    /// global lock to ensure that only a single <see cref="CancellationTokenSource"/> is created per group key.
+    /// The contention should be minimal as the CTS is only created on cache misses, and very few cache groups are
+    /// expected to be created.
+    /// </remarks>
     private static readonly object _ctsCreationLock = new();
 
     private CancellationTokenSource GetOrCreateCts()

@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Routing;
+﻿using Markdig;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Moq;
 using Pmad.Wiki.Services;
 using Pmad.Wiki.Test.Infrastructure;
 
@@ -21,7 +24,7 @@ public class MarkdownRenderServiceTest
 
         _linkGenerator = CreateMockLinkGenerator();
         var optionsWrapper = Options.Create(_options);
-        _service = new MarkdownRenderService(optionsWrapper, _linkGenerator, new MemoryCache(Options.Create(new MemoryCacheOptions())));
+        _service = new MarkdownRenderService(optionsWrapper, _linkGenerator, CreateCache());
     }
 
     private static LinkGenerator CreateMockLinkGenerator(string basePath = "wiki")
@@ -37,10 +40,9 @@ public class MarkdownRenderServiceTest
         // Arrange
         var optionsWrapper = Options.Create<WikiOptions>(null!);
         var linkGenerator = CreateMockLinkGenerator();
-        var cache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new MarkdownRenderService(optionsWrapper, linkGenerator, cache));
+        Assert.Throws<ArgumentNullException>(() => new MarkdownRenderService(optionsWrapper, linkGenerator, CreateCache()));
     }
 
     [Fact]
@@ -50,10 +52,9 @@ public class MarkdownRenderServiceTest
         var options = new WikiOptions { NeutralMarkdownPageCulture = "en" };
         var optionsWrapper = Options.Create(options);
         var linkGenerator = CreateMockLinkGenerator();
-        var cache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
 
         // Act
-        var service = new MarkdownRenderService(optionsWrapper, linkGenerator, cache);
+        var service = new MarkdownRenderService(optionsWrapper, linkGenerator, CreateCache());
 
         // Assert
         Assert.NotNull(service);
@@ -74,10 +75,9 @@ public class MarkdownRenderServiceTest
         };
         var optionsWrapper = Options.Create(options);
         var linkGenerator = CreateMockLinkGenerator();
-        var cache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
 
         // Act
-        var service = new MarkdownRenderService(optionsWrapper, linkGenerator, cache);
+        var service = new MarkdownRenderService(optionsWrapper, linkGenerator, CreateCache());
         // Trigger pipeline creation
         service.ToHtml("test");
 
@@ -863,8 +863,7 @@ var code = ""sample"";
         var options = new WikiOptions { NeutralMarkdownPageCulture = "en" };
         var optionsWrapper = Options.Create(options);
         var linkGenerator = CreateMockLinkGenerator("docs");
-        var cache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
-        var service = new MarkdownRenderService(optionsWrapper, linkGenerator, cache);
+        var service = new MarkdownRenderService(optionsWrapper, linkGenerator, CreateCache());
         var markdown = "[Page](test.md)";
 
         // Act
@@ -881,8 +880,7 @@ var code = ""sample"";
         var options = new WikiOptions { NeutralMarkdownPageCulture = "en" };
         var optionsWrapper = Options.Create(options);
         var linkGenerator = CreateMockLinkGenerator("");
-        var cache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
-        var service = new MarkdownRenderService(optionsWrapper, linkGenerator, cache);
+        var service = new MarkdownRenderService(optionsWrapper, linkGenerator, CreateCache());
         var markdown = "[Page](test.md)";
 
         // Act
@@ -1370,4 +1368,7 @@ var code = ""sample"";
         }
         return count;
     }
+
+    private static MemoryCache CreateCache() =>
+        new MemoryCache(Options.Create(new MemoryCacheOptions()));
 }

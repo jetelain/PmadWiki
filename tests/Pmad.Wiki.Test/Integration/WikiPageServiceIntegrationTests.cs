@@ -54,7 +54,7 @@ public class WikiPageServiceIntegrationTests : IDisposable
         _service = new WikiPageService(
             gitRepositoryService,
             _mockWikiUserService.Object,
-            new WikiPageMetadataCache(gitRepositoryService, optionsWrapper, new MemoryCache(Options.Create(new MemoryCacheOptions()))),
+            new WikiPageMetadataCache(gitRepositoryService, optionsWrapper, CreateCache()),
             optionsWrapper);
     }
 
@@ -981,5 +981,8 @@ public class WikiPageServiceIntegrationTests : IDisposable
     }
 
     #endregion
+
+    private static MemoryCache CreateCache() =>
+        new MemoryCache(Options.Create(new MemoryCacheOptions()));
 }
 

@@ -37,7 +37,7 @@ public class WikiPageMetadataCacheTest
         _service = new WikiPageMetadataCache(
             _mockGitRepositoryService.Object,
             optionsWrapper, 
-            new MemoryCache(Options.Create(new MemoryCacheOptions())));
+            CreateCache());
     }
 
     #region GetPageMetadataAsync Tests
@@ -487,4 +487,7 @@ public class WikiPageMetadataCacheTest
     }
 
     #endregion
+
+    private static MemoryCache CreateCache() =>
+        new MemoryCache(Options.Create(new MemoryCacheOptions()));
 }

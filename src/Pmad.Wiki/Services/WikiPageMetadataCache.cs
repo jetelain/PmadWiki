@@ -19,8 +19,12 @@ public class WikiPageMetadataCache : IWikiPageMetadataCache
         IOptions<WikiOptions> options,
         IMemoryCache memoryCache)
     {
+        ArgumentNullException.ThrowIfNull(gitRepositoryService);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(memoryCache);
+
         _gitRepositoryService = gitRepositoryService;
-        _options = options.Value;
+        _options = options.Value ?? throw new ArgumentNullException(nameof(options));
         _cache = new MemoryCacheGroup(memoryCache, $"WikiPageMetadataCache:{_options.WikiRepositoryName}", TimeSpan.FromDays(1));
     }
 

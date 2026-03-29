@@ -205,15 +205,14 @@ a:hover .template-card .card-title {
 }
 
 
-a.wiki-slideshow {
+a.wiki-slideshow, a.wiki-link {
     border: var(--bs-border-width) solid var(--bs-secondary);
     padding: 0.25em 0.75em 0.25em 0.5em;
     display: inline-block;
     border-radius: var(--bs-border-radius-sm);
 }
 
-    a.wiki-slideshow::before {
-        content: "\f3a9";
+    a.wiki-slideshow::before, a.wiki-link::before {
         display: inline-block;
         font-family: bootstrap-icons !important;
         font-style: normal;
@@ -227,3 +226,43 @@ a.wiki-slideshow {
         margin-right: 0.5em;
         color: var(--bs-secondary);
     }
+
+    a.wiki-link:not([class*="bi-"])::before {
+        content: "\f3b9";
+    }
+
+    a.wiki-slideshow::before {
+        content: "\f3a9";
+    }
+
+/* Pre block and copy button */
+.wiki-content pre {
+    max-height: 50vh;
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: 1rem;
+    line-height: normal;
+    overflow-x: auto;
+}
+
+.wiki-content .wiki-pre-wrapper {
+    position: relative;
+}
+
+.wiki-content .wiki-pre-copy-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.wiki-content .wiki-pre-wrapper:hover .wiki-pre-copy-btn {
+    opacity: 1;
+}
+
+.wiki-content .wiki-pre-wrapper:focus-within .wiki-pre-copy-btn {
+    opacity: 1;
+}
