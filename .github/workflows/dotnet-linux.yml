@@ -17,6 +17,10 @@ jobs:
         fetch-depth: 0
         submodules: recursive
 
+    - name: Build Excalidraw bundle
+      working-directory: src/Pmad.Wiki/bundle/excalidraw
+      run: npm ci && node build.mjs
+
     - name: Restore dependencies
       run: dotnet restore Pmad.Wiki.sln
 
