@@ -10,9 +10,9 @@ The build writes the following files into `src/Pmad.Wiki/wwwroot/lib/excalidraw/
 
 | File | Description |
 |---|---|
-| `excalidraw-bundle.js` | Single minified ESM file — React, ReactDOM and Excalidraw bundled together |
+| `excalidraw-bundle.js` | Single minified ESM file — React and Excalidraw bundled together |
 | `excalidraw.css` | Excalidraw stylesheet |
-| `*` (other files) | Static assets (stylesheet, fonts, locale files, …) loaded at runtime via `EXCALIDRAW_ASSET_PATH` |
+| `fonts` | Fonts loaded at runtime via `EXCALIDRAW_ASSET_PATH` |
 
 React and Excalidraw are bundled into the **same** module so that only one React
 instance exists on the page — a requirement for React hooks to work correctly.
