@@ -716,9 +716,9 @@ namespace Pmad.Wiki.Controllers
                 return false;
             }
 
-            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!_options.AllowedMediaExtensions.Contains(extension))
+            if (!_options.IsMediaPathExtensionAllowed(file.FileName))
             {
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
                 message = _localizer["File type {0} is not allowed.", extension];
                 return false;
             }

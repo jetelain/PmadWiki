@@ -72,7 +72,7 @@ internal class WikiPageEditService : IWikiPageEditService
 
                         if (mediaInfo.EditableMediaInfo?.IsEditable == true
                             && mediaInfo.EditableMediaInfo.InitialGitPath != null
-                            && mediaInfo.EditableMediaInfo.InitialGitPath.StartsWith(ownedMediaPath))
+                            && mediaInfo.EditableMediaInfo.InitialGitPath.StartsWith(ownedMediaPath, System.StringComparison.Ordinal))
                         {
                             // If the media is editable and has an initial git path that indicates it belongs to the same page, we treat it as an update to existing media
                             var mediaPath = mediaInfo.EditableMediaInfo.InitialGitPath;
