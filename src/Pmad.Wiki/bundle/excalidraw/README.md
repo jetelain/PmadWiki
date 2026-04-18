@@ -10,13 +10,13 @@ The build writes the following files into `src/Pmad.Wiki/wwwroot/lib/excalidraw/
 
 | File | Description |
 |---|---|
-| `excalidraw-bundle.js` | Single minified ESM file — React and Excalidraw bundled together |
-| `excalidraw.css` | Excalidraw stylesheet |
-| `fonts` | Fonts loaded at runtime via `EXCALIDRAW_ASSET_PATH` |
+| `excalidraw-bundle.js` | Single minified ESM file exporting `React`, `createRoot`, and `ExcalidrawLib` |
+| `excalidraw.css` | Excalidraw stylesheet copied for runtime use |
+| `fonts/` | Font assets copied for runtime use via `EXCALIDRAW_ASSET_PATH` |
 
 React and Excalidraw are bundled into the **same** module so that only one React
 instance exists on the page — a requirement for React hooks to work correctly.
-Consumers import everything from the single bundle file:
+Consumers import the available exports from the single bundle file:
 
 ```js
 import { ExcalidrawLib, React, createRoot } from '/lib/excalidraw/excalidraw-bundle.js';
