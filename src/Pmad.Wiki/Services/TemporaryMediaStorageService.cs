@@ -133,7 +133,7 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
                 var fileName = Path.GetFileNameWithoutExtension(file);
                 if (Guid.TryParse(fileName, out _))
                 {
-                    var metadata = await ReadMetadata(metadataDirectory, fileName);
+                    var metadata = await ReadMetadata(metadataDirectory, fileName, cancellationToken).ConfigureAwait(false);
                     var fileMediaInfo = new TemporaryMediaInfo
                     {
                         TemporaryId = fileName,
@@ -159,14 +159,14 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
         return result;
     }
 
-    private static async Task<TemporaryMediaInfo?> ReadMetadata(string metadataDirectory, string fileName)
+    private static async Task<TemporaryMediaInfo?> ReadMetadata(string metadataDirectory, string fileName, CancellationToken cancellationToken)
     {
         var metadataPath = Path.Combine(metadataDirectory, fileName + ".json");
         if (File.Exists(metadataPath))
         {
             try
             {
-                return JsonSerializer.Deserialize<TemporaryMediaInfo>(await File.ReadAllTextAsync(metadataPath));
+                return JsonSerializer.Deserialize<TemporaryMediaInfo>(await File.ReadAllTextAsync(metadataPath, cancellationToken).ConfigureAwait(false));
             }
             catch
             {
@@ -186,7 +186,7 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
         // Ensure cache is loaded
         await GetUserTemporaryMediaAsync(user, cancellationToken).ConfigureAwait(false);
         
-        var (_, cacheKey) = GetUserTemporaryDirectory(user);
+        var (userDir, cacheKey) = GetUserTemporaryDirectory(user);
 
         // Remove from cache and delete files
         if (_userMediaCache.TryGetValue(cacheKey, out var userCache))
@@ -203,6 +203,8 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
                     {
                         // Ignore deletion errors
                     }
+
+                    RemoveMetadata(userDir, tempId);
                 }
             }
         }
@@ -232,13 +234,16 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
                     var lastWrite = File.GetLastWriteTimeUtc(file);
                     if (lastWrite < cutoffDate.UtcDateTime)
                     {
+                        var tempId = Path.GetFileNameWithoutExtension(file);
+
                         File.Delete(file);
 
                         if (userCache != null)
                         {
-                            var tempId = Path.GetFileNameWithoutExtension(file);
                             userCache.TryRemove(tempId, out _);
                         }
+
+                        RemoveMetadata(userDir, tempId);
                     }
                 }
                 catch
@@ -255,5 +260,21 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
     {
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(userGitEmail));
         return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private static void RemoveMetadata(string userDir, string temporaryId)
+    {
+        var metadataFile = Path.Combine(userDir, "metadata", temporaryId + ".json");
+        if (File.Exists(metadataFile))
+        {
+            try
+            {
+                File.Delete(metadataFile);
+            }
+            catch
+            {
+                // Ignore deletion errors
+            }
+        }
     }
 }
