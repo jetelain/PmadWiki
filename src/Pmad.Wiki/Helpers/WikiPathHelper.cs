@@ -60,4 +60,39 @@ internal static class WikiPathHelper
     {
         return mediaPath.EndsWith(".excalidraw.svg", StringComparison.OrdinalIgnoreCase);
     }
+
+    public static List<string> GetDirectoryParts(string pagePath)
+    {
+        var pageParts = pagePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        // Get all parts except the last one (the file name)
+        return [.. pageParts.Take(pageParts.Length - 1)];
+    }
+
+    public static string ResolveRelativePath(List<string> currentPageDirectoryParts, string relativePath)
+    {
+        var relativeParts = relativePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var resultParts = new List<string>(currentPageDirectoryParts);
+
+        // Process each part of the relative path
+        foreach (var part in relativeParts)
+        {
+            if (part == "..")
+            {
+                // Go up one level
+                if (resultParts.Count > 0)
+                {
+                    resultParts.RemoveAt(resultParts.Count - 1);
+                }
+            }
+            else if (part != ".")
+            {
+                // Add the part
+                resultParts.Add(part);
+            }
+            // Skip "." as it means current directory
+        }
+
+        return string.Join("/", resultParts);
+    }
 }

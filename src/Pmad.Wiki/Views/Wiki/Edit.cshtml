@@ -49,6 +49,7 @@
         <input type="hidden" asp-for="IsNew" />
         <input type="hidden" asp-for="OriginalContentHash" />
         <input type="hidden" asp-for="TemporaryMediaIds" id="temporary-media-ids" />
+        <input type="hidden" asp-for="DiagramTempUrls" id="diagram-temp-urls" />
 
         <div asp-validation-summary="ModelOnly" class="alert alert-warning" role="alert"></div>
 
@@ -120,6 +121,14 @@
                     </button>
                     <button type="button" class="btn btn-outline-secondary" data-markdown-action="table" title="@Localizer["Table"]">
                         <i class="bi bi-table"></i>
+                    </button>
+                </div>
+                <div class="btn-group btn-group-sm me-2" role="group" aria-label="Diagrams">
+                    <button type="button" id="newDiagramBtn" class="btn btn-outline-secondary" title="@Localizer["New Diagram"]">
+                        <i class="bi bi-vector-pen"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" title="@Localizer["Edit Diagrams"]" data-bs-toggle="modal" data-bs-target="#diagramListModal">
+                        <i class="bi bi-collection-fill"></i>
                     </button>
                 </div>
                 <div class="btn-group btn-group-sm" role="group" aria-label="Page properties">
@@ -276,6 +285,42 @@
     </div>
 </div>
 
+<!-- Excalidraw Editor Modal -->
+<div class="modal fade" id="excalidrawEditModal" tabindex="-1" aria-labelledby="excalidrawEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header position-relative">
+                <h5 class="modal-title" id="excalidrawEditModalLabel">@Localizer["Edit Diagram"]</h5>
+                <div class="position-absolute start-50 translate-middle-x d-flex align-items-center gap-2">
+                    <span id="excalidrawSaveStatus" class="text-muted small d-none"></span>
+                    <button type="button" id="excalidrawSaveBtn" class="btn btn-primary">
+                        <i class="bi bi-save"></i> @Localizer["Save & Close"]
+                    </button>
+                </div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="excalidraw-editor-container" style="height: 100%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Diagram List Modal -->
+<div class="modal fade" id="diagramListModal" tabindex="-1" aria-labelledby="diagramListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="diagramListModalLabel">@Localizer["Diagrams in Page"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3" id="diagramList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Styles {
     <link rel="stylesheet" href="~/lib/pmad-wiki/css/style.css" />
     <link rel="stylesheet" href="~/lib/revealjs/reveal.css" />
@@ -290,7 +335,9 @@
                 previewMarkdown = Url.Action("PreviewMarkdown", "Wiki"),
                 uploadMedia = Url.Action("UploadMedia", "Wiki"),
                 getAccessiblePages = Url.Action("GetAccessiblePages", "Wiki"),
-                getMediaGallery = Url.Action("GetMediaGallery", "Wiki")
+                getMediaGallery = Url.Action("GetMediaGallery", "Wiki"),
+                editMedia = Url.Action("EditMedia", "Wiki"),
+                relativeMedia = Url.Action("RelativeMedia", "Wiki")
             },
             currentPage = new {
                 pageName = Model.PageName,
@@ -316,9 +363,16 @@
                 listItem = Localizer.GetString("List item").ToString(),
                 quote = Localizer.GetString("Quote").ToString(),
                 linkText = Localizer.GetString("link text").ToString(),
-                altText = Localizer.GetString("alt text").ToString()
+                altText = Localizer.GetString("alt text").ToString(),
+                noDiagramsFound = Localizer.GetString("No diagrams found in the page.").ToString(),
+                editDiagram = Localizer.GetString("Edit").ToString(),
+                saveDiagram = Localizer.GetString("Save & Close").ToString(),
+                savingDiagram = Localizer.GetString("Saving...").ToString(),
+                failedToSaveDiagram = Localizer.GetString("Failed to save diagram. Please try again.").ToString(),
+                failedToEditDiagram = Localizer.GetString("Failed to open diagram for editing. Please try again.").ToString()
             },
             basePath = Url.Content("~"),
+            excalidrawLangCode = currentUICulture.Name,
             slideShowConfig = Model.SlideShowConfig
         })
     </script>

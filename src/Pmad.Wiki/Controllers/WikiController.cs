@@ -775,7 +775,6 @@ namespace Pmad.Wiki.Controllers
 
         [HttpGet]
         [Authorize]
-        [ResponseCache(Duration = CacheDurationSeconds, Location = ResponseCacheLocation.Client)]
         public async Task<IActionResult> TempMedia(string id, CancellationToken cancellationToken)
         {
             if (!WikiInputValidator.IsValidTempMediaId(id))
@@ -798,9 +797,23 @@ namespace Pmad.Wiki.Controllers
             var tempMedia = await _temporaryMediaStorage.GetUserTemporaryMediaAsync(wikiUser.User, cancellationToken);
             if (tempMedia.TryGetValue(id, out var mediaInfo))
             {
-                return File(fileContent, ContentTypeHelper.GetContentType(mediaInfo.OriginalFileName));
+                var contentType = ContentTypeHelper.GetContentType(mediaInfo.OriginalFileName);
+                if (mediaInfo.EditableMediaInfo?.IsEditable == true)
+                {
+                    var etag = GetEtag(fileContent);
+                    if (Request.Headers.IfNoneMatch == etag)
+                    {
+                        return StatusCode(StatusCodes.Status304NotModified);
+                    }
+                    Response.Headers.ETag = etag;
+                    Response.Headers.CacheControl = "no-cache";
+                    return File(fileContent, contentType);
+                }
+                Response.Headers.CacheControl = $"private, max-age={CacheDurationSeconds}";
+                return File(fileContent, contentType);
             }
 
+            Response.Headers.CacheControl = $"private, max-age={CacheDurationSeconds}";
             return File(fileContent, "application/octet-stream");
         }
 
@@ -1015,7 +1028,25 @@ namespace Pmad.Wiki.Controllers
         }
 
         [HttpGet]
-        [ResponseCache(Duration = CacheDurationSeconds, Location = ResponseCacheLocation.Client)]
+        [Authorize]
+        public async Task<IActionResult> RelativeMedia(string pageName, string relativePath)
+        {
+            if (!WikiInputValidator.IsValidPageName(pageName))
+            {
+                return BadRequest("Invalid page name.");
+            }
+            if (!WikiInputValidator.MediaPathMarkdownRegex().IsMatch(relativePath)) // This endpoint is used to resolve media paths in markdown
+            {
+                return BadRequest("Invalid media path.");
+            }
+            if (!_options.IsMediaPathExtensionAllowed(relativePath))
+            {
+                return BadRequest("Unsupported media file type.");
+            }
+            return RedirectToAction(nameof(Media), new { id = WikiPathHelper.ResolveRelativePath(WikiPathHelper.GetDirectoryParts(pageName), relativePath) });
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Media(string id, CancellationToken cancellationToken)
         {
             if (!WikiInputValidator.IsValidMediaPath(id))
@@ -1051,8 +1082,27 @@ namespace Pmad.Wiki.Controllers
                 return NotFound();
             }
 
-            return File(fileContent, ContentTypeHelper.GetContentType(id));
+            var contentType = ContentTypeHelper.GetContentType(id);
+
+            if (WikiPathHelper.IsEditableMedia(id))
+            {
+                var etag = GetEtag(fileContent);
+                if (Request.Headers.IfNoneMatch == etag)
+                {
+                    return StatusCode(StatusCodes.Status304NotModified);
+                }
+                Response.Headers.ETag = etag;
+                Response.Headers.CacheControl = "no-cache";
+                return File(fileContent, contentType);
+            }
+
+            Response.Headers.CacheControl = $"private, max-age={CacheDurationSeconds}";
+            return File(fileContent, contentType);
         }
 
+        private static string GetEtag(byte[] fileContent)
+        {
+            return $"\"{Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(fileContent))[..16]}\"";
+        }
     }
 }

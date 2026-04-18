@@ -648,4 +648,31 @@
   <data name="This page is a template. It can be used to create a new page." xml:space="preserve">
     <value>Cette page est un modèle. Elle peut être utilisée pour créer une nouvelle page.</value>
   </data>
+  <data name="New Diagram" xml:space="preserve">
+    <value>Nouveau diagramme</value>
+  </data>
+  <data name="Edit Diagrams" xml:space="preserve">
+    <value>Modifier les diagrammes</value>
+  </data>
+  <data name="Diagrams in Page" xml:space="preserve">
+    <value>Diagrammes dans la page</value>
+  </data>
+  <data name="Edit Diagram" xml:space="preserve">
+    <value>Modifier le diagramme</value>
+  </data>
+  <data name="No diagrams found in the page." xml:space="preserve">
+    <value>Aucun diagramme trouvé dans la page.</value>
+  </data>
+  <data name="Save &amp; Close" xml:space="preserve">
+    <value>Enregistrer et fermer</value>
+  </data>
+  <data name="Saving..." xml:space="preserve">
+    <value>Enregistrement...</value>
+  </data>
+  <data name="Failed to save diagram. Please try again." xml:space="preserve">
+    <value>Échec de l'enregistrement du diagramme. Veuillez réessayer.</value>
+  </data>
+  <data name="Failed to open diagram for editing. Please try again." xml:space="preserve">
+    <value>Échec de l'ouverture du diagramme pour modification. Veuillez réessayer.</value>
+  </data>
 </root>

@@ -49,7 +49,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Track uploaded media files
     const uploadedMedia = new Set();
+    const diagramTempUrls = new Map(); // url -> { tempId, saveUrl } for editable diagrams
     const temporaryMediaIdsInput = document.getElementById('temporary-media-ids');
+    const diagramTempUrlsInput = document.getElementById('diagram-temp-urls');
 
     // Track changes for unsaved warning
     const form = textarea.closest('form');
@@ -337,6 +339,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Track the uploaded media
             uploadedMedia.add(result.temporaryId);
+            if (result.isEditable) {
+                diagramTempUrls.set(result.url, { tempId: result.temporaryId, saveUrl: result.url });
+                updateDiagramTempUrls();
+            }
             updateTemporaryMediaIds();
 
             // Insert markdown reference at cursor position
@@ -357,6 +363,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateTemporaryMediaIds() {
         if (temporaryMediaIdsInput) {
             temporaryMediaIdsInput.value = Array.from(uploadedMedia).join(',');
+        }
+    }
+
+    function updateDiagramTempUrls() {
+        if (diagramTempUrlsInput) {
+            diagramTempUrlsInput.value = JSON.stringify(Object.fromEntries(diagramTempUrls));
         }
     }
 
@@ -911,5 +923,413 @@ document.addEventListener('DOMContentLoaded', function () {
                 modal?.hide();
             });
         }
+    }
+
+    // --- Excalidraw diagram support ---
+
+    let excalidrawLoaded = false;
+    let excalidrawRoot = null;
+    let excalidrawAPI = null;
+    let currentEditingTempId = null;
+    let currentEditingTempUrl = null;
+
+    // On page load, restore diagramTempUrls from the hidden field (handles round-trips after validation failure)
+    // and sync uploadedMedia from it so TemporaryMediaIds stays consistent.
+    (function restoreStateFromHiddenFields() {
+        if (diagramTempUrlsInput && diagramTempUrlsInput.value) {
+            try {
+                const stored = JSON.parse(diagramTempUrlsInput.value);
+                for (const [url, entry] of Object.entries(stored)) {
+                    diagramTempUrls.set(url, entry);
+                    uploadedMedia.add(entry.tempId);
+                }
+            } catch (e) {
+                console.warn('Failed to restore diagramTempUrls:', e);
+            }
+        }
+        updateTemporaryMediaIds();
+    })();
+
+    function getAllDiagrams() {
+        const content = textarea.value;
+        const results = [];
+        const seenUrls = new Set();
+
+        // Committed diagrams: URL itself contains .excalidraw.svg
+        const imgRegex = /!\[([^\]]*)\]\(([^)]+)\)/gi;
+        let match;
+        while ((match = imgRegex.exec(content)) !== null) {
+            const url = match[2];
+            if (url.toLowerCase().includes('.excalidraw.svg')) {
+                results.push({
+                    altText: match[1],
+                    url,
+                    fullMatch: match[0],
+                    index: match.index,
+                    previewUrl: config.apiEndpoints.relativeMedia + "?pageName=" + encodeURIComponent(config.currentPage.pageName) + "&relativePath=" + encodeURIComponent(url)
+                });
+                seenUrls.add(url);
+            }
+        }
+
+        // Temp diagrams uploaded or edited this session: look up diagramTempUrls entries present in the markdown
+        for (const [tempUrl] of diagramTempUrls) {
+            if (seenUrls.has(tempUrl) || !content.includes(tempUrl)) continue;
+            const escapedUrl = tempUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const tempMatch = new RegExp(`!\\[([^\\]]*)\\]\\(${escapedUrl}\\)`).exec(content);
+            results.push({
+                altText: tempMatch ? tempMatch[1] : '',
+                url: tempUrl,
+                fullMatch: tempMatch ? tempMatch[0] : '',
+                index: tempMatch ? tempMatch.index : -1,
+                previewUrl: tempUrl
+            });
+            seenUrls.add(tempUrl);
+        }
+
+        return results;
+    }
+
+    async function loadExcalidraw() {
+        if (excalidrawLoaded) return;
+        const base = config.basePath.replace(/\/+$/, '');
+        window.EXCALIDRAW_ASSET_PATH = base + '/lib/excalidraw/';
+        if (!document.getElementById('excalidraw-css')) {
+            const link = document.createElement('link');
+            link.id = 'excalidraw-css';
+            link.rel = 'stylesheet';
+            link.href = base + '/lib/excalidraw/excalidraw.css';
+            document.head.appendChild(link);
+        }
+        const module = await import(base + '/lib/excalidraw/excalidraw-bundle.js');
+        window._excalidrawLib = module.ExcalidrawLib;
+        window._excalidrawReact = module.React;
+        window._excalidrawCreateRoot = module.createRoot;
+        excalidrawLoaded = true;
+    }
+
+    async function openExcalidrawEditor(tempId, tempUrl, displayName, initialData) {
+        currentEditingTempId = tempId;
+        currentEditingTempUrl = tempUrl;
+        await loadExcalidraw();
+
+        const ExcalidrawLib = window._excalidrawLib;
+        const React = window._excalidrawReact;
+        const createRoot = window._excalidrawCreateRoot;
+
+        const modal = document.getElementById('excalidrawEditModal');
+        const titleEl = document.getElementById('excalidrawEditModalLabel');
+        if (titleEl) titleEl.textContent = displayName;
+
+        const saveBtn = document.getElementById('excalidrawSaveBtn');
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = `<i class="bi bi-save"></i> ${config.labels.saveDiagram || 'Save & Close'}`;
+        }
+
+        const bsModal = new bootstrap.Modal(modal, { backdrop: 'static', keyboard: false });
+        bsModal.show();
+
+        modal.addEventListener('shown.bs.modal', function onShown() {
+            modal.removeEventListener('shown.bs.modal', onShown);
+
+            const container = document.getElementById('excalidraw-editor-container');
+
+            const App = () => {
+                const [api, setApi] = React.useState(null);
+
+                React.useEffect(() => {
+                    if (api) {
+                        excalidrawAPI = api;
+                    }
+                }, [api]);
+
+                return React.createElement(
+                    'div',
+                    { style: { height: '100%', position: 'relative' } },
+                    React.createElement(ExcalidrawLib.Excalidraw, {
+                        excalidrawAPI: setApi,
+                        initialData: initialData || null,
+                        langCode: config.excalidrawLangCode || 'en-US'
+                    })
+                );
+            };
+
+            if (excalidrawRoot) {
+                excalidrawRoot.unmount();
+            }
+            excalidrawRoot = createRoot(container);
+            excalidrawRoot.render(React.createElement(App));
+        }, { once: true });
+    }
+
+    async function saveExcalidrawDiagram() {
+        if (!excalidrawAPI || !currentEditingTempId) return;
+
+        const saveBtn = document.getElementById('excalidrawSaveBtn');
+        const saveStatus = document.getElementById('excalidrawSaveStatus');
+
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = config.labels.savingDiagram || 'Saving...';
+        }
+        if (saveStatus) saveStatus.classList.add('d-none');
+
+        try {
+            const ExcalidrawLib = window._excalidrawLib;
+            const elements = excalidrawAPI.getSceneElements();
+            const appState = excalidrawAPI.getAppState();
+            const files = excalidrawAPI.getFiles();
+
+            const svgElement = await ExcalidrawLib.exportToSvg({
+                elements,
+                appState: { ...appState, exportWithDarkMode: false, exportEmbedScene: true },
+                files
+            });
+
+            const svgString = new XMLSerializer().serializeToString(svgElement);
+            const blob = new Blob([svgString], { type: 'image/svg+xml' });
+
+            const formData = new FormData();
+            formData.append('file', blob, 'diagram.excalidraw.svg');
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const response = await fetch(currentEditingTempUrl, {
+                method: 'POST',
+                body: formData,
+                headers: { 'RequestVerificationToken': token }
+            });
+
+            if (!response.ok) {
+                throw new Error(config.labels.failedToSaveDiagram || 'Failed to save diagram.');
+            }
+
+            const bsModal = bootstrap.Modal.getInstance(document.getElementById('excalidrawEditModal'));
+            bsModal?.hide();
+        } catch (error) {
+            console.error('Error saving diagram:', error);
+            if (saveStatus) {
+                saveStatus.textContent = config.labels.failedToSaveDiagram || 'Failed to save diagram. Please try again.';
+                saveStatus.classList.remove('d-none');
+            }
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `<i class="bi bi-save"></i> ${config.labels.saveDiagram || 'Save & Close'}`;
+            }
+        }
+    }
+
+    async function startEditDiagram(diagram) {
+        let entry = diagramTempUrls.get(diagram.url);
+        let url = diagram.url;
+
+        if (!entry) {
+            // Check if the diagram URL is itself a temp media URL (round-trip after validation failure):
+            // in that case the URL in markdown was previously returned by the backend and can be used directly.
+            const idMatch = /[?/]id[=/]([a-f0-9]+)/i.exec(diagram.url) || /tempmedia[/?=]([a-f0-9]+)/i.exec(diagram.url);
+            if (idMatch) {
+                entry = { tempId: idMatch[1], saveUrl: diagram.url };
+                diagramTempUrls.set(url, entry);
+            }
+        }
+
+        if (!entry) {
+            // Committed file – call EditMedia to get an editable temp copy
+            showUploadIndicator(diagram.url);
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const response = await fetch(`${config.apiEndpoints.editMedia}?existingMediaPath=${encodeURIComponent(diagram.url)}`, {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': token }
+                });
+
+                if (!response.ok) {
+                    throw new Error(config.labels.failedToEditDiagram || 'Failed to open diagram for editing.');
+                }
+
+                const result = await response.json();
+                entry = { tempId: result.temporaryId, saveUrl: result.url };
+                const newUrl = result.url;
+
+                // Replace the old path in markdown with the new temp URL returned by the backend
+                const newContent = textarea.value.replaceAll(diagram.url, newUrl);
+                insertTextWithUndo(textarea, 0, textarea.value.length, newContent, newContent.length);
+
+                uploadedMedia.add(entry.tempId);
+                diagramTempUrls.set(newUrl, entry);
+                updateTemporaryMediaIds();
+                updateDiagramTempUrls();
+                url = newUrl;
+
+                hideUploadIndicator();
+            } catch (error) {
+                console.error('Error creating editable diagram copy:', error);
+                showUploadError(diagram.url, error.message);
+                hideUploadIndicator();
+                return;
+            }
+        }
+
+        const urlParts = url.split('/');
+        const displayName = diagram.altText || urlParts[urlParts.length - 1];
+
+        let initialData = null;
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                await loadExcalidraw();
+                const blob = await response.blob();
+                try {
+                    initialData = await window._excalidrawLib.loadFromBlob(blob, null, null);
+                } catch (e) {
+                    // New/empty diagram – start with blank canvas
+                    console.log('Could not parse diagram data, starting fresh:', e);
+                }
+            }
+        } catch (e) {
+            console.log('Could not fetch diagram:', e);
+        }
+
+        await openExcalidrawEditor(entry.tempId, entry.saveUrl, displayName, initialData);
+    }
+
+    // New Diagram button
+    const newDiagramBtn = document.getElementById('newDiagramBtn');
+    if (newDiagramBtn) {
+        newDiagramBtn.addEventListener('click', async function () {
+            const timestamp = Date.now();
+            const fileName = `diagram-${timestamp}.excalidraw.svg`;
+            const placeholderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><!-- svg-source:excalidraw --></svg>`;
+            const blob = new Blob([placeholderSvg], { type: 'image/svg+xml' });
+            const file = new File([blob], fileName, { type: 'image/svg+xml' });
+
+            showUploadIndicator(fileName);
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const response = await fetch(config.apiEndpoints.uploadMedia, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'RequestVerificationToken': token }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Upload failed');
+                }
+
+                const result = await response.json();
+
+                uploadedMedia.add(result.temporaryId);
+                diagramTempUrls.set(result.url, { tempId: result.temporaryId, saveUrl: result.url });
+                updateTemporaryMediaIds();
+                updateDiagramTempUrls();
+
+                const markdownRef = `![${fileName}](${result.url})`;
+                insertTextWithUndo(textarea, textarea.selectionStart, textarea.selectionEnd, markdownRef, markdownRef.length);
+
+                hideUploadIndicator();
+
+                await openExcalidrawEditor(result.temporaryId, result.url, fileName, null);
+            } catch (error) {
+                console.error('New diagram error:', error);
+                showUploadError(fileName, error.message);
+                hideUploadIndicator();
+            }
+        });
+    }
+
+    // Diagram List modal
+    const diagramListModal = document.getElementById('diagramListModal');
+    if (diagramListModal) {
+        diagramListModal.addEventListener('show.bs.modal', function () {
+            const diagrams = getAllDiagrams();
+            const list = document.getElementById('diagramList');
+            if (!list) return;
+
+            list.innerHTML = '';
+
+            if (diagrams.length === 0) {
+                const p = document.createElement('p');
+                p.className = 'text-muted mb-0';
+                p.textContent = config.labels.noDiagramsFound || 'No diagrams found in the page.';
+                list.appendChild(p);
+                return;
+            }
+
+            diagrams.forEach(diagram => {
+                const urlParts = diagram.url.split('/');
+                const displayName = diagram.altText || urlParts[urlParts.length - 1];
+
+                const col = document.createElement('div');
+                col.className = 'col-md-4 col-sm-6';
+
+                const card = document.createElement('div');
+                card.className = 'card h-100';
+
+                const imgWrapper = document.createElement('div');
+                imgWrapper.className = 'card-img-top d-flex align-items-center justify-content-center bg-light';
+                imgWrapper.style.height = '160px';
+                imgWrapper.style.overflow = 'hidden';
+
+                const img = document.createElement('img');
+                img.src = diagram.previewUrl;
+                img.alt = displayName;
+                img.style.maxHeight = '160px';
+                img.style.maxWidth = '100%';
+                img.style.objectFit = 'contain';
+                imgWrapper.appendChild(img);
+
+                const cardBody = document.createElement('div');
+                cardBody.className = 'card-body d-flex flex-column';
+
+                const nameEl = document.createElement('p');
+                nameEl.className = 'card-text small text-truncate mb-2';
+                nameEl.title = displayName;
+                nameEl.textContent = displayName;
+
+                const editBtn = document.createElement('button');
+                editBtn.type = 'button';
+                editBtn.className = 'btn btn-sm btn-outline-primary mt-auto';
+                editBtn.innerHTML = `<i class="bi bi-pencil"></i> ${config.labels.editDiagram || 'Edit'}`;
+                editBtn.addEventListener('click', function () {
+                    const bsModal = bootstrap.Modal.getInstance(diagramListModal);
+                    bsModal?.hide();
+                    diagramListModal.addEventListener('hidden.bs.modal', async function onHidden() {
+                        diagramListModal.removeEventListener('hidden.bs.modal', onHidden);
+                        await startEditDiagram(diagram);
+                    }, { once: true });
+                });
+
+                cardBody.appendChild(nameEl);
+                cardBody.appendChild(editBtn);
+                card.appendChild(imgWrapper);
+                card.appendChild(cardBody);
+                col.appendChild(card);
+                list.appendChild(col);
+            });
+        });
+    }
+
+    // Excalidraw save button
+    const excalidrawSaveBtn = document.getElementById('excalidrawSaveBtn');
+    if (excalidrawSaveBtn) {
+        excalidrawSaveBtn.addEventListener('click', saveExcalidrawDiagram);
+    }
+
+    // Clean up Excalidraw when its modal closes
+    const excalidrawEditModal = document.getElementById('excalidrawEditModal');
+    if (excalidrawEditModal) {
+        excalidrawEditModal.addEventListener('hidden.bs.modal', function () {
+            if (excalidrawRoot) {
+                excalidrawRoot.unmount();
+                excalidrawRoot = null;
+            }
+            excalidrawAPI = null;
+            currentEditingTempId = null;
+            currentEditingTempUrl = null;
+        });
     }
 });

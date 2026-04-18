@@ -109,4 +109,35 @@ public class WikiPathHelperTest
     {
         Assert.False(WikiPathHelper.IsEditableMedia(mediaPath));
     }
+
+    [Theory]
+    [InlineData("file.md", new string[] { })]
+    [InlineData("dir/file.md", new[] { "dir" })]
+    [InlineData("dir/sub/file.md", new[] { "dir", "sub" })]
+    [InlineData("dir/sub/deep/file.md", new[] { "dir", "sub", "deep" })]
+    [InlineData("/dir/file.md", new[] { "dir" })]
+    public void GetDirectoryParts_ReturnsExpectedResult(string pagePath, string[] expected)
+    {
+        var result = WikiPathHelper.GetDirectoryParts(pagePath);
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("dir/page.md", "other.md", "dir/other.md")]
+    [InlineData("dir/page.md", "sub/other.md", "dir/sub/other.md")]
+    [InlineData("dir/page.md", "../other.md", "other.md")]
+    [InlineData("dir/sub/page.md", "../other.md", "dir/other.md")]
+    [InlineData("dir/sub/page.md", "../../other.md", "other.md")]
+    [InlineData("dir/sub/page.md", "../../a/b/other.md", "a/b/other.md")]
+    [InlineData("dir/page.md", "./other.md", "dir/other.md")]
+    [InlineData("page.md", "other.md", "other.md")]
+    [InlineData("page.md", "sub/other.md", "sub/other.md")]
+    [InlineData("page.md", "../other.md", "other.md")]
+    [InlineData("dir/sub/page.md", "../../../other.md", "other.md")]
+    public void ResolveRelativePath_ReturnsExpectedResult(string currentPage, string relativePath, string expected)
+    {
+        var directoryParts = WikiPathHelper.GetDirectoryParts(currentPage);
+        var result = WikiPathHelper.ResolveRelativePath(directoryParts, relativePath);
+        Assert.Equal(expected, result);
+    }
 }

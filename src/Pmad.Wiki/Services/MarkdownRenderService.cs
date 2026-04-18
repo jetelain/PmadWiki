@@ -113,7 +113,7 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
     private void ProcessWikiLinks(Markdig.Syntax.MarkdownDocument document, string currentPageName, string? culture)
     {
         // Pre-compute current page directory parts to avoid repeated splitting
-        var currentPageDirectoryParts = GetDirectoryParts(currentPageName);
+        var currentPageDirectoryParts = WikiPathHelper.GetDirectoryParts(currentPageName);
 
         foreach (var linkInline in document.Descendants<LinkInline>())
         {
@@ -135,19 +135,19 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
     private bool IsMedia(string url)
     {
         return WikiInputValidator.MediaPathMarkdownRegex().IsMatch(url)
-            && _options.AllowedMediaExtensions.Any(ext => url.EndsWith(ext, StringComparison.OrdinalIgnoreCase));
+            && _options.IsMediaPathExtensionAllowed(url);
     }
 
     private string ProcessMediaLink(string url, List<string> currentPageDirectoryParts)
     {
-        var targetMedia = ResolveRelativePath(currentPageDirectoryParts, url);
+        var targetMedia = WikiPathHelper.ResolveRelativePath(currentPageDirectoryParts, url);
 
         return GenerateMediaUrl(targetMedia);
     }
 
     private string ProcessSingleWikiLink(string urlWithoutExtension, string anchor, List<string> currentPageDirectoryParts, string? culture)
     {
-        var targetPageName = ResolveRelativePath(currentPageDirectoryParts, urlWithoutExtension);
+        var targetPageName = WikiPathHelper.ResolveRelativePath(currentPageDirectoryParts, urlWithoutExtension);
         var generatedUrl = GenerateWikiUrl(targetPageName, culture);
         return generatedUrl + anchor;
     }
@@ -180,41 +180,6 @@ public sealed class MarkdownRenderService : IMarkdownRenderService
         }
 
         throw new System.InvalidOperationException($"Failed to generate media URL for '{mediaPath}' using LinkGenerator.");
-    }
-
-    private static List<string> GetDirectoryParts(string pagePath)
-    {
-        var pageParts = pagePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-
-        // Get all parts except the last one (the file name)
-        return [.. pageParts.Take(pageParts.Length - 1)];
-    }
-
-    private static string ResolveRelativePath(List<string> currentPageDirectoryParts, string relativePath)
-    {
-        var relativeParts = relativePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        var resultParts = new List<string>(currentPageDirectoryParts);
-        
-        // Process each part of the relative path
-        foreach (var part in relativeParts)
-        {
-            if (part == "..")
-            {
-                // Go up one level
-                if (resultParts.Count > 0)
-                {
-                    resultParts.RemoveAt(resultParts.Count - 1);
-                }
-            }
-            else if (part != ".")
-            {
-                // Add the part
-                resultParts.Add(part);
-            }
-            // Skip "." as it means current directory
-        }
-        
-        return string.Join("/", resultParts);
     }
 
     private static bool IsAbsoluteUrl(string url)
