@@ -49,7 +49,7 @@ public class WikiPageEditServiceTest
             content,
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(d => d.Count == 0),
+            It.Is<Dictionary<string, WikiMediaFile>>(d => d.Count == 0),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -77,7 +77,7 @@ public class WikiPageEditServiceTest
             content,
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(d => d.Count == 0),
+            It.Is<Dictionary<string, WikiMediaFile>>(d => d.Count == 0),
             It.IsAny<CancellationToken>()), Times.Once);
 
         _mockTempMediaStorage.Verify(
@@ -107,7 +107,7 @@ public class WikiPageEditServiceTest
             content,
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(d => d.Count == 0),
+            It.Is<Dictionary<string, WikiMediaFile>>(d => d.Count == 0),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -133,7 +133,7 @@ public class WikiPageEditServiceTest
             content,
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(d => d.Count == 0),
+            It.Is<Dictionary<string, WikiMediaFile>>(d => d.Count == 0),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -182,10 +182,10 @@ public class WikiPageEditServiceTest
             It.Is<string>(c => c.Contains("![Screenshot](medias/screenshot_abc123def456.png)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m =>
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
                 m.Count == 1 &&
                 m.ContainsKey("medias/screenshot_abc123def456.png") &&
-                m["medias/screenshot_abc123def456.png"].SequenceEqual(mediaContent)),
+                m["medias/screenshot_abc123def456.png"].Content.SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -230,10 +230,10 @@ public class WikiPageEditServiceTest
             It.Is<string>(c => c.Contains("![Diagram](medias/diagram_abc789def012.svg)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m =>
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
                 m.Count == 1 &&
                 m.ContainsKey("docs/medias/diagram_abc789def012.svg") &&
-                m["docs/medias/diagram_abc789def012.svg"].SequenceEqual(mediaContent)),
+                m["docs/medias/diagram_abc789def012.svg"].Content.SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -278,10 +278,10 @@ public class WikiPageEditServiceTest
             It.Is<string>(c => c.Contains("[Download](medias/datafile_abcdef123456)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m =>
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
                 m.Count == 1 &&
                 m.ContainsKey("medias/datafile_abcdef123456") &&
-                m["medias/datafile_abcdef123456"].SequenceEqual(mediaContent)),
+                m["medias/datafile_abcdef123456"].Content.SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -326,10 +326,10 @@ public class WikiPageEditServiceTest
             It.Is<string>(c => c.Contains("[Download](medias/backup-tar_fedcba987654.gz)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m =>
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
                 m.Count == 1 &&
                 m.ContainsKey("medias/backup-tar_fedcba987654.gz") &&
-                m["medias/backup-tar_fedcba987654.gz"].SequenceEqual(mediaContent)),
+                m["medias/backup-tar_fedcba987654.gz"].Content.SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -418,14 +418,14 @@ More text.
                 c.Contains("[Download PDF](medias/document_aabbccdd0003.pdf)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m =>
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
                 m.Count == 3 &&
                 m.ContainsKey("medias/photo1_aabbccdd0001.png") &&
                 m.ContainsKey("medias/photo2_aabbccdd0002.jpg") &&
                 m.ContainsKey("medias/document_aabbccdd0003.pdf") &&
-                m["medias/photo1_aabbccdd0001.png"].SequenceEqual(mediaContent1) &&
-                m["medias/photo2_aabbccdd0002.jpg"].SequenceEqual(mediaContent2) &&
-                m["medias/document_aabbccdd0003.pdf"].SequenceEqual(mediaContent3)),
+                m["medias/photo1_aabbccdd0001.png"].Content.SequenceEqual(mediaContent1) &&
+                m["medias/photo2_aabbccdd0002.jpg"].Content.SequenceEqual(mediaContent2) &&
+                m["medias/document_aabbccdd0003.pdf"].Content.SequenceEqual(mediaContent3)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -480,10 +480,10 @@ The same image appears twice.";
                 c.Contains("![Second reference](medias/logo_abcdef123789.png)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m =>
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
                 m.Count == 1 &&
                 m.ContainsKey("medias/logo_abcdef123789.png") &&
-                m["medias/logo_abcdef123789.png"].SequenceEqual(mediaContent)),
+                m["medias/logo_abcdef123789.png"].Content.SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
 
         _mockTempMediaStorage.Verify(
@@ -521,7 +521,7 @@ The same image appears twice.";
             It.Is<string>(c => c.Contains("/wiki/tempmedia/ffffffffffff")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m => m.Count == 0),
+            It.Is<Dictionary<string, WikiMediaFile>>(m => m.Count == 0),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -564,7 +564,7 @@ The same image appears twice.";
             It.Is<string>(c => c.Contains("/wiki/tempmedia/deadbeefcafe")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m => m.Count == 0),
+            It.Is<Dictionary<string, WikiMediaFile>>(m => m.Count == 0),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -616,10 +616,10 @@ The same image appears twice.";
                 c.Contains("![Invalid](/wiki/tempmedia/999999999999)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m =>
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
                 m.Count == 1 &&
                 m.ContainsKey("medias/valid_abcd1234ef56.png") &&
-                m["medias/valid_abcd1234ef56.png"].SequenceEqual(mediaContent)),
+                m["medias/valid_abcd1234ef56.png"].Content.SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -645,7 +645,7 @@ The same image appears twice.";
             "",
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(d => d.Count == 0),
+            It.Is<Dictionary<string, WikiMediaFile>>(d => d.Count == 0),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -689,10 +689,10 @@ The same image appears twice.";
             It.Is<string>(c => c.Contains("![Image](medias/image_a1b2c3d4e5f6.png)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m =>
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
                 m.Count == 1 &&
                 m.ContainsKey("medias/image_a1b2c3d4e5f6.png") &&
-                m["medias/image_a1b2c3d4e5f6.png"].SequenceEqual(mediaContent)),
+                m["medias/image_a1b2c3d4e5f6.png"].Content.SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -754,10 +754,10 @@ The same image appears twice.";
                 !c.Contains("/wiki/tempmedia/")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m =>
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
                 m.Count == 1 &&
                 m.ContainsKey("medias/temp_cafe12345678.png") &&
-                m["medias/temp_cafe12345678.png"].SequenceEqual(mediaContent)),
+                m["medias/temp_cafe12345678.png"].Content.SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -808,10 +808,10 @@ The same image appears twice.";
                 c.Contains($@"<a href=""medias/file_dada123beeee.png"">Download</a>")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m =>
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
                 m.Count == 1 &&
                 m.ContainsKey("medias/file_dada123beeee.png") &&
-                m["medias/file_dada123beeee.png"].SequenceEqual(mediaContent)),
+                m["medias/file_dada123beeee.png"].Content.SequenceEqual(mediaContent)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -842,7 +842,7 @@ The same image appears twice.";
             content,
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(d => d.Count == 0),
+            It.Is<Dictionary<string, WikiMediaFile>>(d => d.Count == 0),
             cancellationToken), Times.Once);
     }
 
@@ -895,12 +895,274 @@ The same image appears twice.";
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<IWikiUser>(),
-                It.Is<Dictionary<string, byte[]>>(m =>
+                It.Is<Dictionary<string, WikiMediaFile>>(m =>
                     m.Count == 1 &&
                     m.ContainsKey("medias/image_fade00000000.png") &&
-                    m["medias/image_fade00000000.png"].SequenceEqual(mediaContent)),
+                    m["medias/image_fade00000000.png"].Content.SequenceEqual(mediaContent)),
                 cancellationToken),
             Times.Once);
+    }
+
+    #endregion
+
+    #region SavePageAsync Tests - Editable Media (IsUpdate flag)
+
+    [Fact]
+    public async Task SavePageAsync_WithEditableMediaMatchingOwnedPath_SetsIsUpdateTrue()
+    {
+        // Arrange
+        var author = CreateMockUser("user@example.com", "Test User");
+        var tempId = "aa00bb11cc22";
+        var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+
+        // The initial git path falls inside the page's owned media directory: "medias/mypage/"
+        var initialGitPath = "medias/mypage/drawing.excalidraw.svg";
+        var content = $"# My Page\n\n![Drawing](/wiki/tempmedia/{tempId})";
+
+        var tempMedia = new Dictionary<string, TemporaryMediaInfo>
+        {
+            [tempId] = new TemporaryMediaInfo
+            {
+                TemporaryId = tempId,
+                OriginalFileName = "drawing.excalidraw.svg",
+                FilePath = "/temp/drawing.excalidraw.svg",
+                CreatedAt = DateTimeOffset.UtcNow,
+                EditableMediaInfo = new EditableMediaInfo { IsEditable = true, InitialGitPath = initialGitPath }
+            }
+        };
+
+        _mockTempMediaStorage
+            .Setup(x => x.GetUserTemporaryMediaAsync(author, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(tempMedia);
+
+        _mockTempMediaStorage
+            .Setup(x => x.GetTemporaryMediaAsync(author, tempId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mediaContent);
+
+        // Act
+        await _service.SavePageAsync("mypage", null, content, "Update drawing", author, CancellationToken.None);
+
+        // Assert: IsUpdate must be true and the existing git path must be used as key
+        _mockPageService.Verify(x => x.SavePageWithMediaAsync(
+            "mypage",
+            null,
+            It.Is<string>(c => c.Contains("![Drawing](medias/mypage/drawing.excalidraw.svg)")),
+            "Update drawing",
+            author,
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
+                m.Count == 1 &&
+                m.ContainsKey(initialGitPath) &&
+                m[initialGitPath].IsUpdate == true &&
+                m[initialGitPath].Content.SequenceEqual(mediaContent)),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SavePageAsync_WithEditableMediaMatchingNestedPageOwnedPath_SetsIsUpdateTrue()
+    {
+        // Arrange: page is "docs/guide", so owned path is "docs/medias/guide/"
+        var author = CreateMockUser("user@example.com", "Test User");
+        var tempId = "dd33ee44ff55";
+        var mediaContent = new byte[] { 0x3C, 0x73, 0x76, 0x67 }; // <svg
+
+        var initialGitPath = "docs/medias/guide/chart.excalidraw.svg";
+        var content = $"# Guide\n\n![Chart](/wiki/tempmedia/{tempId})";
+
+        var tempMedia = new Dictionary<string, TemporaryMediaInfo>
+        {
+            [tempId] = new TemporaryMediaInfo
+            {
+                TemporaryId = tempId,
+                OriginalFileName = "chart.excalidraw.svg",
+                FilePath = "/temp/chart.excalidraw.svg",
+                CreatedAt = DateTimeOffset.UtcNow,
+                EditableMediaInfo = new EditableMediaInfo { IsEditable = true, InitialGitPath = initialGitPath }
+            }
+        };
+
+        _mockTempMediaStorage
+            .Setup(x => x.GetUserTemporaryMediaAsync(author, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(tempMedia);
+
+        _mockTempMediaStorage
+            .Setup(x => x.GetTemporaryMediaAsync(author, tempId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mediaContent);
+
+        // Act
+        await _service.SavePageAsync("docs/guide", null, content, "Update chart", author, CancellationToken.None);
+
+        // Assert
+        _mockPageService.Verify(x => x.SavePageWithMediaAsync(
+            "docs/guide",
+            null,
+            It.Is<string>(c => c.Contains("![Chart](medias/guide/chart.excalidraw.svg)")),
+            "Update chart",
+            author,
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
+                m.Count == 1 &&
+                m.ContainsKey(initialGitPath) &&
+                m[initialGitPath].IsUpdate == true &&
+                m[initialGitPath].Content.SequenceEqual(mediaContent)),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SavePageAsync_WithEditableMediaOutsideOwnedPath_SetsIsUpdateFalse()
+    {
+        // Arrange: InitialGitPath belongs to a different page, so it must be treated as a new file
+        var author = CreateMockUser("user@example.com", "Test User");
+        var tempId = "112233445566";
+        var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+
+        // "medias/otherpage/" does NOT start with "medias/mypage/"
+        var initialGitPath = "medias/otherpage/image.excalidraw.svg";
+        var content = $"# My Page\n\n![Image](/wiki/tempmedia/{tempId})";
+
+        var tempMedia = new Dictionary<string, TemporaryMediaInfo>
+        {
+            [tempId] = new TemporaryMediaInfo
+            {
+                TemporaryId = tempId,
+                OriginalFileName = "image.excalidraw.svg",
+                FilePath = "/temp/image.excalidraw.svg",
+                CreatedAt = DateTimeOffset.UtcNow,
+                EditableMediaInfo = new EditableMediaInfo { IsEditable = true, InitialGitPath = initialGitPath }
+            }
+        };
+
+        _mockTempMediaStorage
+            .Setup(x => x.GetUserTemporaryMediaAsync(author, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(tempMedia);
+
+        _mockTempMediaStorage
+            .Setup(x => x.GetTemporaryMediaAsync(author, tempId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mediaContent);
+
+        // Act
+        await _service.SavePageAsync("mypage", null, content, "Add image", author, CancellationToken.None);
+
+        // Assert: must use a new path (not initialGitPath) with IsUpdate false
+        _mockPageService.Verify(x => x.SavePageWithMediaAsync(
+            "mypage",
+            null,
+            It.Is<string>(c => c.Contains($"![Image](medias/mypage/image_{tempId}.excalidraw.svg)")),
+            "Add image",
+            author,
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
+                m.Count == 1 &&
+                !m.ContainsKey(initialGitPath) &&
+                m.Values.Single().IsUpdate == false),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SavePageAsync_WithEditableMediaWithoutInitialGitPath_SetsIsUpdateFalse()
+    {
+        // Arrange: new editable media that has never been saved to git before
+        var author = CreateMockUser("user@example.com", "Test User");
+        var tempId = "aabbccddeeff";
+        var mediaContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var content = $"# My Page\n\n![New](/wiki/tempmedia/{tempId})";
+
+        var tempMedia = new Dictionary<string, TemporaryMediaInfo>
+        {
+            [tempId] = new TemporaryMediaInfo
+            {
+                TemporaryId = tempId,
+                OriginalFileName = "new.excalidraw.svg",
+                FilePath = "/temp/new.excalidraw.svg",
+                CreatedAt = DateTimeOffset.UtcNow,
+                EditableMediaInfo = new EditableMediaInfo { IsEditable = true, InitialGitPath = null }
+            }
+        };
+
+        _mockTempMediaStorage
+            .Setup(x => x.GetUserTemporaryMediaAsync(author, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(tempMedia);
+
+        _mockTempMediaStorage
+            .Setup(x => x.GetTemporaryMediaAsync(author, tempId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mediaContent);
+
+        // Act
+        await _service.SavePageAsync("mypage", null, content, "Add new drawing", author, CancellationToken.None);
+
+        // Assert
+        _mockPageService.Verify(x => x.SavePageWithMediaAsync(
+            "mypage",
+            null,
+            It.Is<string>(c => c.Contains($"![New](medias/mypage/new_{tempId}.excalidraw.svg)")),
+            "Add new drawing",
+            author,
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
+                m.Count == 1 &&
+                m.Values.Single().IsUpdate == false &&
+                m.Values.Single().Content.SequenceEqual(mediaContent)),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SavePageAsync_WithMixOfUpdatedAndNewMedia_SetsIsUpdateFlagsCorrectly()
+    {
+        // Arrange
+        var author = CreateMockUser("user@example.com", "Test User");
+        var updateId = "aaa000000001";
+        var newId    = "bbb000000002";
+
+        var updateContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var newContent    = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 };
+
+        var existingPath = "medias/page/existing.excalidraw.svg";
+        var content = $"# Page\n\n![Existing](/wiki/tempmedia/{updateId})\n\n![New](/wiki/tempmedia/{newId})";
+
+        var tempMedia = new Dictionary<string, TemporaryMediaInfo>
+        {
+            [updateId] = new TemporaryMediaInfo
+            {
+                TemporaryId = updateId,
+                OriginalFileName = "existing.excalidraw.svg",
+                FilePath = "/tmp/existing.excalidraw.svg",
+                CreatedAt = DateTimeOffset.UtcNow,
+                EditableMediaInfo = new EditableMediaInfo { IsEditable = true, InitialGitPath = existingPath }
+            },
+            [newId] = new TemporaryMediaInfo
+            {
+                TemporaryId = newId,
+                OriginalFileName = "photo.jpg",
+                FilePath = "/tmp/photo.jpg",
+                CreatedAt = DateTimeOffset.UtcNow
+            }
+        };
+
+        _mockTempMediaStorage
+            .Setup(x => x.GetUserTemporaryMediaAsync(author, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(tempMedia);
+
+        _mockTempMediaStorage
+            .Setup(x => x.GetTemporaryMediaAsync(author, updateId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(updateContent);
+
+        _mockTempMediaStorage
+            .Setup(x => x.GetTemporaryMediaAsync(author, newId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(newContent);
+
+        // Act
+        await _service.SavePageAsync("page", null, content, "Mixed save", author, CancellationToken.None);
+
+        // Assert
+        _mockPageService.Verify(x => x.SavePageWithMediaAsync(
+            "page",
+            null,
+            It.Is<string>(c => c.Contains($"![Existing](medias/page/existing.excalidraw.svg)") && c.Contains($"![New](medias/photo_{newId}.jpg)")),
+            "Mixed save",
+            author,
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
+                m.Count == 2 &&
+                m.ContainsKey(existingPath) &&
+                m[existingPath].IsUpdate == true &&
+                m[existingPath].Content.SequenceEqual(updateContent) &&
+                m.Values.Any(v => v.IsUpdate == false && v.Content.SequenceEqual(newContent))),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     #endregion
@@ -988,12 +1250,12 @@ That's it!";
                 c.Contains("![Screenshot 2](medias/screenshot-2_abcdef000002.jpg)")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m =>
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
                 m.Count == 2 &&
                 m.ContainsKey("docs/medias/screenshot-1_abcdef000001.png") &&
                 m.ContainsKey("docs/medias/screenshot-2_abcdef000002.jpg") &&
-                m["docs/medias/screenshot-1_abcdef000001.png"].SequenceEqual(mediaContent1) &&
-                m["docs/medias/screenshot-2_abcdef000002.jpg"].SequenceEqual(mediaContent2)),
+                m["docs/medias/screenshot-1_abcdef000001.png"].Content.SequenceEqual(mediaContent1) &&
+                m["docs/medias/screenshot-2_abcdef000002.jpg"].Content.SequenceEqual(mediaContent2)),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -1094,7 +1356,7 @@ That's it!";
                 c.Contains($@"<video src=""medias/video_aabbccddee06.mp4"" controls></video>")),
             commitMessage,
             author,
-            It.Is<Dictionary<string, byte[]>>(m =>
+            It.Is<Dictionary<string, WikiMediaFile>>(m =>
                 m.Count == 6 &&
                 m.ContainsKey("medias/image_aabbccddee01.png") &&
                 m.ContainsKey("medias/photo_aabbccddee02.jpg") &&
@@ -1102,6 +1364,227 @@ That's it!";
                 m.ContainsKey("medias/vector_aabbccddee04.svg") &&
                 m.ContainsKey("medias/doc_aabbccddee05.pdf") &&
                 m.ContainsKey("medias/video_aabbccddee06.mp4")),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    #endregion
+
+    #region CreateEditableMediaFromExisting Tests
+
+    [Fact]
+    public async Task CreateEditableMediaFromExisting_WithValidPath_ReturnsTemporaryId()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var mediaPath = "images/diagram.excalidraw.svg";
+        var content = new byte[] { 0x3C, 0x73, 0x76, 0x67 }; // <svg
+        var expectedTempId = Guid.NewGuid().ToString("N");
+
+        _mockPageService
+            .Setup(x => x.GetMediaFileAsync(mediaPath, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(content);
+
+        _mockTempMediaStorage
+            .Setup(x => x.StoreEditableTemporaryMediaAsync(
+                user,
+                It.IsAny<string>(),
+                content,
+                It.IsAny<EditableMediaInfo>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedTempId);
+
+        // Act
+        var result = await _service.CreateEditableMediaFromExisting(user, mediaPath, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(expectedTempId, result);
+    }
+
+    [Fact]
+    public async Task CreateEditableMediaFromExisting_WithValidPath_PassesEditableMediaInfoWithCorrectInitialGitPath()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var mediaPath = "images/diagram.excalidraw.svg";
+        var content = new byte[] { 0x3C, 0x73, 0x76, 0x67 };
+
+        _mockPageService
+            .Setup(x => x.GetMediaFileAsync(mediaPath, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(content);
+
+        _mockTempMediaStorage
+            .Setup(x => x.StoreEditableTemporaryMediaAsync(
+                user,
+                It.IsAny<string>(),
+                content,
+                It.IsAny<EditableMediaInfo>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Guid.NewGuid().ToString("N"));
+
+        // Act
+        await _service.CreateEditableMediaFromExisting(user, mediaPath, CancellationToken.None);
+
+        // Assert
+        _mockTempMediaStorage.Verify(x => x.StoreEditableTemporaryMediaAsync(
+            user,
+            It.IsAny<string>(),
+            content,
+            It.Is<EditableMediaInfo>(e => e.IsEditable && e.InitialGitPath == mediaPath),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateEditableMediaFromExisting_WithSafeFileName_RestoresOriginalFileName()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        // Path with a safe file name generated by GenerateSafeFileName (original name + "_" + tempId)
+        var tempId = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
+        var mediaPath = $"images/diagram_{tempId}.excalidraw.svg";
+        var content = new byte[] { 0x3C, 0x73, 0x76, 0x67 };
+
+        _mockPageService
+            .Setup(x => x.GetMediaFileAsync(mediaPath, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(content);
+
+        _mockTempMediaStorage
+            .Setup(x => x.StoreEditableTemporaryMediaAsync(
+                user,
+                It.IsAny<string>(),
+                content,
+                It.IsAny<EditableMediaInfo>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Guid.NewGuid().ToString("N"));
+
+        // Act
+        await _service.CreateEditableMediaFromExisting(user, mediaPath, CancellationToken.None);
+
+        // Assert - the original file name should have the tempId suffix stripped
+        _mockTempMediaStorage.Verify(x => x.StoreEditableTemporaryMediaAsync(
+            user,
+            "diagram.excalidraw.svg",
+            content,
+            It.IsAny<EditableMediaInfo>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateEditableMediaFromExisting_WithNonSafeFileName_KeepsFileName()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var mediaPath = "images/diagram.excalidraw.svg";
+        var content = new byte[] { 0x3C, 0x73, 0x76, 0x67 };
+
+        _mockPageService
+            .Setup(x => x.GetMediaFileAsync(mediaPath, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(content);
+
+        _mockTempMediaStorage
+            .Setup(x => x.StoreEditableTemporaryMediaAsync(
+                user,
+                It.IsAny<string>(),
+                content,
+                It.IsAny<EditableMediaInfo>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Guid.NewGuid().ToString("N"));
+
+        // Act
+        await _service.CreateEditableMediaFromExisting(user, mediaPath, CancellationToken.None);
+
+        // Assert - name without a GUID suffix should be kept as-is
+        _mockTempMediaStorage.Verify(x => x.StoreEditableTemporaryMediaAsync(
+            user,
+            "diagram.excalidraw.svg",
+            content,
+            It.IsAny<EditableMediaInfo>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateEditableMediaFromExisting_WhenFileNotFound_ReturnsNull()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var mediaPath = "images/missing.excalidraw.svg";
+
+        _mockPageService
+            .Setup(x => x.GetMediaFileAsync(mediaPath, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((byte[]?)null);
+
+        // Act
+        var result = await _service.CreateEditableMediaFromExisting(user, mediaPath, CancellationToken.None);
+
+        // Assert
+        Assert.Null(result);
+        _mockTempMediaStorage.Verify(x => x.StoreEditableTemporaryMediaAsync(
+            It.IsAny<IWikiUser>(),
+            It.IsAny<string>(),
+            It.IsAny<byte[]>(),
+            It.IsAny<EditableMediaInfo>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateEditableMediaFromExisting_WithNonEditablePath_ThrowsArgumentException()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var invalidPath = "images/photo.png"; // Not an .excalidraw.svg
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.CreateEditableMediaFromExisting(user, invalidPath, CancellationToken.None));
+
+        _mockPageService.Verify(x => x.GetMediaFileAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateEditableMediaFromExisting_WithPathTraversal_ThrowsArgumentException()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var traversalPath = "../secret/diagram.excalidraw.svg";
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.CreateEditableMediaFromExisting(user, traversalPath, CancellationToken.None));
+
+        _mockPageService.Verify(x => x.GetMediaFileAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateEditableMediaFromExisting_WithRootLevelPath_ReturnsTemporaryId()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var mediaPath = "diagram.excalidraw.svg";
+        var content = new byte[] { 0x3C, 0x73, 0x76, 0x67 };
+        var expectedTempId = Guid.NewGuid().ToString("N");
+
+        _mockPageService
+            .Setup(x => x.GetMediaFileAsync(mediaPath, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(content);
+
+        _mockTempMediaStorage
+            .Setup(x => x.StoreEditableTemporaryMediaAsync(
+                user,
+                It.IsAny<string>(),
+                content,
+                It.IsAny<EditableMediaInfo>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedTempId);
+
+        // Act
+        var result = await _service.CreateEditableMediaFromExisting(user, mediaPath, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(expectedTempId, result);
+        _mockTempMediaStorage.Verify(x => x.StoreEditableTemporaryMediaAsync(
+            user,
+            "diagram.excalidraw.svg",
+            content,
+            It.Is<EditableMediaInfo>(e => e.IsEditable && e.InitialGitPath == mediaPath),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 

@@ -907,9 +907,9 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Page with Image\n\n![Logo](images/logo.png)";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/logo.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 } // PNG header
+            ["images/logo.png"] = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 }) // PNG header
         };
 
         _mockRepository
@@ -953,11 +953,11 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Gallery\n\n![Image 1](images/img1.png)\n![Image 2](images/img2.jpg)\n[Document](docs/manual.pdf)";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/img1.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 },
-            ["images/img2.jpg"] = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 },
-            ["docs/manual.pdf"] = new byte[] { 0x25, 0x50, 0x44, 0x46 }
+            ["images/img1.png"] = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 }),
+            ["images/img2.jpg"] = new WikiMediaFile(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 }),
+            ["docs/manual.pdf"] = new WikiMediaFile(new byte[] { 0x25, 0x50, 0x44, 0x46 })
         };
 
         _mockRepository
@@ -998,9 +998,9 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Updated Page\n\n![New Image](images/new.png)";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/new.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+            ["images/new.png"] = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 })
         };
 
         _mockRepository
@@ -1039,9 +1039,9 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Test Page";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["../../../etc/passwd"] = new byte[] { 0x01, 0x02, 0x03 }
+            ["../../../etc/passwd"] = new WikiMediaFile(new byte[] { 0x01, 0x02, 0x03 })
         };
 
         // Act & Assert
@@ -1055,9 +1055,9 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Test Page";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images//logo.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+            ["images//logo.png"] = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 })
         };
 
         // Act & Assert
@@ -1071,9 +1071,9 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Test Page";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["/images/logo.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+            ["/images/logo.png"] = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 })
         };
 
         // Act & Assert
@@ -1087,9 +1087,9 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Test Page";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+            ["images/"] = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 })
         };
 
         // Act & Assert
@@ -1103,9 +1103,9 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Test Page";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/.hidden.gif"] = new byte[] { 0x47, 0x49, 0x46 }
+            ["images/.hidden.gif"] = new WikiMediaFile(new byte[] { 0x47, 0x49, 0x46 })
         };
 
         // Act & Assert
@@ -1119,9 +1119,9 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Test Page";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/logo"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+            ["images/logo"] = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 })
         };
 
         // Act & Assert
@@ -1135,7 +1135,7 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Simple Page";
-        var mediaFiles = new Dictionary<string, byte[]>();
+        var mediaFiles = new Dictionary<string, WikiMediaFile>();
 
         _mockRepository
             .Setup(x => x.GetPathTypeAsync("test.md", "main", It.IsAny<CancellationToken>()))
@@ -1171,9 +1171,9 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Page Française\n\n![Image](images/banner.jpg)";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/banner.jpg"] = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 }
+            ["images/banner.jpg"] = new WikiMediaFile(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 })
         };
 
         _mockRepository
@@ -1213,9 +1213,9 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("admin@example.com", "Admin");
         var content = "# Admin Guide\n\n![Screenshot](docs/admin/screenshot.png)";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["docs/admin/screenshot.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+            ["docs/admin/screenshot.png"] = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 })
         };
 
         _mockRepository
@@ -1253,13 +1253,13 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Rich Media Page\n\nMultiple media types.";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/photo.jpg"] = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 },
-            ["images/diagram.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 },
-            ["videos/tutorial.mp4"] = new byte[] { 0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70 },
-            ["documents/spec.pdf"] = new byte[] { 0x25, 0x50, 0x44, 0x46 },
-            ["data/info.json"] = new byte[] { 0x7B, 0x7D }
+            ["images/photo.jpg"] = new WikiMediaFile(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 }),
+            ["images/diagram.png"] = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 }),
+            ["videos/tutorial.mp4"] = new WikiMediaFile(new byte[] { 0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70 }),
+            ["documents/spec.pdf"] = new WikiMediaFile(new byte[] { 0x25, 0x50, 0x44, 0x46 }),
+            ["data/info.json"] = new WikiMediaFile(new byte[] { 0x7B, 0x7D })
         };
 
         _mockRepository
@@ -1302,9 +1302,9 @@ public class WikiPageServiceTest
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Test Page";
         var imageContent = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/test.png"] = imageContent
+            ["images/test.png"] = new WikiMediaFile(imageContent)
         };
 
         _mockRepository
@@ -1342,10 +1342,10 @@ public class WikiPageServiceTest
         // Arrange
         var author = CreateMockWikiUser("user@example.com", "Test User");
         var content = "# Test Page";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/valid.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 },
-            ["../invalid.png"] = new byte[] { 0x89, 0x50, 0x4E, 0x47 }
+            ["images/valid.png"] = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 }),
+            ["../invalid.png"] = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 })
         };
 
         _mockRepository
@@ -1362,6 +1362,131 @@ public class WikiPageServiceTest
             It.IsAny<IEnumerable<GitCommitOperation>>(),
             It.IsAny<GitCommitMetadata>(),
             It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithIsUpdateTrue_UsesUpdateFileOperationForMedia()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Page\n\n![Drawing](medias/page/drawing.excalidraw.svg)";
+        var mediaBytes = new byte[] { 0x3C, 0x73, 0x76, 0x67 }; // <svg
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
+        {
+            ["medias/page/drawing.excalidraw.svg"] = new WikiMediaFile(mediaBytes, IsUpdate: true)
+        };
+
+        _mockRepository
+            .Setup(x => x.GetPathTypeAsync("page.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GitTreeEntryKind?)null);
+
+        GitCommitOperation[]? capturedOps = null;
+        _mockRepository
+            .Setup(x => x.CreateCommitAsync(
+                "main",
+                It.IsAny<IEnumerable<GitCommitOperation>>(),
+                It.IsAny<GitCommitMetadata>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, IEnumerable<GitCommitOperation>, GitCommitMetadata, CancellationToken>(
+                (_, ops, _, _) => capturedOps = ops.ToArray())
+            .ReturnsAsync(GitHash.FromBytes(new byte[20]));
+
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("page", null, content))
+            .Returns(new WikiPageMetadata("Page", new()));
+
+        // Act
+        await _service.SavePageWithMediaAsync("page", null, content, "Update drawing", author, mediaFiles, CancellationToken.None);
+
+        // Assert: media must use UpdateFileOperation, not AddFileOperation
+        Assert.NotNull(capturedOps);
+        Assert.Equal(2, capturedOps.Length);
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "page.md");
+        Assert.Contains(capturedOps.OfType<UpdateFileOperation>(), op => op.Path == "medias/page/drawing.excalidraw.svg");
+        Assert.DoesNotContain(capturedOps.OfType<AddFileOperation>(), op => op.Path == "medias/page/drawing.excalidraw.svg");
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithIsUpdateFalse_UsesAddFileOperationForMedia()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Page\n\n![New Image](medias/new.png)";
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
+        {
+            ["medias/new.png"] = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, IsUpdate: false)
+        };
+
+        _mockRepository
+            .Setup(x => x.GetPathTypeAsync("page.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GitTreeEntryKind?)null);
+
+        GitCommitOperation[]? capturedOps = null;
+        _mockRepository
+            .Setup(x => x.CreateCommitAsync(
+                "main",
+                It.IsAny<IEnumerable<GitCommitOperation>>(),
+                It.IsAny<GitCommitMetadata>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, IEnumerable<GitCommitOperation>, GitCommitMetadata, CancellationToken>(
+                (_, ops, _, _) => capturedOps = ops.ToArray())
+            .ReturnsAsync(GitHash.FromBytes(new byte[20]));
+
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("page", null, content))
+            .Returns(new WikiPageMetadata("Page", new()));
+
+        // Act
+        await _service.SavePageWithMediaAsync("page", null, content, "Add image", author, mediaFiles, CancellationToken.None);
+
+        // Assert: media must use AddFileOperation, not UpdateFileOperation
+        Assert.NotNull(capturedOps);
+        Assert.Equal(2, capturedOps.Length);
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(), op => op.Path == "medias/new.png");
+        Assert.DoesNotContain(capturedOps.OfType<UpdateFileOperation>(), op => op.Path == "medias/new.png");
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithMixedIsUpdateFlags_UsesCorrectOperationsForEach()
+    {
+        // Arrange
+        var author = CreateMockWikiUser("user@example.com", "Test User");
+        var content = "# Page\n\nMixed media.";
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
+        {
+            ["medias/page/existing.excalidraw.svg"] = new WikiMediaFile(new byte[] { 0x01 }, IsUpdate: true),
+            ["medias/new-upload.png"]               = new WikiMediaFile(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, IsUpdate: false)
+        };
+
+        _mockRepository
+            .Setup(x => x.GetPathTypeAsync("page.md", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GitTreeEntryKind?)null);
+
+        GitCommitOperation[]? capturedOps = null;
+        _mockRepository
+            .Setup(x => x.CreateCommitAsync(
+                "main",
+                It.IsAny<IEnumerable<GitCommitOperation>>(),
+                It.IsAny<GitCommitMetadata>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, IEnumerable<GitCommitOperation>, GitCommitMetadata, CancellationToken>(
+                (_, ops, _, _) => capturedOps = ops.ToArray())
+            .ReturnsAsync(GitHash.FromBytes(new byte[20]));
+
+        _mockMetadataCache
+            .Setup(x => x.ExtractAndCacheMetadata("page", null, content))
+            .Returns(new WikiPageMetadata("Page", new()));
+
+        // Act
+        await _service.SavePageWithMediaAsync("page", null, content, "Mixed commit", author, mediaFiles, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(capturedOps);
+        Assert.Equal(3, capturedOps.Length);
+        Assert.Contains(capturedOps.OfType<UpdateFileOperation>(), op => op.Path == "medias/page/existing.excalidraw.svg");
+        Assert.Contains(capturedOps.OfType<AddFileOperation>(),    op => op.Path == "medias/new-upload.png");
+        Assert.DoesNotContain(capturedOps.OfType<AddFileOperation>(),    op => op.Path == "medias/page/existing.excalidraw.svg");
+        Assert.DoesNotContain(capturedOps.OfType<UpdateFileOperation>(), op => op.Path == "medias/new-upload.png");
     }
 
     #endregion

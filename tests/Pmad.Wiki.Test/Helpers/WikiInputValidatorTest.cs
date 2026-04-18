@@ -344,6 +344,9 @@ public class WikiInputValidatorTest
     [InlineData("mixed-Case_123.pdf")]
     [InlineData("file.with.multiple.dots.txt")]
     [InlineData("path/file.ext")]
+    [InlineData("diagram.excalidraw.svg")]
+    [InlineData("path/to/diagram.excalidraw.svg")]
+    [InlineData("medias/page/diagram.excalidraw.svg")]
     public void IsValidMediaPath_WithValidPath_ReturnsTrue(string mediaPath)
     {
         // Act
@@ -487,6 +490,8 @@ public class WikiInputValidatorTest
     [InlineData("image.jpg")]
     [InlineData("path/to/file.pdf")]
     [InlineData("file.with.dots.txt")]
+    [InlineData("diagram.excalidraw.svg")]
+    [InlineData("path/to/diagram.excalidraw.svg")]
     public void ValidateMediaPath_WithValidPath_DoesNotThrow(string mediaPath)
     {
         // Act & Assert
@@ -822,6 +827,138 @@ public class WikiInputValidatorTest
 
         // Assert
         Assert.False(result);
+    }
+
+    #endregion
+
+    #region IsValidEditableMedia Tests
+
+    [Theory]
+    [InlineData("diagram.excalidraw.svg")]
+    [InlineData("path/to/diagram.excalidraw.svg")]
+    [InlineData("medias/page/diagram.excalidraw.svg")]
+    [InlineData("my-diagram.excalidraw.svg")]
+    [InlineData("my_diagram.excalidraw.svg")]
+    [InlineData("diagram123.excalidraw.svg")]
+    public void IsValidEditableMedia_WithValidExcalidrawPath_ReturnsTrue(string mediaPath)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidEditableMedia(mediaPath);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsValidEditableMedia_WithNull_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidEditableMedia(null!);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsValidEditableMedia_WithEmptyString_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidEditableMedia("");
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsValidEditableMedia_WithWhitespace_ReturnsFalse()
+    {
+        // Act
+        var result = WikiInputValidator.IsValidEditableMedia("   ");
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Theory]
+    [InlineData("image.jpg")]            // not excalidraw
+    [InlineData("document.pdf")]         // not excalidraw
+    [InlineData("diagram.svg")]          // .svg only, not .excalidraw.svg
+    [InlineData("diagram.excalidraw")]   // missing .svg
+    [InlineData("path/to/image.png")]    // not excalidraw
+    public void IsValidEditableMedia_WithNonExcalidrawPath_ReturnsFalse(string mediaPath)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidEditableMedia(mediaPath);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Theory]
+    [InlineData("../diagram.excalidraw.svg")]             // path traversal
+    [InlineData("path/../other.excalidraw.svg")]          // path traversal
+    [InlineData("/diagram.excalidraw.svg")]               // leading slash
+    [InlineData("path/diagram.excalidraw.svg/")]          // trailing slash
+    [InlineData("path//diagram.excalidraw.svg")]          // double slash
+    [InlineData("diagram with spaces.excalidraw.svg")]    // spaces
+    [InlineData("diagram@name.excalidraw.svg")]           // special characters
+    public void IsValidEditableMedia_WithUnsafePath_ReturnsFalse(string mediaPath)
+    {
+        // Act
+        var result = WikiInputValidator.IsValidEditableMedia(mediaPath);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    #endregion
+
+    #region ValidateEditableMedia Tests
+
+    [Theory]
+    [InlineData("diagram.excalidraw.svg")]
+    [InlineData("path/to/diagram.excalidraw.svg")]
+    [InlineData("medias/page/diagram.excalidraw.svg")]
+    public void ValidateEditableMedia_WithValidPath_DoesNotThrow(string mediaPath)
+    {
+        // Act & Assert
+        var exception = Record.Exception(() => WikiInputValidator.ValidateEditableMedia(mediaPath));
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void ValidateEditableMedia_WithNull_ThrowsArgumentException()
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() =>
+            WikiInputValidator.ValidateEditableMedia(null!));
+        Assert.Equal("mediaPath", exception.ParamName);
+        Assert.Contains("Invalid media path.", exception.Message);
+    }
+
+    [Fact]
+    public void ValidateEditableMedia_WithEmptyString_ThrowsArgumentException()
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() =>
+            WikiInputValidator.ValidateEditableMedia(""));
+        Assert.Equal("mediaPath", exception.ParamName);
+        Assert.Contains("Invalid media path.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("image.jpg")]                              // not excalidraw
+    [InlineData("diagram.svg")]                            // .svg only
+    [InlineData("../diagram.excalidraw.svg")]              // path traversal
+    [InlineData("/diagram.excalidraw.svg")]                // leading slash
+    [InlineData("diagram with spaces.excalidraw.svg")]     // spaces
+    public void ValidateEditableMedia_WithInvalidPath_ThrowsArgumentException(string mediaPath)
+    {
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() =>
+            WikiInputValidator.ValidateEditableMedia(mediaPath));
+        Assert.Equal("mediaPath", exception.ParamName);
+        Assert.Contains("Invalid media path.", exception.Message);
     }
 
     #endregion

@@ -678,35 +678,98 @@ namespace Pmad.Wiki.Controllers
                 return Forbid();
             }
 
-            if (file == null || file.Length == 0)
+            if (!IsValidUpload(file, out var message))
             {
-                return BadRequest(new UploadMediaErrorResponse { Error = _localizer["No file uploaded."] });
-            }
-
-            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!_options.AllowedMediaExtensions.Contains(extension))
-            {
-                return BadRequest(new UploadMediaErrorResponse { Error = _localizer["File type {0} is not allowed.", extension] });
-            }
-
-            // Check file size (limit to 10MB)
-            if (file.Length > 10 * 1024 * 1024)
-            {
-                return BadRequest(new UploadMediaErrorResponse { Error = _localizer["File size exceeds 10MB limit."] });
+                return BadRequest(new UploadMediaErrorResponse { Error = message });
             }
 
             using var memoryStream = new MemoryStream();
             await file.CopyToAsync(memoryStream, cancellationToken);
             var fileContent = memoryStream.ToArray();
 
-            var temporaryId = await _temporaryMediaStorage.StoreTemporaryMediaAsync(wikiUser.User, file.FileName, fileContent, cancellationToken);
+            string temporaryId;
+
+            if (WikiPathHelper.IsEditableMedia(file.FileName))
+            {
+                temporaryId = await _temporaryMediaStorage.StoreEditableTemporaryMediaAsync(wikiUser.User, file.FileName, fileContent, new EditableMediaInfo() { IsEditable = true }, cancellationToken);
+            }
+            else 
+            {
+                temporaryId = await _temporaryMediaStorage.StoreTemporaryMediaAsync(wikiUser.User, file.FileName, fileContent, cancellationToken);
+            }
 
             return Ok(new UploadMediaResponse
             { 
                 TemporaryId = temporaryId,
                 FileName = file.FileName,
                 Url = Url.Action("TempMedia", "Wiki", new { id = temporaryId }) ?? string.Empty,
-                Size = file.Length
+                Size = file.Length,
+                IsEditable = WikiPathHelper.IsEditableMedia(file.FileName)
+            });
+        }
+
+        private bool IsValidUpload(IFormFile file, out string message)
+        {
+            if (file == null || file.Length == 0)
+            {
+                message = _localizer["No file uploaded."];
+                return false;
+            }
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!_options.AllowedMediaExtensions.Contains(extension))
+            {
+                message = _localizer["File type {0} is not allowed.", extension];
+                return false;
+            }
+
+            // Check file size (limit to 10MB)
+            if (file.Length > 10 * 1024 * 1024)
+            {
+                message = _localizer["File size exceeds 10MB limit."];
+                return false;
+            }
+
+            message = string.Empty;
+            return true;
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditMedia(string existingMediaPath, CancellationToken cancellationToken)
+        {
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
+            if (wikiUser == null || !wikiUser.CanEdit)
+            {
+                return Forbid();
+            }
+
+            if (!WikiInputValidator.IsValidMediaPath(existingMediaPath))
+            {
+                return BadRequest("Invalid existing media path.");
+            }
+
+            if (!_options.IsMediaPathExtensionAllowed(existingMediaPath) || !WikiInputValidator.IsValidEditableMedia(existingMediaPath))
+            {
+                return BadRequest("Unsupported media file type.");
+            }
+
+            if (!await _pagePermissionHelper.CanEdit(wikiUser, existingMediaPath, cancellationToken))
+            {
+                return Forbid();
+            }
+
+            var temporaryId = await _wikiPageEditService.CreateEditableMediaFromExisting(wikiUser!.User, existingMediaPath, cancellationToken);
+            if (string.IsNullOrEmpty(temporaryId))
+            {
+                return NotFound();
+            }
+
+            return Ok(new EditMediaResponse
+            {
+                TemporaryId = temporaryId,
+                Url = Url.Action("TempMedia", "Wiki", new { id = temporaryId }) ?? string.Empty,
             });
         }
 
@@ -739,6 +802,39 @@ namespace Pmad.Wiki.Controllers
             }
 
             return File(fileContent, "application/octet-stream");
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TempMedia(string id, IFormFile file, CancellationToken cancellationToken)
+        {
+            if (!WikiInputValidator.IsValidTempMediaId(id))
+            {
+                return BadRequest("Invalid temporary media ID.");
+            }
+
+            var wikiUser = await _userService.GetWikiUserAsync(User, false, cancellationToken);
+            if (wikiUser == null || !wikiUser.CanEdit)
+            {
+                return Forbid();
+            }
+
+            if (!IsValidUpload(file, out var message))
+            {
+                return BadRequest(new UploadMediaErrorResponse { Error = message });
+            }
+
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream, cancellationToken);
+            var fileContent = memoryStream.ToArray();
+
+            if (await _temporaryMediaStorage.UpdateEditableTemporaryMediaAsync(wikiUser.User, id, fileContent, cancellationToken))
+            {
+                return Ok();
+            }
+
+            return NotFound();
         }
 
         [HttpGet]
@@ -927,7 +1023,7 @@ namespace Pmad.Wiki.Controllers
                 return BadRequest("Invalid media path.");
             }
 
-            if (!_options.AllowedMediaExtensions.Any(ext => id.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+            if (!_options.IsMediaPathExtensionAllowed(id))
             {
                 return BadRequest("Unsupported media file type.");
             }

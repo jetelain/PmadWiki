@@ -75,6 +75,11 @@ public static class WikiEndpointRouteBuilderExtensions
             defaults: new { controller = "Wiki", action = "UploadMedia" });
 
         endpoints.MapControllerRoute(
+            name: "wiki-edit-media",
+            pattern: $"{pattern}/editmedia",
+            defaults: new { controller = "Wiki", action = "EditMedia" });
+
+        endpoints.MapControllerRoute(
             name: "wiki-temp-media",
             pattern: $"{pattern}/tempmedia/{{**id}}",
             defaults: new { controller = "Wiki", action = "TempMedia" });

@@ -464,9 +464,9 @@ public class WikiPageServiceIntegrationTests : IDisposable
         var author = CreateTestUser();
         var content = "# Page with Media\n\n![Image](images/pic.png)";
         var imageBytes = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/pic.png"] = imageBytes
+            ["images/pic.png"] = new WikiMediaFile(imageBytes)
         };
 
         // Act
@@ -797,6 +797,108 @@ public class WikiPageServiceIntegrationTests : IDisposable
 
     #endregion
 
+    #region SavePageWithMediaAsync Tests - IsUpdate flag
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithIsUpdateTrue_OverwritesExistingMediaInGit()
+    {
+        // Arrange
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        var author = CreateTestUser();
+
+        var originalBytes = new byte[] { 0x01, 0x02, 0x03, 0x04 };
+        var updatedBytes  = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }; // PNG header
+
+        // First commit: add the media file as a new file
+        var content = "# Page\n\n![Drawing](medias/page/drawing.excalidraw.svg)";
+        await _service.SavePageWithMediaAsync("page", null, content, "Add drawing", author,
+            new Dictionary<string, WikiMediaFile>
+            {
+                ["medias/page/drawing.excalidraw.svg"] = new WikiMediaFile(originalBytes, IsUpdate: false)
+            }, CancellationToken.None);
+
+        var bytesAfterAdd = GetGitBinaryFileContent("medias/page/drawing.excalidraw.svg");
+        Assert.Equal(originalBytes, bytesAfterAdd);
+
+        // Second commit: update the same file using IsUpdate: true
+        await _service.SavePageWithMediaAsync("page", null, content, "Update drawing", author,
+            new Dictionary<string, WikiMediaFile>
+            {
+                ["medias/page/drawing.excalidraw.svg"] = new WikiMediaFile(updatedBytes, IsUpdate: true)
+            }, CancellationToken.None);
+
+        // Assert: file content must reflect the updated bytes
+        var bytesAfterUpdate = GetGitBinaryFileContent("medias/page/drawing.excalidraw.svg");
+        Assert.Equal(updatedBytes, bytesAfterUpdate);
+
+        // Verify two separate commits were created for the media file
+        var log = GetGitLog("medias/page/drawing.excalidraw.svg");
+        Assert.Contains("Update drawing", log);
+        Assert.Contains("Add drawing", log);
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithIsUpdateFalse_AddsNewMediaInGit()
+    {
+        // Arrange
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        var author = CreateTestUser();
+        var imageBytes = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 }; // JPEG header
+
+        var content = "# Page\n\n![Photo](medias/photo.jpg)";
+
+        // Act
+        await _service.SavePageWithMediaAsync("page", null, content, "Add photo", author,
+            new Dictionary<string, WikiMediaFile>
+            {
+                ["medias/photo.jpg"] = new WikiMediaFile(imageBytes, IsUpdate: false)
+            }, CancellationToken.None);
+
+        // Assert
+        var retrievedBytes = GetGitBinaryFileContent("medias/photo.jpg");
+        Assert.Equal(imageBytes, retrievedBytes);
+    }
+
+    [Fact]
+    public async Task SavePageWithMediaAsync_WithMixedIsUpdateFlags_CommitsCorrectly()
+    {
+        // Arrange
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        var author = CreateTestUser();
+
+        var existingBytes = new byte[] { 0x01, 0x02 };
+        var newBytes      = new byte[] { 0x03, 0x04 };
+        var updatedBytes  = new byte[] { 0x05, 0x06 };
+
+        // First: add the existing file
+        await _service.SavePageWithMediaAsync("page", null, "# v1", "Initial", author,
+            new Dictionary<string, WikiMediaFile>
+            {
+                ["medias/page/existing.excalidraw.svg"] = new WikiMediaFile(existingBytes, IsUpdate: false)
+            }, CancellationToken.None);
+
+        // Second: update existing and add new in one commit
+        var content = "# v2\n\n![Existing](medias/page/existing.excalidraw.svg)\n\n![New](medias/new.png)";
+        await _service.SavePageWithMediaAsync("page", null, content, "Mixed update", author,
+            new Dictionary<string, WikiMediaFile>
+            {
+                ["medias/page/existing.excalidraw.svg"] = new WikiMediaFile(updatedBytes, IsUpdate: true),
+                ["medias/new.png"]                      = new WikiMediaFile(newBytes,     IsUpdate: false)
+            }, CancellationToken.None);
+
+        // Assert
+        var retrievedExisting = GetGitBinaryFileContent("medias/page/existing.excalidraw.svg");
+        Assert.Equal(updatedBytes, retrievedExisting);
+
+        var retrievedNew = GetGitBinaryFileContent("medias/new.png");
+        Assert.Equal(newBytes, retrievedNew);
+    }
+
+    #endregion
+
     #region Edge Cases and Error Scenarios
 
     [Fact]
@@ -887,9 +989,9 @@ public class WikiPageServiceIntegrationTests : IDisposable
         }
 
         var content = "# Binary Test\n\nPage with binary media.";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["data/binary.bin"] = binaryData
+            ["data/binary.bin"] = new WikiMediaFile(binaryData)
         };
 
         // Act
@@ -914,11 +1016,11 @@ public class WikiPageServiceIntegrationTests : IDisposable
         var pdfData = new byte[] { 0x25, 0x50, 0x44, 0x46 };
 
         var content = "# Test Page\n\nPage with multiple media files.";
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/logo.png"] = pngData,
-            ["photos/picture.jpg"] = jpgData,
-            ["documents/guide.pdf"] = pdfData
+            ["images/logo.png"] = new WikiMediaFile(pngData),
+            ["photos/picture.jpg"] = new WikiMediaFile(jpgData),
+            ["documents/guide.pdf"] = new WikiMediaFile(pdfData)
         };
 
         await _service.SavePageWithMediaAsync("mediatest", null, content, "Add media files", author, mediaFiles, CancellationToken.None);
@@ -958,9 +1060,9 @@ public class WikiPageServiceIntegrationTests : IDisposable
         var imageData = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
         var content = "# Test Page";
 
-        var mediaFiles = new Dictionary<string, byte[]>
+        var mediaFiles = new Dictionary<string, WikiMediaFile>
         {
-            ["images/valid.png"] = imageData
+            ["images/valid.png"] = new WikiMediaFile(imageData)
         };
 
         await _service.SavePageWithMediaAsync("test", null, content, "Add media", author, mediaFiles, CancellationToken.None);

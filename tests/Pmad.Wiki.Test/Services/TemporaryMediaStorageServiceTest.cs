@@ -912,6 +912,248 @@ public class TemporaryMediaStorageServiceTest : IDisposable
 
     #endregion
 
+    #region StoreEditableTemporaryMediaAsync Tests
+
+    [Fact]
+    public async Task StoreEditableTemporaryMediaAsync_WithValidFile_StoresFileAndReturnsId()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var fileName = "editable.png";
+        var fileContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var editableInfo = new EditableMediaInfo { IsEditable = true };
+
+        // Act
+        var temporaryId = await _service.StoreEditableTemporaryMediaAsync(user, fileName, fileContent, editableInfo, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(temporaryId);
+        Assert.True(Guid.TryParse(temporaryId, out _));
+
+        var media = await _service.GetUserTemporaryMediaAsync(user, CancellationToken.None);
+        Assert.Single(media);
+        Assert.True(media.TryGetValue(temporaryId, out var info));
+        Assert.Equal(fileName, info.OriginalFileName);
+        Assert.NotNull(info.EditableMediaInfo);
+        Assert.True(info.EditableMediaInfo.IsEditable);
+    }
+
+    [Fact]
+    public async Task StoreEditableTemporaryMediaAsync_StoresEditableMediaInfo()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var fileContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var editableInfo = new EditableMediaInfo { IsEditable = true, InitialGitPath = "images/photo.png" };
+
+        // Act
+        var temporaryId = await _service.StoreEditableTemporaryMediaAsync(user, "photo.png", fileContent, editableInfo, CancellationToken.None);
+
+        // Assert
+        var media = await _service.GetUserTemporaryMediaAsync(user, CancellationToken.None);
+        var info = media[temporaryId];
+        Assert.NotNull(info.EditableMediaInfo);
+        Assert.True(info.EditableMediaInfo.IsEditable);
+        Assert.Equal("images/photo.png", info.EditableMediaInfo.InitialGitPath);
+    }
+
+    [Fact]
+    public async Task StoreEditableTemporaryMediaAsync_StoresEditableMediaInfo_AfterRestart()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var fileContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var editableInfo = new EditableMediaInfo { IsEditable = true, InitialGitPath = "images/photo.png" };
+        var temporaryId = await _service.StoreEditableTemporaryMediaAsync(user, "photo.png", fileContent, editableInfo, CancellationToken.None);
+
+        // Simulate service restart
+        var newService = new TemporaryMediaStorageService(Options.Create(_options));
+
+        // Act
+        var media = await newService.GetUserTemporaryMediaAsync(user, CancellationToken.None);
+
+        // Assert
+        Assert.Single(media);
+        var info = media[temporaryId];
+        Assert.NotNull(info.EditableMediaInfo);
+        Assert.True(info.EditableMediaInfo.IsEditable);
+        Assert.Equal("images/photo.png", info.EditableMediaInfo.InitialGitPath);
+    }
+
+    [Fact]
+    public async Task StoreEditableTemporaryMediaAsync_StoresContentCorrectly()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var fileContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var editableInfo = new EditableMediaInfo { IsEditable = true };
+
+        // Act
+        var temporaryId = await _service.StoreEditableTemporaryMediaAsync(user, "image.png", fileContent, editableInfo, CancellationToken.None);
+
+        // Assert
+        var retrievedContent = await _service.GetTemporaryMediaAsync(user, temporaryId, CancellationToken.None);
+        Assert.NotNull(retrievedContent);
+        Assert.Equal(fileContent, retrievedContent);
+    }
+
+    [Fact]
+    public async Task StoreEditableTemporaryMediaAsync_WithoutExtension_ThrowsArgumentException()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var fileContent = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var editableInfo = new EditableMediaInfo { IsEditable = true };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.StoreEditableTemporaryMediaAsync(user, "no_extension", fileContent, editableInfo, CancellationToken.None));
+
+        Assert.Equal("fileName", exception.ParamName);
+    }
+
+    #endregion
+
+    #region UpdateEditableTemporaryMediaAsync Tests
+
+    [Fact]
+    public async Task UpdateEditableTemporaryMediaAsync_WithValidEditableMedia_UpdatesContent()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var originalContent = new byte[] { 0x01, 0x02, 0x03 };
+        var updatedContent = new byte[] { 0x0A, 0x0B, 0x0C, 0x0D };
+        var editableInfo = new EditableMediaInfo { IsEditable = true };
+        var temporaryId = await _service.StoreEditableTemporaryMediaAsync(user, "image.png", originalContent, editableInfo, CancellationToken.None);
+
+        // Act
+        var result = await _service.UpdateEditableTemporaryMediaAsync(user, temporaryId, updatedContent, CancellationToken.None);
+
+        // Assert
+        Assert.True(result);
+        var retrievedContent = await _service.GetTemporaryMediaAsync(user, temporaryId, CancellationToken.None);
+        Assert.Equal(updatedContent, retrievedContent);
+    }
+
+    [Fact]
+    public async Task UpdateEditableTemporaryMediaAsync_WithNonEditableMedia_ReturnsFalse()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var fileContent = new byte[] { 0x01, 0x02, 0x03 };
+        var editableInfo = new EditableMediaInfo { IsEditable = false };
+        var temporaryId = await _service.StoreEditableTemporaryMediaAsync(user, "image.png", fileContent, editableInfo, CancellationToken.None);
+
+        // Act
+        var result = await _service.UpdateEditableTemporaryMediaAsync(user, temporaryId, new byte[] { 0x0A }, CancellationToken.None);
+
+        // Assert
+        Assert.False(result);
+        var retrievedContent = await _service.GetTemporaryMediaAsync(user, temporaryId, CancellationToken.None);
+        Assert.Equal(fileContent, retrievedContent);
+    }
+
+    [Fact]
+    public async Task UpdateEditableTemporaryMediaAsync_WithNonEditableMediaInfo_ReturnsFalse()
+    {
+        // Arrange - store without editable info
+        var user = CreateMockUser("user@example.com", "Test User");
+        var fileContent = new byte[] { 0x01, 0x02, 0x03 };
+        var temporaryId = await _service.StoreTemporaryMediaAsync(user, "image.png", fileContent, CancellationToken.None);
+
+        // Act
+        var result = await _service.UpdateEditableTemporaryMediaAsync(user, temporaryId, new byte[] { 0x0A }, CancellationToken.None);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task UpdateEditableTemporaryMediaAsync_WithNonExistentId_ReturnsFalse()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var nonExistentId = Guid.NewGuid().ToString("N");
+
+        // Act
+        var result = await _service.UpdateEditableTemporaryMediaAsync(user, nonExistentId, new byte[] { 0x0A }, CancellationToken.None);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task UpdateEditableTemporaryMediaAsync_WithInvalidId_ThrowsArgumentException()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.UpdateEditableTemporaryMediaAsync(user, "invalid-id", new byte[] { 0x0A }, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task UpdateEditableTemporaryMediaAsync_WithDifferentUser_ReturnsFalse()
+    {
+        // Arrange
+        var user1 = CreateMockUser("user1@example.com", "User 1");
+        var user2 = CreateMockUser("user2@example.com", "User 2");
+        var originalContent = new byte[] { 0x01, 0x02, 0x03 };
+        var editableInfo = new EditableMediaInfo { IsEditable = true };
+        var temporaryId = await _service.StoreEditableTemporaryMediaAsync(user1, "image.png", originalContent, editableInfo, CancellationToken.None);
+
+        // Act
+        var result = await _service.UpdateEditableTemporaryMediaAsync(user2, temporaryId, new byte[] { 0x0A }, CancellationToken.None);
+
+        // Assert
+        Assert.False(result);
+        var content = await _service.GetTemporaryMediaAsync(user1, temporaryId, CancellationToken.None);
+        Assert.Equal(originalContent, content);
+    }
+
+    [Fact]
+    public async Task UpdateEditableTemporaryMediaAsync_CanUpdateMultipleTimes()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var originalContent = new byte[] { 0x01 };
+        var editableInfo = new EditableMediaInfo { IsEditable = true };
+        var temporaryId = await _service.StoreEditableTemporaryMediaAsync(user, "image.png", originalContent, editableInfo, CancellationToken.None);
+
+        // Act & Assert - first update
+        var update1 = new byte[] { 0x02, 0x03 };
+        Assert.True(await _service.UpdateEditableTemporaryMediaAsync(user, temporaryId, update1, CancellationToken.None));
+        Assert.Equal(update1, await _service.GetTemporaryMediaAsync(user, temporaryId, CancellationToken.None));
+
+        // Act & Assert - second update
+        var update2 = new byte[] { 0x04, 0x05, 0x06 };
+        Assert.True(await _service.UpdateEditableTemporaryMediaAsync(user, temporaryId, update2, CancellationToken.None));
+        Assert.Equal(update2, await _service.GetTemporaryMediaAsync(user, temporaryId, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task UpdateEditableTemporaryMediaAsync_WithDeletedFile_ReturnsFalse()
+    {
+        // Arrange
+        var user = CreateMockUser("user@example.com", "Test User");
+        var fileContent = new byte[] { 0x01, 0x02, 0x03 };
+        var editableInfo = new EditableMediaInfo { IsEditable = true };
+        var temporaryId = await _service.StoreEditableTemporaryMediaAsync(user, "image.png", fileContent, editableInfo, CancellationToken.None);
+
+        // Delete the physical file manually
+        var media = await _service.GetUserTemporaryMediaAsync(user, CancellationToken.None);
+        File.Delete(media[temporaryId].FilePath);
+
+        // Act
+        var result = await _service.UpdateEditableTemporaryMediaAsync(user, temporaryId, new byte[] { 0x0A }, CancellationToken.None);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    #endregion
+
     #region Integration Tests
 
     [Fact]
