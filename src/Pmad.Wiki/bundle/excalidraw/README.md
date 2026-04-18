@@ -19,7 +19,7 @@ instance exists on the page — a requirement for React hooks to work correctly.
 Consumers import everything from the single bundle file:
 
 ```js
-import { ExcalidrawLib, React, ReactDOM, createRoot } from '/lib/excalidraw/excalidraw-bundle.js';
+import { ExcalidrawLib, React, createRoot } from '/lib/excalidraw/excalidraw-bundle.js';
 ```
 
 ## Prerequisites

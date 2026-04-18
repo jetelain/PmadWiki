@@ -1029,7 +1029,7 @@ namespace Pmad.Wiki.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> RelativeMedia(string pageName, string relativePath)
+        public IActionResult RelativeMedia(string pageName, string relativePath)
         {
             if (!WikiInputValidator.IsValidPageName(pageName))
             {
