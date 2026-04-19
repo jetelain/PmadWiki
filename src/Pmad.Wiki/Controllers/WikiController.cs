@@ -1043,7 +1043,12 @@ namespace Pmad.Wiki.Controllers
             {
                 return BadRequest("Unsupported media file type.");
             }
-            return RedirectToAction(nameof(Media), new { id = WikiPathHelper.ResolveRelativePath(WikiPathHelper.GetDirectoryParts(pageName), relativePath) });
+            var id = WikiPathHelper.ResolveRelativePath(WikiPathHelper.GetDirectoryParts(pageName), relativePath);
+            if (!WikiInputValidator.IsValidMediaPath(id))
+            {
+                return BadRequest("Invalid media path.");
+            }
+            return RedirectToAction(nameof(Media), new { id });
         }
 
         [HttpGet]
