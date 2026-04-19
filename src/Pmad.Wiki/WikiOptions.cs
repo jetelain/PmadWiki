@@ -79,4 +79,14 @@ public class WikiOptions
     /// Gets or sets the default configuration options for slideshow presentations using reveal.js.
     /// </summary>
     public RevealJsConfig SlideShowDefaultOptions { get; set; } = new RevealJsConfig();
+
+    /// <summary>
+    /// Checks if the given media path has an allowed file extension based on the <see cref="AllowedMediaExtensions"/> list.
+    /// </summary>
+    /// <param name="mediaPath"></param>
+    /// <returns></returns>
+    internal bool IsMediaPathExtensionAllowed(string mediaPath)
+    {
+        return AllowedMediaExtensions.Any(ext => mediaPath.EndsWith(ext, StringComparison.OrdinalIgnoreCase));
+    }
 }

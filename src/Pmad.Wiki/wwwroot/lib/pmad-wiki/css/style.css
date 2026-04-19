@@ -266,3 +266,49 @@ a.wiki-slideshow, a.wiki-link {
 .wiki-content .wiki-pre-wrapper:focus-within .wiki-pre-copy-btn {
     opacity: 1;
 }
+
+/* Solve some conflicts between Bootstrap and Excalidraw */
+.excalidraw {
+    --zIndex-modal: 1100;
+    --zIndex-popup: 1101;
+}
+
+    .excalidraw .dropdown-menu {
+        display: revert;
+        border: revert;
+        padding: revert;
+    }
+
+    .excalidraw .popover {
+        border: revert;
+        background: revert;
+        max-width: revert;
+    }
+
+    .excalidraw .popover hr {
+        margin: revert;
+    }
+
+    .excalidraw kbd.HelpDialog__key {
+        background-color: var(--bs-body-color) !important;
+        opacity: .6;
+    }
+
+/* Le conteneur principal */
+.icon-stack {
+    position: relative;
+    display: inline-block;
+}
+
+    .icon-stack .icon-base {
+        display: inline-block;
+        transform: scale(1.2);
+    }
+
+    .icon-stack .icon-overlay {
+        display: inline-block;
+        position: absolute;
+        top: 58%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.7);
+    }

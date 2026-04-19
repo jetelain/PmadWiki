@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Pmad.Wiki.Helpers;
@@ -39,7 +38,7 @@ public static partial class WikiInputValidator
     /// Not suitable for validating media paths in markdown files, as it doesn't allow relative paths. Use <see cref="MediaPathMarkdownRegex"/> for that.
     /// </remarks>
     /// <returns></returns>
-    [GeneratedRegex("^([a-zA-Z0-9_-]+/)*[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9]+)+$", RegexOptions.CultureInvariant)]
+    [GeneratedRegex("^([a-zA-Z0-9_-]+/)*[a-zA-Z0-9_-]+(\\.excalidraw\\.svg|\\.[a-zA-Z0-9]+)+$", RegexOptions.CultureInvariant)]
     private static partial Regex MediaPathRegex();
 
     /// <summary>
@@ -199,5 +198,18 @@ public static partial class WikiInputValidator
             return false;
         }
         return ThemeNameRegex().IsMatch(themeName);
+    }
+
+    public static bool IsValidEditableMedia(string mediaPath)
+    {
+        return IsValidMediaPath(mediaPath) && WikiPathHelper.IsEditableMedia(mediaPath);
+    }
+
+    public static void ValidateEditableMedia(string mediaPath)
+    {
+        if (!IsValidEditableMedia(mediaPath))
+        {
+            throw new ArgumentException("Invalid media path.", nameof(mediaPath));
+        }
     }
 }

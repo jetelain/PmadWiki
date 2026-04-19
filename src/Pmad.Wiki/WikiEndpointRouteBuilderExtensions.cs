@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Pmad.Git.HttpServer;
+using Pmad.Wiki.Controllers;
 
 namespace Pmad.Wiki;
 
@@ -55,6 +56,11 @@ public static class WikiEndpointRouteBuilderExtensions
             defaults: new { controller = "Wiki", action = "Media" });
 
         endpoints.MapControllerRoute(
+            name: "wiki-media-relative",
+            pattern: $"{pattern}/media-relative",
+            defaults: new { controller = "Wiki", action = nameof(WikiController.RelativeMedia) });
+
+        endpoints.MapControllerRoute(
             name: "wiki-create",
             pattern: $"{pattern}/create/{{**id}}",
             defaults: new { controller = "Wiki", action = "Create" });
@@ -73,6 +79,11 @@ public static class WikiEndpointRouteBuilderExtensions
             name: "wiki-upload-media",
             pattern: $"{pattern}/uploadmedia",
             defaults: new { controller = "Wiki", action = "UploadMedia" });
+
+        endpoints.MapControllerRoute(
+            name: "wiki-edit-media",
+            pattern: $"{pattern}/editmedia",
+            defaults: new { controller = "Wiki", action = "EditMedia" });
 
         endpoints.MapControllerRoute(
             name: "wiki-temp-media",

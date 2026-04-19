@@ -1409,12 +1409,12 @@ public class WikiControllerIntegrationTests : IDisposable
         // Arrange
         var controller = CreateController();
         InitializeGitRepository();
-        
+
         // Create templates in different locations
         CommitFile("_templates/Basic.md", "# Basic Template", "Add basic template");
         CommitFile("_templates/reports/Weekly.md", "---\ntitle: Weekly Report\n---\n# Weekly Report", "Add weekly report");
         CommitFile("_templates/reports/Monthly.md", "---\ntitle: Monthly Report\n---\n# Monthly Report", "Add monthly report");
-        
+
         SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
 
         // Act
@@ -1424,10 +1424,253 @@ public class WikiControllerIntegrationTests : IDisposable
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<WikiCreateFromTemplateViewModel>(viewResult.Model);
         Assert.Equal(3, model.Templates.Count);
-        
+
         // Templates should be sorted by display name
         var templateNames = model.Templates.Select(t => t.DisplayName ?? t.TemplateName).ToList();
         Assert.Equal(templateNames.OrderBy(n => n).ToList(), templateNames);
+    }
+
+    #endregion
+
+    #region EditMedia and TempMedia POST Integration Tests
+
+    [Fact]
+    public async Task EditMedia_WithExistingExcalidrawFile_ReturnsTemporaryId()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        var svgContent = "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"100\" height=\"100\"/></svg>";
+        CommitFile("images/diagram.excalidraw.svg", svgContent, "Add excalidraw diagram");
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        // Act
+        var result = await controller.EditMedia("images/diagram.excalidraw.svg", CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        dynamic response = okResult.Value!;
+        Assert.NotEmpty((string)response.TemporaryId);
+        Assert.NotEmpty((string)response.Url);
+    }
+
+    [Fact]
+    public async Task EditMedia_WithNonExistentFile_ReturnsNotFound()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        // Act
+        var result = await controller.EditMedia("images/nonexistent.excalidraw.svg", CancellationToken.None);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task EditMedia_WithNonEditableFileType_ReturnsBadRequest()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        var imageBytes = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        CommitBinaryFile("images/logo.png", imageBytes, "Add logo");
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        // Act
+        var result = await controller.EditMedia("images/logo.png", CancellationToken.None);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal("Unsupported media file type.", badRequestResult.Value);
+    }
+
+    [Fact]
+    public async Task EditMedia_ThenGetViaTempMedia_ReturnsOriginalContent()
+    {
+        // Arrange
+        var editController = CreateController();
+        InitializeGitRepository();
+        var svgContent = "<svg xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"50\" cy=\"50\" r=\"40\"/></svg>";
+        CommitFile("images/shape.excalidraw.svg", svgContent, "Add excalidraw shape");
+        SetupAuthenticatedUser(editController, "Editor", "editor@example.com", canEdit: true);
+
+        // Act - EditMedia to get a temporary ID
+        var editResult = await editController.EditMedia("images/shape.excalidraw.svg", CancellationToken.None);
+        var okResult = Assert.IsType<OkObjectResult>(editResult);
+        dynamic editResponse = okResult.Value!;
+        var temporaryId = (string)editResponse.TemporaryId;
+
+        // Act - Retrieve the temporary file via GET TempMedia
+        var getController = CreateController();
+        SetupAuthenticatedUser(getController, "Editor", "editor@example.com", canEdit: true);
+        var getResult = await getController.TempMedia(temporaryId, CancellationToken.None);
+
+        // Assert - Temporary file should contain the original SVG content
+        var fileResult = Assert.IsType<FileContentResult>(getResult);
+        var returnedContent = Encoding.UTF8.GetString(fileResult.FileContents);
+        Assert.Equal(svgContent, returnedContent);
+        Assert.Equal("image/svg+xml", fileResult.ContentType);
+    }
+
+    [Fact]
+    public async Task TempMediaPost_WithValidFile_UpdatesTemporaryContent()
+    {
+        // Arrange - First create a temporary editable media via EditMedia
+        var editController = CreateController();
+        InitializeGitRepository();
+        var originalSvg = "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"10\" height=\"10\"/></svg>";
+        CommitFile("images/box.excalidraw.svg", originalSvg, "Add box diagram");
+        SetupAuthenticatedUser(editController, "Editor", "editor@example.com", canEdit: true);
+
+        var editResult = await editController.EditMedia("images/box.excalidraw.svg", CancellationToken.None);
+        var okResult = Assert.IsType<OkObjectResult>(editResult);
+        dynamic editResponse = okResult.Value!;
+        var temporaryId = (string)editResponse.TemporaryId;
+
+        // Act - Update the temporary file via POST TempMedia
+        var updatedSvg = "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"200\" height=\"200\"/></svg>";
+        var updatedBytes = Encoding.UTF8.GetBytes(updatedSvg);
+        var formFile = CreateFormFile("box.excalidraw.svg", updatedBytes);
+
+        var postController = CreateController();
+        SetupAuthenticatedUser(postController, "Editor", "editor@example.com", canEdit: true);
+        var postResult = await postController.TempMedia(temporaryId, formFile, CancellationToken.None);
+
+        // Assert - POST should succeed
+        Assert.IsType<OkResult>(postResult);
+
+        // Assert - Retrieve updated content to verify
+        var getController = CreateController();
+        SetupAuthenticatedUser(getController, "Editor", "editor@example.com", canEdit: true);
+        var getResult = await getController.TempMedia(temporaryId, CancellationToken.None);
+        var fileResult = Assert.IsType<FileContentResult>(getResult);
+        var returnedContent = Encoding.UTF8.GetString(fileResult.FileContents);
+        Assert.Equal(updatedSvg, returnedContent);
+    }
+
+    [Fact]
+    public async Task TempMediaPost_WithNonExistentTemporaryId_ReturnsNotFound()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        var formFile = CreateFormFile("diagram.excalidraw.svg", Encoding.UTF8.GetBytes("<svg/>"));
+        var nonExistentId = Guid.NewGuid().ToString("N");
+
+        // Act
+        var result = await controller.TempMedia(nonExistentId, formFile, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task EditMedia_ThenUpdateViaTempMediaPost_ThenSavePage_PersistsUpdatedFile()
+    {
+        // Arrange - Place the diagram under the page's owned media directory (medias/{pageName}/)
+        // so that WikiPageEditService treats the TempMedia POST as an in-place update.
+        InitializeGitRepository();
+        var originalSvg = "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>Original</text></svg>";
+        CommitFile("medias/docs/diagram.excalidraw.svg", originalSvg, "Add original diagram");
+        CommitFile("docs.md", "# Docs\n\n![Diagram](medias/docs/diagram.excalidraw.svg)", "Add docs page");
+
+        // Step 1: Start editing the media
+        var editController = CreateController();
+        SetupAuthenticatedUser(editController, "Editor", "editor@example.com", canEdit: true);
+        var editResult = await editController.EditMedia("medias/docs/diagram.excalidraw.svg", CancellationToken.None);
+        var okResult = Assert.IsType<OkObjectResult>(editResult);
+        dynamic editResponse = okResult.Value!;
+        var temporaryId = (string)editResponse.TemporaryId;
+        var tempUrl = (string)editResponse.Url;
+
+        // Step 2: Update the temporary file via POST TempMedia
+        var updatedSvg = "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>Updated</text></svg>";
+        var formFile = CreateFormFile("diagram.excalidraw.svg", Encoding.UTF8.GetBytes(updatedSvg));
+
+        var postController = CreateController();
+        SetupAuthenticatedUser(postController, "Editor", "editor@example.com", canEdit: true);
+        var postResult = await postController.TempMedia(temporaryId, formFile, CancellationToken.None);
+        Assert.IsType<OkResult>(postResult);
+
+        // Step 3: Save the page referencing the temporary file URL
+        var pageService = _serviceProvider.GetRequiredService<IWikiPageService>();
+        var currentPage = await pageService.GetPageAsync("docs", null, CancellationToken.None);
+
+        var saveController = CreateController();
+        SetupAuthenticatedUser(saveController, "Editor", "editor@example.com", canEdit: true);
+        var saveModel = new WikiPageEditViewModel
+        {
+            PageName = "docs",
+            Content = $"# Docs\n\n![Diagram]({tempUrl})",
+            CommitMessage = "Update docs with edited diagram",
+            IsNew = false,
+            OriginalContentHash = currentPage?.ContentHash,
+            TemporaryMediaIds = temporaryId
+        };
+        var saveResult = await saveController.Edit(saveModel, CancellationToken.None);
+        Assert.IsType<RedirectToActionResult>(saveResult);
+
+        // Assert - The original media file in Git should now contain the updated SVG
+        var savedMediaContent = GetGitFileContent("medias/docs/diagram.excalidraw.svg");
+        Assert.Equal(updatedSvg, savedMediaContent);
+    }
+
+    [Fact]
+    public async Task UploadMedia_ThenSavePage_PersistsNewMediaFile()
+    {
+        // Arrange
+        var controller = CreateController();
+        InitializeGitRepository();
+        CommitFile(".gitkeep", "", "Initialize repository");
+        SetupAuthenticatedUser(controller, "Editor", "editor@example.com", canEdit: true);
+
+        // Upload a new image
+        var imageBytes = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }; // PNG header
+        var formFile = CreateFormFile("photo.png", imageBytes);
+        var uploadResult = await controller.UploadMedia(formFile, CancellationToken.None);
+        var uploadOk = Assert.IsType<OkObjectResult>(uploadResult);
+        var uploadResponse = Assert.IsType<UploadMediaResponse>(uploadOk.Value);
+
+        // Save a page that references the uploaded image
+        var editController = CreateController();
+        SetupAuthenticatedUser(editController, "Editor", "editor@example.com", canEdit: true);
+        var model = new WikiPageEditViewModel
+        {
+            PageName = "gallery",
+            Content = $"# Gallery\n\n![Photo]({uploadResponse.Url})",
+            CommitMessage = "Create gallery page",
+            IsNew = true,
+            TemporaryMediaIds = uploadResponse.TemporaryId
+        };
+        var saveResult = await editController.Edit(model, CancellationToken.None);
+        Assert.IsType<RedirectToActionResult>(saveResult);
+
+        // Assert - The gallery page content should reference a permanent path
+        var savedContent = GetGitFileContent("gallery.md");
+        Assert.Contains("# Gallery", savedContent);
+        Assert.DoesNotContain("/Wiki/TempMedia/", savedContent);
+        Assert.Contains("![Photo]", savedContent);
+
+        // Assert - The media file should exist in Git
+        var savedPage = await _serviceProvider.GetRequiredService<IWikiPageService>().GetPageAsync("gallery", null, CancellationToken.None);
+        Assert.NotNull(savedPage);
+    }
+
+    private static IFormFile CreateFormFile(string fileName, byte[] content)
+    {
+        var stream = new MemoryStream(content);
+        return new FormFile(stream, 0, content.Length, "file", fileName)
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "application/octet-stream"
+        };
     }
 
     #endregion

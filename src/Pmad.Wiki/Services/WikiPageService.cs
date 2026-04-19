@@ -253,7 +253,7 @@ public sealed class WikiPageService : IWikiPageService
         return pages.Values.OrderBy(p => p.PageName).ToList();
     }
 
-    public async Task SavePageWithMediaAsync(string pageName, string? culture, string content, string commitMessage, IWikiUser author, Dictionary<string, byte[]> mediaFiles, CancellationToken cancellationToken = default)
+    public async Task SavePageWithMediaAsync(string pageName, string? culture, string content, string commitMessage, IWikiUser author, Dictionary<string, WikiMediaFile> mediaFiles, CancellationToken cancellationToken = default)
     {
         var repository = GetRepository();
         var filePath = WikiFilePathHelper.GetFilePath(pageName, culture, _options.NeutralMarkdownPageCulture);
@@ -275,10 +275,12 @@ public sealed class WikiPageService : IWikiPageService
         operations.Add(pageOperation);
 
         // Add media file operations
-        foreach (var (mediaPath, mediaContent) in mediaFiles)
+        foreach (var (mediaPath, mediaFile) in mediaFiles)
         {
             WikiInputValidator.ValidateMediaPath(mediaPath);
-            operations.Add(new AddFileOperation(mediaPath, mediaContent));
+            operations.Add(mediaFile.IsUpdate
+                ? new UpdateFileOperation(mediaPath, mediaFile.Content)
+                : new AddFileOperation(mediaPath, mediaFile.Content));
         }
 
         var authorSignature = WikiUserHelper.CreateGitCommitSignature(author);

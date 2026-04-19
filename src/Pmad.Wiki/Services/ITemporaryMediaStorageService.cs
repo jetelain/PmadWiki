@@ -13,10 +13,30 @@ public interface ITemporaryMediaStorageService
     /// <param name="fileName">The original file name.</param>
     /// <param name="fileContent">The file content.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A temporary URL that can be used in markdown during editing.</returns>
+    /// <returns>Temporary file id.</returns>
     Task<string> StoreTemporaryMediaAsync(IWikiUser user, string fileName, byte[] fileContent, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Stores an uploaded media file in temporary storage for the user.
+    /// </summary>
+    /// <param name="user">The wiki user.</param>
+    /// <param name="fileName">The original file name.</param>
+    /// <param name="fileContent">The file content.</param>
+    /// <param name="editableMediaInfo">Edit permission information of this file</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Temporary file id.</returns>
+    Task<string> StoreEditableTemporaryMediaAsync(IWikiUser user, string fileName, byte[] fileContent, EditableMediaInfo editableMediaInfo, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates the content of an existing temporary media file for the user.
+    /// </summary>
+    /// <param name="user">The wiki user.</param>
+    /// <param name="temporaryId">The temporary file identifier.</param>
+    /// <param name="newContent">The file content.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<bool> UpdateEditableTemporaryMediaAsync(IWikiUser user, string temporaryId, byte[] newContent, CancellationToken cancellationToken = default);
+
+    /// <summary>   
     /// Gets the temporary file content.
     /// </summary>
     /// <param name="user">The wiki user.</param>

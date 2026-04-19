@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Pmad.Wiki.Helpers;
 
@@ -31,7 +32,17 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
         return (Path.Combine(GetTemporaryStorageRoot(), safeUserId), safeUserId);
     }
 
-    public async Task<string> StoreTemporaryMediaAsync(IWikiUser user, string fileName, byte[] fileContent, CancellationToken cancellationToken = default)
+    public Task<string> StoreTemporaryMediaAsync(IWikiUser user, string fileName, byte[] fileContent, CancellationToken cancellationToken = default)
+    {
+        return StoreTemporaryMediaAsync(user, fileName, fileContent, null, cancellationToken);
+    }
+
+    public Task<string> StoreEditableTemporaryMediaAsync(IWikiUser user, string fileName, byte[] fileContent, EditableMediaInfo editableMediaInfo, CancellationToken cancellationToken = default)
+    {
+        return StoreTemporaryMediaAsync(user, fileName, fileContent, editableMediaInfo, cancellationToken);
+    }
+
+    private async Task<string> StoreTemporaryMediaAsync(IWikiUser user, string fileName, byte[] fileContent, EditableMediaInfo? editableMediaInfo, CancellationToken cancellationToken = default)
     {
         var extension = Path.GetExtension(fileName);
         if (string.IsNullOrEmpty(extension))
@@ -55,62 +66,59 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
             TemporaryId = temporaryId,
             OriginalFileName = fileName,
             FilePath = filePath,
-            CreatedAt = DateTimeOffset.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow,
+            EditableMediaInfo = editableMediaInfo
         };
 
+        var metadataDirectory = Path.Combine(userDir, "metadata");
+        Directory.CreateDirectory(metadataDirectory);
+        await File.WriteAllTextAsync(Path.Combine(metadataDirectory, temporaryId + ".json"), JsonSerializer.Serialize(mediaInfo), cancellationToken);
+        
         var userCache = _userMediaCache.GetOrAdd(cacheKey, _ => new ConcurrentDictionary<string, TemporaryMediaInfo>());
         userCache[temporaryId] = mediaInfo;
 
         return temporaryId;
     }
 
+    public async Task<bool> UpdateEditableTemporaryMediaAsync(IWikiUser user, string temporaryId, byte[] newContent, CancellationToken cancellationToken = default)
+    {
+        WikiInputValidator.ValidateTempMediaId(temporaryId);
+
+        var userCache = await GetUserTemporaryMediaAsync(user, cancellationToken).ConfigureAwait(false);
+
+        if (userCache.TryGetValue(temporaryId, out var mediaInfo) &&
+            mediaInfo.EditableMediaInfo?.IsEditable == true &&
+            File.Exists(mediaInfo.FilePath))
+        {
+            await File.WriteAllBytesAsync(mediaInfo.FilePath, newContent, cancellationToken);
+            return true;
+        }
+
+        return false;
+    }
+
     public async Task<byte[]?> GetTemporaryMediaAsync(IWikiUser user, string temporaryId, CancellationToken cancellationToken = default)
     {
         WikiInputValidator.ValidateTempMediaId(temporaryId);
 
-        var (userDir, cacheKey) = GetUserTemporaryDirectory(user);
+        var userCache = await GetUserTemporaryMediaAsync(user, cancellationToken).ConfigureAwait(false);
 
-        if (_userMediaCache.TryGetValue(cacheKey, out var userCache) && 
-            userCache.TryGetValue(temporaryId, out var mediaInfo) &&
+        if (userCache.TryGetValue(temporaryId, out var mediaInfo) &&
             File.Exists(mediaInfo.FilePath))
         {
             return await File.ReadAllBytesAsync(mediaInfo.FilePath, cancellationToken);
         }
 
-        // Try to locate file if not in cache
-        if (!Directory.Exists(userDir))
-        {
-            return null;
-        }
-
-        var files = Directory.GetFiles(userDir, temporaryId + ".*");
-        if (files.Length > 0 && File.Exists(files[0]))
-        {
-            var fileName = Path.GetFileName(files[0]);
-            var foundMediaInfo = new TemporaryMediaInfo
-            {
-                TemporaryId = temporaryId,
-                OriginalFileName = fileName,
-                FilePath = files[0],
-                CreatedAt = File.GetCreationTimeUtc(files[0])
-            };
-
-            var foundUserCache = _userMediaCache.GetOrAdd(cacheKey, _ => new ConcurrentDictionary<string, TemporaryMediaInfo>());
-            foundUserCache[temporaryId] = foundMediaInfo;
-
-            return await File.ReadAllBytesAsync(files[0], cancellationToken);
-        }
-
         return null;
     }
 
-    public Task<Dictionary<string, TemporaryMediaInfo>> GetUserTemporaryMediaAsync(IWikiUser user, CancellationToken cancellationToken = default)
+    public async Task<Dictionary<string, TemporaryMediaInfo>> GetUserTemporaryMediaAsync(IWikiUser user, CancellationToken cancellationToken = default)
     {
         var (userDir, cacheKey) = GetUserTemporaryDirectory(user);
 
         if (_userMediaCache.TryGetValue(cacheKey, out var userCache))
         {
-            return Task.FromResult(new Dictionary<string, TemporaryMediaInfo>(userCache));
+            return new Dictionary<string, TemporaryMediaInfo>(userCache);
         }
 
         // Try to load from file system
@@ -118,17 +126,21 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
 
         if (Directory.Exists(userDir))
         {
+            var metadataDirectory = Path.Combine(userDir, "metadata");
+
             foreach (var file in Directory.GetFiles(userDir))
             {
                 var fileName = Path.GetFileNameWithoutExtension(file);
                 if (Guid.TryParse(fileName, out _))
                 {
+                    var metadata = await ReadMetadata(metadataDirectory, fileName, cancellationToken).ConfigureAwait(false);
                     var fileMediaInfo = new TemporaryMediaInfo
                     {
                         TemporaryId = fileName,
-                        OriginalFileName = Path.GetFileName(file),
+                        OriginalFileName = metadata?.OriginalFileName ?? Path.GetFileName(file),
                         FilePath = file,
-                        CreatedAt = File.GetCreationTimeUtc(file)
+                        CreatedAt = metadata?.CreatedAt ?? File.GetCreationTimeUtc(file),
+                        EditableMediaInfo = metadata?.EditableMediaInfo
                     };
                     result[fileName] = fileMediaInfo;
                 }
@@ -144,7 +156,24 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
             }
         }
 
-        return Task.FromResult(result);
+        return result;
+    }
+
+    private static async Task<TemporaryMediaInfo?> ReadMetadata(string metadataDirectory, string fileName, CancellationToken cancellationToken)
+    {
+        var metadataPath = Path.Combine(metadataDirectory, fileName + ".json");
+        if (File.Exists(metadataPath))
+        {
+            try
+            {
+                return JsonSerializer.Deserialize<TemporaryMediaInfo>(await File.ReadAllTextAsync(metadataPath, cancellationToken).ConfigureAwait(false));
+            }
+            catch
+            {
+                // Ignore metadata parsing errors
+            }
+        }
+        return null;
     }
 
     public async Task CleanupUserTemporaryMediaAsync(IWikiUser user, string[] temporaryIds, CancellationToken cancellationToken = default)
@@ -157,7 +186,7 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
         // Ensure cache is loaded
         await GetUserTemporaryMediaAsync(user, cancellationToken).ConfigureAwait(false);
         
-        var (_, cacheKey) = GetUserTemporaryDirectory(user);
+        var (userDir, cacheKey) = GetUserTemporaryDirectory(user);
 
         // Remove from cache and delete files
         if (_userMediaCache.TryGetValue(cacheKey, out var userCache))
@@ -174,6 +203,8 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
                     {
                         // Ignore deletion errors
                     }
+
+                    RemoveMetadata(userDir, tempId);
                 }
             }
         }
@@ -203,13 +234,16 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
                     var lastWrite = File.GetLastWriteTimeUtc(file);
                     if (lastWrite < cutoffDate.UtcDateTime)
                     {
+                        var tempId = Path.GetFileNameWithoutExtension(file);
+
                         File.Delete(file);
 
                         if (userCache != null)
                         {
-                            var tempId = Path.GetFileNameWithoutExtension(file);
                             userCache.TryRemove(tempId, out _);
                         }
+
+                        RemoveMetadata(userDir, tempId);
                     }
                 }
                 catch
@@ -226,5 +260,21 @@ public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
     {
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(userGitEmail));
         return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private static void RemoveMetadata(string userDir, string temporaryId)
+    {
+        var metadataFile = Path.Combine(userDir, "metadata", temporaryId + ".json");
+        if (File.Exists(metadataFile))
+        {
+            try
+            {
+                File.Delete(metadataFile);
+            }
+            catch
+            {
+                // Ignore deletion errors
+            }
+        }
     }
 }

@@ -16,4 +16,7 @@ public class TemporaryMediaInfo
 
     /// <summary>Gets or sets the date and time when the temporary file was created.</summary>
     public required DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>Gets or sets the edit permission information of this temporary file.</summary>
+    public EditableMediaInfo? EditableMediaInfo { get; set; }
 }

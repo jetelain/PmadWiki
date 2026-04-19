@@ -21,7 +21,7 @@ internal class TestUrlHelper : IUrlHelper
 
     public string? Action(UrlActionContext actionContext)
     {
-        var routeValues = actionContext.Values as RouteValueDictionary;
+        var routeValues = new RouteValueDictionary(actionContext.Values);
         var action = actionContext.Action;
         var controller = actionContext.Controller;
         var id = routeValues?["id"]?.ToString() ?? "";

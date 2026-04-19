@@ -79,9 +79,9 @@ public interface IWikiPageService
     /// <param name="content">The raw Markdown content of the page.</param>
     /// <param name="commitMessage">The Git commit message.</param>
     /// <param name="author">The wiki user performing the save.</param>
-    /// <param name="mediaFiles">A dictionary mapping relative media paths to their binary content.</param>
+    /// <param name="mediaFiles">A dictionary mapping repository-relative media paths to their <see cref="WikiMediaFile"/> descriptors.</param>
     /// <param name="cancellationToken">Token to cancel the async operation.</param>
-    Task SavePageWithMediaAsync(string pageName, string? culture, string content, string commitMessage, Services.IWikiUser author, Dictionary<string, byte[]> mediaFiles, CancellationToken cancellationToken = default);
+    Task SavePageWithMediaAsync(string pageName, string? culture, string content, string commitMessage, Services.IWikiUser author, Dictionary<string, WikiMediaFile> mediaFiles, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the title of a page without loading its full content.

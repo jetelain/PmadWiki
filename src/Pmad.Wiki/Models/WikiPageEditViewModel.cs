@@ -29,5 +29,12 @@ public class WikiPageEditViewModel
     /// </summary>
     public string? TemporaryMediaIds { get; set; }
 
+    /// <summary>
+    /// JSON-serialized map of diagram temp URL entries (url -> {tempId, saveUrl}) built client-side.
+    /// Persisted across server round-trips so the Excalidraw editor can resolve temp diagrams after
+    /// a validation failure re-render.
+    /// </summary>
+    public string? DiagramTempUrls { get; set; }
+
     public RevealJsConfig SlideShowConfig { get; set; } = new RevealJsConfig();
 }
