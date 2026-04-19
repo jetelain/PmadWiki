@@ -97,6 +97,8 @@ public class WikiController_MediaCacheTests : WikiControllerTestBase
         // Assert
         var statusResult = Assert.IsType<StatusCodeResult>(result);
         Assert.Equal(StatusCodes.Status304NotModified, statusResult.StatusCode);
+        Assert.Equal("no-cache", _controller.Response.Headers.CacheControl.ToString());
+        Assert.Equal(etag, _controller.Response.Headers.ETag.ToString());
     }
 
     [Fact]
@@ -243,6 +245,8 @@ public class WikiController_MediaCacheTests : WikiControllerTestBase
         // Assert
         var statusResult = Assert.IsType<StatusCodeResult>(result);
         Assert.Equal(StatusCodes.Status304NotModified, statusResult.StatusCode);
+        Assert.Equal("no-cache", _controller.Response.Headers.CacheControl.ToString());
+        Assert.Equal(etag, _controller.Response.Headers.ETag.ToString());
     }
 
     [Fact]

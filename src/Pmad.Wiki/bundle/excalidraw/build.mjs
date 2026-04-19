@@ -34,11 +34,8 @@ await esbuild.build({
     },
 });
 
-// Copy CSS
 const prodDir = resolve(__dirname, 'node_modules/@excalidraw/excalidraw/dist/prod');
-
-// Copy static assets (fonts, locales, etc.) loaded at runtime via EXCALIDRAW_ASSET_PATH
-copyDir(resolve(prodDir, 'fonts'), resolve(outDir, 'fonts'));
 copyFileSync(resolve(prodDir, 'index.css'), resolve(outDir, 'excalidraw.css'));
+copyDir(resolve(prodDir, 'fonts'), resolve(outDir, 'fonts'));
 
 console.log(`Bundle written to ${outDir}`);

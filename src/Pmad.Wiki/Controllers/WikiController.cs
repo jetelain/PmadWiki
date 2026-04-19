@@ -801,12 +801,12 @@ namespace Pmad.Wiki.Controllers
                 if (mediaInfo.EditableMediaInfo?.IsEditable == true)
                 {
                     var etag = GetEtag(fileContent);
-                    if (Request.Headers.IfNoneMatch == etag)
+                    Response.Headers.ETag = etag;
+                    Response.Headers.CacheControl = "no-cache";
+                    if (Request.Headers.IfNoneMatch.Contains(etag))
                     {
                         return StatusCode(StatusCodes.Status304NotModified);
                     }
-                    Response.Headers.ETag = etag;
-                    Response.Headers.CacheControl = "no-cache";
                     return File(fileContent, contentType);
                 }
                 Response.Headers.CacheControl = $"private, max-age={CacheDurationSeconds}";
@@ -1092,12 +1092,12 @@ namespace Pmad.Wiki.Controllers
             if (WikiPathHelper.IsEditableMedia(id))
             {
                 var etag = GetEtag(fileContent);
-                if (Request.Headers.IfNoneMatch == etag)
+                Response.Headers.ETag = etag;
+                Response.Headers.CacheControl = "no-cache";
+                if (Request.Headers.IfNoneMatch.Contains(etag))
                 {
                     return StatusCode(StatusCodes.Status304NotModified);
                 }
-                Response.Headers.ETag = etag;
-                Response.Headers.CacheControl = "no-cache";
                 return File(fileContent, contentType);
             }
 
