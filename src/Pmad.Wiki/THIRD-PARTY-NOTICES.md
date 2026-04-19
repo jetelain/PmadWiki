@@ -54,6 +54,24 @@ Mergely itself utilizes:
 
 ---
 
+## Excalidraw
+
+**License:** MIT License  
+**Copyright:** © 2020-present Excalidraw contributors  
+**Website:** https://excalidraw.com/  
+**Version:** 0.18.0  
+**Used for:** Virtual whiteboard and diagram editing within wiki pages
+
+Excalidraw is bundled as a self-hosted ESM module (see `src/Pmad.Wiki/bundle/excalidraw/`).
+
+### Excalidraw Bundle Dependencies
+
+The Excalidraw bundle also includes:
+- **React** 18.3.1 - Licensed under MIT License (© Meta Platforms, Inc. and affiliates)
+- **React DOM** 18.3.1 - Licensed under MIT License (© Meta Platforms, Inc. and affiliates)
+
+---
+
 ## License Summaries
 
 ### Mozilla Public License Version 1.1 (MPL-1.1)
@@ -81,4 +99,4 @@ A permissive free software license that permits reuse with minimal restrictions.
 
 For questions about licensing or third-party software usage, please refer to the individual license files in the project or contact the project maintainers.
 
-Last updated: 2026-03-09
+Last updated: 2026-04-19

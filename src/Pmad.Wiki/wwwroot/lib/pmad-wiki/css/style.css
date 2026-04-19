@@ -293,3 +293,22 @@ a.wiki-slideshow, a.wiki-link {
         background-color: var(--bs-body-color) !important;
         opacity: .6;
     }
+
+/* Le conteneur principal */
+.icon-stack {
+    position: relative;
+    display: inline-block;
+}
+
+    .icon-stack .icon-base {
+        display: inline-block;
+        transform: scale(1.2);
+    }
+
+    .icon-stack .icon-overlay {
+        display: inline-block;
+        position: absolute;
+        top: 58%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.7);
+    }

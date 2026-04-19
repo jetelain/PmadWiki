@@ -5,17 +5,16 @@
 Features:
 - Git based wiki storage (powered by Pmad.Git)
 - Markdown rendering (powered by Markdig)
+- Diagram/sketch support (powered by Excalidraw)
+- Slide show support (powered by Reveal.js)
 - Bootstrap 5 based UI
 - Easy integration into existing ASP.NET Core MVC applications
 - Customizable layout support - use your own application's layout
 - Page localization support
-- Automatic page title extraction from H1 headings
 - Media file support (images, videos, PDFs, and other files from the Git repository)
 - Optional page-level access control with group-based permissions
-- Pattern-based access rules (supports wildcards)
 - In-memory caching for optimal performance
-- Admin interface for managing access rules
-- Version history with visual diff comparison
+- Version history with visual diff comparison (powered by Mergely)
 
 ## Configuration
 
@@ -73,6 +72,8 @@ This project uses the following third-party libraries:
 - **Bootstrap 5** - Front-end framework
 - **Bootstrap Icons** - Icon library
 - **Reveal.js** - Slide show presentation framework
+- **Excalidraw** - Virtual whiteboard / diagram editor (MIT License)
+- **React** - UI runtime bundled with Excalidraw (MIT License)
 - **Mergely** - Text diff and merge library (Mozilla Public License Version 1.1)
   - Copyright © Jamie Peabody
   - Used for displaying side-by-side diff comparisons

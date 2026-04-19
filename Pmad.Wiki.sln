@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36908.2
+# Visual Studio Version 18
+VisualStudioVersion = 18.4.11702.344 oobstable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pmad.Wiki", "src\Pmad.Wiki\Pmad.Wiki.csproj", "{A30C54E7-A08F-4EB6-B3B7-E3A5A6199196}"
 EndProject
@@ -14,6 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github", "Github", "{02EA68
 		.github\workflows\dotnet-linux-pr.yml = .github\workflows\dotnet-linux-pr.yml
 		.github\workflows\dotnet-linux-pub.yml = .github\workflows\dotnet-linux-pub.yml
 		.github\workflows\dotnet-linux.yml = .github\workflows\dotnet-linux.yml
+		README.md = README.md
 	EndProjectSection
 EndProject
 Global
