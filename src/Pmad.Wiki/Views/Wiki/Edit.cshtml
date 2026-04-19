@@ -4,7 +4,20 @@
     ViewData["Title"] = Model.IsNew ? Localizer["Create: {0}", Model.PageName] : Localizer["Edit: {0}", Model.PageName];
 
     var requestCultureFeature = Context.Features.Get<IRequestCultureFeature>();
+
+    // Excalidraw uses the current UI culture for localization, so we need to ensure it's a specific culture (e.g. "en-US" instead of "en") to get the correct language pack
     var currentUICulture = requestCultureFeature?.RequestCulture.UICulture ?? System.Globalization.CultureInfo.InvariantCulture;
+    if (currentUICulture.IsNeutralCulture)
+    {
+        try
+        {
+            currentUICulture = System.Globalization.CultureInfo.CreateSpecificCulture(currentUICulture.Name);
+        }
+        catch
+        {
+            // If we can't create a specific culture, just use the neutral culture
+        }
+    }
 }
 
 <div class="wiki-edit">
