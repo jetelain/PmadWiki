@@ -12,6 +12,7 @@ using Pmad.Wiki.Services;
 
 namespace Pmad.Wiki.Controllers
 {
+    [ServiceFilter(typeof(Services.Tenants.IWikiTenantActivationFilter))]
     public class WikiController : Controller
     {
         private const int CacheDurationSeconds = 14400; // 4 hours

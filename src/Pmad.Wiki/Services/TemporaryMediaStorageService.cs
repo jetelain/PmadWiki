@@ -13,10 +13,10 @@ namespace Pmad.Wiki.Services;
 /// </summary>
 public sealed class TemporaryMediaStorageService : ITemporaryMediaStorageService
 {
-    private readonly WikiOptions _options;
+    private readonly WikiGlobalOptions _options;
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, TemporaryMediaInfo>> _userMediaCache = new();
 
-    public TemporaryMediaStorageService(IOptions<WikiOptions> options)
+    public TemporaryMediaStorageService(IOptions<WikiGlobalOptions> options)
     {
         _options = options.Value;
     }
